@@ -26,12 +26,14 @@ This project is fully open-source and designed for **educational and non-commerc
 ```bash
 git clone https://github.com/yourusername/music-favorites-api.git
 cd music-favorites-api
-npm install 
+npm install
+```
 
 ### Running the API
 
 ```bash
 npm start
+```
 
 ## API Documentation
 
