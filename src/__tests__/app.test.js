@@ -47,6 +47,20 @@ describe( 'GET /act/:id - Basic functionality', () => {
       get( `/invalid/${actId}` ).
       expect( 404 );
   } );
+
+  /**
+   * Test error handling for invalid MusicBrainz ID
+   */
+  test( 'returns 500 error for invalid MusicBrainz ID', async () => {
+    const invalidId = 'invalid-id-format';
+    const response = await request( app ).
+      get( `/act/${invalidId}` ).
+      expect( 500 );
+
+    expect( response.body.type ).toBe( 'error' );
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+  } );
 } );
 
 describe( 'GET /act/:id - Response metadata', () => {
