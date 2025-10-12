@@ -4,25 +4,19 @@
  */
 
 /**
- * Maps social network URLs to their platform names
- * @param {string} url - The social network URL
- * @returns {string|null} Platform name or null if not supported
+ * Detects social media platform from URL
+ * @param {string} url - The URL to check
+ * @returns {string|null} Platform name or null if not a major social platform
  */
-const getSocialPlatform = ( url ) => {
-  if ( url.includes( 'twitter.com' ) ) {
-    return 'twitter';
+const detectSocialPlatform = ( url ) => {
+  const match = url.match( /(?:twitter|facebook|instagram|tiktok)\.com/u );
+  if ( !match ) {
+    return null;
   }
-  if ( url.includes( 'facebook.com' ) ) {
-    return 'facebook';
-  }
-  if ( url.includes( 'instagram.com' ) ) {
-    return 'instagram';
-  }
-  if ( url.includes( 'tiktok.com' ) ) {
-    return 'tiktok';
-  }
-  return null;
+  return match[ 0 ].split( '.' )[ 0 ];
 };
+
+const EXCLUDED_TYPES = [ 'free streaming', 'streaming', 'purchase for download', 'other databases' ];
 
 /**
  * Processes a single relation and adds it to the relations object
@@ -33,38 +27,21 @@ const getSocialPlatform = ( url ) => {
 const processRelation = ( relation, relations ) => {
   const { type } = relation;
   const url = relation.url.resource;
-  const typeMap = {
-    'allmusic': 'allmusic',
-    'bandcamp': 'bandcamp',
-    'bandsintown': 'bandsintown',
-    'discogs': 'discogs',
-    'last.fm': 'lastfm',
-    'lyrics': 'lyrics',
-    'myspace': 'myspace',
-    'setlistfm': 'setlistfm',
-    'songkick': 'songkick',
-    'soundcloud': 'soundcloud',
-    'VIAF': 'viaf',
-    'wikidata': 'wikidata',
-    'youtube music': 'youtubeMusic'
-  };
 
-  if ( typeMap[ type ] ) {
-    relations[ typeMap[ type ] ] = url;
-  }
-
-  if ( type === 'youtube' ) {
-    if ( !relation.ended ) {
-      relations.youtube = url;
-    }
+  if ( EXCLUDED_TYPES.includes( type ) ) {
+    return;
   }
 
   if ( type === 'social network' ) {
-    const platform = getSocialPlatform( url );
+    const platform = detectSocialPlatform( url );
     if ( platform ) {
       relations[ platform ] = url;
     }
+    return;
   }
+
+  const key = type.toLowerCase().replace( /[ .]/gu, '' );
+  relations[ key ] = url;
 };
 
 /**

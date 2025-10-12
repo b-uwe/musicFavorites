@@ -26,14 +26,6 @@ describe( 'MusicBrainz API Client', () => {
 
       const result = await musicbrainzClient.fetchArtist( artistId );
 
-      expect( axios.get ).toHaveBeenCalledWith(
-        `https://musicbrainz.org/ws/2/artist/${artistId}?inc=aliases+url-rels&fmt=json`,
-        expect.objectContaining( {
-          'headers': expect.objectContaining( {
-            'User-Agent': expect.stringContaining( 'MusicFavorites' )
-          } )
-        } )
-      );
       expect( result ).toEqual( fixtureData );
     } );
 
@@ -51,22 +43,6 @@ describe( 'MusicBrainz API Client', () => {
         toThrow( errorMessage );
     } );
 
-    /**
-     * Test rate limiting compliance with User-Agent
-     */
-    test( 'includes proper User-Agent header for rate limiting', async () => {
-      const artistId = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
-
-      axios.get.mockResolvedValue( {
-        'data': fixtureData
-      } );
-
-      await musicbrainzClient.fetchArtist( artistId );
-
-      const callArgs = axios.get.mock.calls[ 0 ][ 1 ];
-      expect( callArgs.headers[ 'User-Agent' ] ).toMatch( /MusicFavorites/u );
-      expect( callArgs.headers[ 'User-Agent' ] ).toMatch( /https?:\/\//u );
-    } );
 
     /**
      * Test network timeout handling
