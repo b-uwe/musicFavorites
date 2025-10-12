@@ -49,6 +49,64 @@ describe( 'GET /act/:id - Basic functionality', () => {
   } );
 } );
 
+describe( 'Error handling - JSON responses', () => {
+  /**
+   * Test JSON error for invalid route
+   */
+  test( 'returns JSON error for invalid route', async () => {
+    const response = await request( app ).
+      get( '/invalid/path' ).
+      expect( 404 ).
+      expect( 'Content-Type', /json/u );
+
+    expect( response.body ).toHaveProperty( 'error' );
+    expect( response.body ).toHaveProperty( 'status' );
+    expect( response.body.status ).toBe( 404 );
+    expect( response.body.error ).toMatch( /not found/iu );
+  } );
+
+  /**
+   * Test JSON error for invalid HTTP method
+   */
+  test( 'returns JSON error for unsupported HTTP method', async () => {
+    const response = await request( app ).
+      post( '/act/53689c08-f234-4c47-9256-58c8568f06d1' ).
+      expect( 404 ).
+      expect( 'Content-Type', /json/u );
+
+    expect( response.body ).toHaveProperty( 'error' );
+    expect( response.body.status ).toBe( 404 );
+  } );
+
+  /**
+   * Test JSON error for root path
+   */
+  test( 'returns JSON error for root path', async () => {
+    const response = await request( app ).
+      get( '/' ).
+      expect( 404 ).
+      expect( 'Content-Type', /json/u );
+
+    expect( response.body ).toHaveProperty( 'error' );
+    expect( response.body.status ).toBe( 404 );
+  } );
+} );
+
+describe( 'GET /robots.txt', () => {
+  /**
+   * Test robots.txt serves plain text
+   */
+  test( 'returns robots.txt as text/plain', async () => {
+    const response = await request( app ).
+      get( '/robots.txt' ).
+      expect( 200 );
+
+    expect( response.headers[ 'content-type' ] ).toMatch( /text\/plain/u );
+    expect( response.text ).toBeDefined();
+    expect( response.text ).toContain( 'User-agent' );
+  } );
+} );
+
 describe( 'GET /act/:id - Error handling', () => {
   /**
    * Test error handling for invalid MusicBrainz ID

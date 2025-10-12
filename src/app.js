@@ -4,6 +4,7 @@
  */
 
 const express = require( 'express' );
+const path = require( 'path' );
 const musicbrainzClient = require( './services/musicbrainz' );
 const musicbrainzTransformer = require( './services/musicbrainzTransformer' );
 
@@ -56,5 +57,32 @@ app.get( '/act/:id', async ( req, res ) => {
     } );
   }
 } );
+
+/**
+ * Serve robots.txt file
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {void} Sends robots.txt file
+ */
+app.get( '/robots.txt', ( req, res ) => {
+  const robotsPath = path.join( __dirname, '..', 'robots.txt' );
+
+  return res.sendFile( robotsPath, {
+    'headers': {
+      'Content-Type': 'text/plain; charset=utf-8'
+    }
+  } );
+} );
+
+/**
+ * Handle 404 errors with JSON response
+ * @param {object} req - Express request object
+ * @param {object} res - Express response object
+ * @returns {object} JSON error response
+ */
+app.use( ( req, res ) => res.status( 404 ).json( {
+  'error': 'Not found',
+  'status': 404
+} ) );
 
 module.exports = app;
