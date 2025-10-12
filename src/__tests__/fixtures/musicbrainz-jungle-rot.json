@@ -1,1 +1,604 @@
-{"ipis":[],"area":{"type-id":null,"iso-3166-1-codes":["US"],"sort-name":"United States","disambiguation":"","name":"United States","type":null,"id":"489ce91b-6658-3307-9877-795b68554c98"},"begin-area":{"iso-3166-2-codes":["US-WI"],"disambiguation":"","type":null,"name":"Wisconsin","id":"10cb2ebd-1bc7-4c11-b10d-54f60c421d20","type-id":null,"sort-name":"Wisconsin"},"life-span":{"end":null,"begin":"1994","ended":false},"id":"ab81255c-7a4f-4528-bb77-4a3fbd8e8317","country":"US","aliases":[],"name":"Jungle Rot","disambiguation":"United States death metal","relations":[{"target-type":"url","source-credit":"","attributes":[],"attribute-ids":{},"direction":"forward","begin":null,"end":null,"url":{"id":"4051456d-54dd-45b3-9fa2-79c613dc49ce","resource":"https://www.allmusic.com/artist/mn0000310088"},"attribute-values":{},"target-credit":"","type-id":"6b3e3c85-0002-4f34-aca6-80ace0d7e846","type":"allmusic","ended":false},{"direction":"forward","attributes":[],"attribute-ids":{},"target-type":"url","source-credit":"","ended":false,"type":"bandcamp","target-credit":"","type-id":"c550166e-0548-4a18-b1d4-e2ae423a3e88","attribute-values":{},"begin":null,"end":null,"url":{"resource":"https://junglerot.bandcamp.com/","id":"a11c0664-6d7c-4dee-bc8d-21fe0d3d7349"}},{"begin":null,"url":{"id":"ed42f5c8-9cfc-4e6e-ac22-6839a66473ab","resource":"https://www.bandsintown.com/a/13217"},"end":null,"attribute-values":{},"type-id":"ea45ed3d-2d5e-456e-8c32-94b6f51426e2","target-credit":"","ended":false,"type":"bandsintown","target-type":"url","source-credit":"","attribute-ids":{},"attributes":[],"direction":"forward"},{"ended":false,"type":"discogs","type-id":"04a5b104-a4c2-4bac-99a1-7b837c37d9e4","target-credit":"","attribute-values":{},"begin":null,"url":{"id":"a5478d07-3c58-4213-9747-bdc3ac0e4910","resource":"https://www.discogs.com/artist/606841"},"end":null,"direction":"forward","attribute-ids":{},"attributes":[],"target-type":"url","source-credit":""},{"source-credit":"","target-type":"url","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"end":null,"url":{"resource":"https://open.spotify.com/artist/2kIYZ2eHRnAbaPYE860qNx","id":"5d131f28-2847-4157-9e2a-9810699e64ee"},"begin":null,"ended":false,"type":"free streaming","target-credit":"","type-id":"769085a1-c2f7-4c24-a532-2375a77693bd"},{"target-type":"url","source-credit":"","attribute-ids":{},"attributes":[],"direction":"forward","begin":null,"url":{"resource":"https://www.deezer.com/artist/97850","id":"02cc328c-6404-4a42-a2ca-a387a634b2ae"},"end":null,"attribute-values":{},"type-id":"769085a1-c2f7-4c24-a532-2375a77693bd","target-credit":"","ended":false,"type":"free streaming"},{"attribute-ids":{},"attributes":[],"direction":"forward","target-type":"url","source-credit":"","type-id":"08db8098-c0df-4b78-82c3-c8697b4bba7f","target-credit":"","ended":false,"type":"last.fm","begin":null,"url":{"id":"9f6017c6-d52c-4708-8141-9eb257ff0ab7","resource":"https://www.last.fm/music/Jungle+Rot"},"end":null,"attribute-values":{}},{"target-type":"url","source-credit":"","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"begin":null,"end":null,"url":{"id":"090b2400-6d6f-4927-b5af-cd8b936179c3","resource":"https://genius.com/artists/Jungle-rot"},"ended":false,"type":"lyrics","target-credit":"","type-id":"e4d73442-3762-45a8-905c-401da65544ed"},{"attribute-values":{},"url":{"resource":"https://myspace.com/junglerot","id":"d48a1062-8157-4959-9363-f9ef72fc1bbe"},"end":null,"begin":null,"type":"myspace","ended":false,"type-id":"bac47923-ecde-4b59-822e-d08f0cd10156","target-credit":"","source-credit":"","target-type":"url","direction":"forward","attribute-ids":{},"attributes":[]},{"attribute-values":{},"end":null,"url":{"resource":"https://rateyourmusic.com/artist/jungle-rot","id":"f1e8de4b-9426-4453-9c86-ce34a9359e59"},"begin":null,"ended":false,"type":"other databases","target-credit":"","type-id":"d94fb61c-fa20-4e3c-a19a-71a949fb2c55","source-credit":"","target-type":"url","direction":"forward","attributes":[],"attribute-ids":{}},{"source-credit":"","target-type":"url","attributes":[],"attribute-ids":{},"direction":"forward","end":null,"url":{"id":"feb43b42-474b-4094-ad30-2effb28d167b","resource":"https://www.metal-archives.com/bands/Jungle_Rot/1094"},"begin":null,"attribute-values":{},"target-credit":"","type-id":"d94fb61c-fa20-4e3c-a19a-71a949fb2c55","ended":false,"type":"other databases"},{"type-id":"d94fb61c-fa20-4e3c-a19a-71a949fb2c55","target-credit":"","ended":false,"type":"other databases","begin":null,"url":{"id":"d5eace8e-c08c-4530-baf5-5410d6e953a9","resource":"https://www.musik-sammler.de/artist/jungle-rot/"},"end":null,"attribute-values":{},"attribute-ids":{},"attributes":[],"direction":"forward","target-type":"url","source-credit":""},{"target-credit":"","type-id":"d94fb61c-fa20-4e3c-a19a-71a949fb2c55","type":"other databases","ended":false,"begin":null,"end":null,"url":{"resource":"https://www.spirit-of-metal.com/en/band/Jungle_Rot","id":"bc59cc8a-a7f9-4cfd-943b-ab03c53a7b8b"},"attribute-values":{},"attributes":[],"attribute-ids":{},"direction":"forward","target-type":"url","source-credit":""},{"direction":"forward","attributes":[],"attribute-ids":{},"source-credit":"","target-type":"url","type":"purchase for download","ended":false,"target-credit":"","type-id":"f8319a2f-f824-4617-81c8-be6560b3b203","attribute-values":{},"end":null,"url":{"id":"da706d9c-840e-43d7-a19f-bd69966e9821","resource":"https://itunes.apple.com/us/artist/id3563178"},"begin":null},{"ended":false,"type":"setlistfm","target-credit":"","type-id":"bf5d0d5e-27a1-4e94-9df7-3cdc67b3b207","attribute-values":{},"end":null,"url":{"resource":"https://www.setlist.fm/setlists/jungle-rot-5bd43f8c.html","id":"38af0cdd-014a-4719-aa55-1fd17555252c"},"begin":null,"direction":"forward","attributes":[],"attribute-ids":{},"source-credit":"","target-type":"url"},{"target-type":"url","source-credit":"","direction":"forward","attribute-ids":{},"attributes":[],"attribute-values":{},"begin":null,"url":{"resource":"https://twitter.com/JungleRotBand","id":"17583541-a850-4018-8058-1df469a09073"},"end":null,"ended":false,"type":"social network","type-id":"99429741-f3f6-484b-84f8-23af51991770","target-credit":""},{"target-type":"url","source-credit":"","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"begin":null,"end":null,"url":{"id":"8540be4e-5bed-42b6-b323-d23d8048c95d","resource":"https://www.facebook.com/igotjunglerot"},"type":"social network","ended":false,"target-credit":"","type-id":"99429741-f3f6-484b-84f8-23af51991770"},{"target-type":"url","source-credit":"","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"begin":null,"end":null,"url":{"resource":"https://www.instagram.com/jungle_rot/","id":"8f8252cf-47b0-417e-bdd0-e0d357f1ce05"},"ended":false,"type":"social network","target-credit":"","type-id":"99429741-f3f6-484b-84f8-23af51991770"},{"type-id":"99429741-f3f6-484b-84f8-23af51991770","target-credit":"","type":"social network","ended":false,"begin":null,"url":{"resource":"https://www.reverbnation.com/junglerot","id":"96c285e4-8ace-4a1f-bf16-48ee92affb37"},"end":null,"attribute-values":{},"attribute-ids":{},"attributes":[],"direction":"forward","target-type":"url","source-credit":""},{"target-type":"url","source-credit":"","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"begin":null,"end":null,"url":{"id":"49ae73c6-67d4-4761-9c56-1c5621f3a5a3","resource":"https://www.tiktok.com/@jungle_rot"},"ended":false,"type":"social network","target-credit":"","type-id":"99429741-f3f6-484b-84f8-23af51991770"},{"attribute-values":{},"begin":null,"end":null,"url":{"resource":"https://www.songkick.com/artists/478835","id":"7b104115-74e7-4835-ac13-289e73c7b0eb"},"type":"songkick","ended":false,"target-credit":"","type-id":"aac9c4bc-a5b9-30b8-9839-e3ac314c6e58","target-type":"url","source-credit":"","direction":"forward","attributes":[],"attribute-ids":{}},{"source-credit":"","target-type":"url","attributes":[],"attribute-ids":{},"direction":"forward","end":null,"url":{"resource":"https://soundcloud.com/jungle-rot","id":"0432e58d-5022-44ac-9308-c554618de129"},"begin":null,"attribute-values":{},"target-credit":"","type-id":"89e4a949-0976-440d-bda1-5f772c1e5710","type":"soundcloud","ended":false},{"url":{"id":"c9eacb55-7e5c-4853-b5d9-97ab5da524df","resource":"https://music.amazon.com/artists/B001T2UI2I"},"end":null,"begin":null,"attribute-values":{},"type-id":"63cc5d1f-f096-4c94-a43f-ecb32ea94161","target-credit":"","type":"streaming","ended":false,"source-credit":"","target-type":"url","attribute-ids":{},"attributes":[],"direction":"forward"},{"type":"streaming","ended":false,"type-id":"63cc5d1f-f096-4c94-a43f-ecb32ea94161","target-credit":"","attribute-values":{},"url":{"id":"59af693e-dd93-4bc7-a24b-6b5dd15d4d7c","resource":"https://music.apple.com/us/artist/3563178"},"end":null,"begin":null,"direction":"forward","attribute-ids":{},"attributes":[],"source-credit":"","target-type":"url"},{"attributes":[],"attribute-ids":{},"direction":"forward","source-credit":"","target-type":"url","target-credit":"","type-id":"63cc5d1f-f096-4c94-a43f-ecb32ea94161","type":"streaming","ended":false,"end":null,"url":{"id":"f46af527-1c67-465f-aa7b-9f338633dcc9","resource":"https://tidal.com/artist/3587581"},"begin":null,"attribute-values":{}},{"attributes":[],"attribute-ids":{},"direction":"forward","source-credit":"","target-type":"url","target-credit":"","type-id":"63cc5d1f-f096-4c94-a43f-ecb32ea94161","type":"streaming","ended":false,"end":null,"url":{"resource":"https://us.napster.com/artist/jungle-rot","id":"16291e4c-9a61-4e47-b193-8b2233e0b6fe"},"begin":null,"attribute-values":{}},{"source-credit":"","target-type":"url","attributes":[],"attribute-ids":{},"direction":"forward","end":null,"url":{"resource":"http://viaf.org/viaf/123957878","id":"02bd7883-3483-4623-a91c-cf3e7107de2e"},"begin":null,"attribute-values":{},"target-credit":"","type-id":"e8571dcc-35d4-4e91-a577-a3382fd84460","type":"VIAF","ended":false},{"attribute-ids":{},"attributes":[],"direction":"forward","target-type":"url","source-credit":"","type-id":"689870a4-a1e4-4912-b17f-7b2664215698","target-credit":"","ended":false,"type":"wikidata","begin":null,"url":{"id":"13949602-dd7b-4fcf-9c1a-7a1d51c557e1","resource":"https://www.wikidata.org/wiki/Q743790"},"end":null,"attribute-values":{}},{"source-credit":"","target-type":"url","attributes":[],"attribute-ids":{},"direction":"forward","end":null,"url":{"id":"db7794d6-0d39-47c5-8638-5ba3a2ac7bf4","resource":"https://www.youtube.com/junglerotmusic"},"begin":null,"attribute-values":{},"target-credit":"","type-id":"6a540e5b-58c6-4192-b6ba-dbc71ec8fcf0","type":"youtube","ended":false},{"target-type":"url","source-credit":"","attribute-ids":{},"attributes":[],"direction":"forward","begin":null,"url":{"id":"b4f0318d-602e-4165-8a9f-af8ea35b67fd","resource":"https://www.youtube.com/channel/UCuqunF0lmMsOFcb-RqOe0Yw"},"end":null,"attribute-values":{},"type-id":"6a540e5b-58c6-4192-b6ba-dbc71ec8fcf0","target-credit":"","type":"youtube","ended":true},{"source-credit":"","target-type":"url","direction":"forward","attributes":[],"attribute-ids":{},"attribute-values":{},"end":null,"url":{"id":"d6831e26-d753-4d88-871f-bd7047e17dfa","resource":"https://music.youtube.com/channel/UCxYpK12nORvztF7A7kvCdCQ"},"begin":null,"ended":false,"type":"youtube music","target-credit":"","type-id":"631712a0-7525-42ba-b7a3-605aa7a238c4"}],"gender-id":null,"isnis":["0000000085753204"],"gender":null,"end-area":null,"type":"Group","sort-name":"Jungle Rot","type-id":"e431f5f6-b5d2-343d-8b36-72607fffb74b"}
+{
+  "ipis": [],
+  "area": {
+    "type-id": null,
+    "iso-3166-1-codes": [
+      "US"
+    ],
+    "sort-name": "United States",
+    "disambiguation": "",
+    "name": "United States",
+    "type": null,
+    "id": "489ce91b-6658-3307-9877-795b68554c98"
+  },
+  "begin-area": {
+    "iso-3166-2-codes": [
+      "US-WI"
+    ],
+    "disambiguation": "",
+    "type": null,
+    "name": "Wisconsin",
+    "id": "10cb2ebd-1bc7-4c11-b10d-54f60c421d20",
+    "type-id": null,
+    "sort-name": "Wisconsin"
+  },
+  "life-span": {
+    "end": null,
+    "begin": "1994",
+    "ended": false
+  },
+  "id": "ab81255c-7a4f-4528-bb77-4a3fbd8e8317",
+  "country": "US",
+  "aliases": [],
+  "name": "Jungle Rot",
+  "disambiguation": "United States death metal",
+  "relations": [
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "4051456d-54dd-45b3-9fa2-79c613dc49ce",
+        "resource": "https://www.allmusic.com/artist/mn0000310088"
+      },
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "6b3e3c85-0002-4f34-aca6-80ace0d7e846",
+      "type": "allmusic",
+      "ended": false
+    },
+    {
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "target-type": "url",
+      "source-credit": "",
+      "ended": false,
+      "type": "bandcamp",
+      "target-credit": "",
+      "type-id": "c550166e-0548-4a18-b1d4-e2ae423a3e88",
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "resource": "https://junglerot.bandcamp.com/",
+        "id": "a11c0664-6d7c-4dee-bc8d-21fe0d3d7349"
+      }
+    },
+    {
+      "begin": null,
+      "url": {
+        "id": "ed42f5c8-9cfc-4e6e-ac22-6839a66473ab",
+        "resource": "https://www.bandsintown.com/a/13217"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "ea45ed3d-2d5e-456e-8c32-94b6f51426e2",
+      "target-credit": "",
+      "ended": false,
+      "type": "bandsintown",
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward"
+    },
+    {
+      "ended": false,
+      "type": "discogs",
+      "type-id": "04a5b104-a4c2-4bac-99a1-7b837c37d9e4",
+      "target-credit": "",
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "id": "a5478d07-3c58-4213-9747-bdc3ac0e4910",
+        "resource": "https://www.discogs.com/artist/606841"
+      },
+      "end": null,
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "resource": "https://open.spotify.com/artist/2kIYZ2eHRnAbaPYE860qNx",
+        "id": "5d131f28-2847-4157-9e2a-9810699e64ee"
+      },
+      "begin": null,
+      "ended": false,
+      "type": "free streaming",
+      "target-credit": "",
+      "type-id": "769085a1-c2f7-4c24-a532-2375a77693bd"
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "begin": null,
+      "url": {
+        "resource": "https://www.deezer.com/artist/97850",
+        "id": "02cc328c-6404-4a42-a2ca-a387a634b2ae"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "769085a1-c2f7-4c24-a532-2375a77693bd",
+      "target-credit": "",
+      "ended": false,
+      "type": "free streaming"
+    },
+    {
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": "",
+      "type-id": "08db8098-c0df-4b78-82c3-c8697b4bba7f",
+      "target-credit": "",
+      "ended": false,
+      "type": "last.fm",
+      "begin": null,
+      "url": {
+        "id": "9f6017c6-d52c-4708-8141-9eb257ff0ab7",
+        "resource": "https://www.last.fm/music/Jungle+Rot"
+      },
+      "end": null,
+      "attribute-values": {}
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "090b2400-6d6f-4927-b5af-cd8b936179c3",
+        "resource": "https://genius.com/artists/Jungle-rot"
+      },
+      "ended": false,
+      "type": "lyrics",
+      "target-credit": "",
+      "type-id": "e4d73442-3762-45a8-905c-401da65544ed"
+    },
+    {
+      "attribute-values": {},
+      "url": {
+        "resource": "https://myspace.com/junglerot",
+        "id": "d48a1062-8157-4959-9363-f9ef72fc1bbe"
+      },
+      "end": null,
+      "begin": null,
+      "type": "myspace",
+      "ended": false,
+      "type-id": "bac47923-ecde-4b59-822e-d08f0cd10156",
+      "target-credit": "",
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": []
+    },
+    {
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "resource": "https://rateyourmusic.com/artist/jungle-rot",
+        "id": "f1e8de4b-9426-4453-9c86-ce34a9359e59"
+      },
+      "begin": null,
+      "ended": false,
+      "type": "other databases",
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {}
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "id": "feb43b42-474b-4094-ad30-2effb28d167b",
+        "resource": "https://www.metal-archives.com/bands/Jungle_Rot/1094"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "ended": false,
+      "type": "other databases"
+    },
+    {
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "target-credit": "",
+      "ended": false,
+      "type": "other databases",
+      "begin": null,
+      "url": {
+        "id": "d5eace8e-c08c-4530-baf5-5410d6e953a9",
+        "resource": "https://www.musik-sammler.de/artist/jungle-rot/"
+      },
+      "end": null,
+      "attribute-values": {},
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "type": "other databases",
+      "ended": false,
+      "begin": null,
+      "end": null,
+      "url": {
+        "resource": "https://www.spirit-of-metal.com/en/band/Jungle_Rot",
+        "id": "bc59cc8a-a7f9-4cfd-943b-ab03c53a7b8b"
+      },
+      "attribute-values": {},
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "source-credit": "",
+      "target-type": "url",
+      "type": "purchase for download",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "f8319a2f-f824-4617-81c8-be6560b3b203",
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "id": "da706d9c-840e-43d7-a19f-bd69966e9821",
+        "resource": "https://itunes.apple.com/us/artist/id3563178"
+      },
+      "begin": null
+    },
+    {
+      "ended": false,
+      "type": "setlistfm",
+      "target-credit": "",
+      "type-id": "bf5d0d5e-27a1-4e94-9df7-3cdc67b3b207",
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "resource": "https://www.setlist.fm/setlists/jungle-rot-5bd43f8c.html",
+        "id": "38af0cdd-014a-4719-aa55-1fd17555252c"
+      },
+      "begin": null,
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "source-credit": "",
+      "target-type": "url"
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "resource": "https://twitter.com/JungleRotBand",
+        "id": "17583541-a850-4018-8058-1df469a09073"
+      },
+      "end": null,
+      "ended": false,
+      "type": "social network",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770",
+      "target-credit": ""
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "8540be4e-5bed-42b6-b323-d23d8048c95d",
+        "resource": "https://www.facebook.com/igotjunglerot"
+      },
+      "type": "social network",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770"
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "resource": "https://www.instagram.com/jungle_rot/",
+        "id": "8f8252cf-47b0-417e-bdd0-e0d357f1ce05"
+      },
+      "ended": false,
+      "type": "social network",
+      "target-credit": "",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770"
+    },
+    {
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770",
+      "target-credit": "",
+      "type": "social network",
+      "ended": false,
+      "begin": null,
+      "url": {
+        "resource": "https://www.reverbnation.com/junglerot",
+        "id": "96c285e4-8ace-4a1f-bf16-48ee92affb37"
+      },
+      "end": null,
+      "attribute-values": {},
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "49ae73c6-67d4-4761-9c56-1c5621f3a5a3",
+        "resource": "https://www.tiktok.com/@jungle_rot"
+      },
+      "ended": false,
+      "type": "social network",
+      "target-credit": "",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770"
+    },
+    {
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "resource": "https://www.songkick.com/artists/478835",
+        "id": "7b104115-74e7-4835-ac13-289e73c7b0eb"
+      },
+      "type": "songkick",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "aac9c4bc-a5b9-30b8-9839-e3ac314c6e58",
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {}
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "resource": "https://soundcloud.com/jungle-rot",
+        "id": "0432e58d-5022-44ac-9308-c554618de129"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "89e4a949-0976-440d-bda1-5f772c1e5710",
+      "type": "soundcloud",
+      "ended": false
+    },
+    {
+      "url": {
+        "id": "c9eacb55-7e5c-4853-b5d9-97ab5da524df",
+        "resource": "https://music.amazon.com/artists/B001T2UI2I"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "target-credit": "",
+      "type": "streaming",
+      "ended": false,
+      "source-credit": "",
+      "target-type": "url",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward"
+    },
+    {
+      "type": "streaming",
+      "ended": false,
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "target-credit": "",
+      "attribute-values": {},
+      "url": {
+        "id": "59af693e-dd93-4bc7-a24b-6b5dd15d4d7c",
+        "resource": "https://music.apple.com/us/artist/3563178"
+      },
+      "end": null,
+      "begin": null,
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "source-credit": "",
+      "target-type": "url"
+    },
+    {
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url",
+      "target-credit": "",
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "type": "streaming",
+      "ended": false,
+      "end": null,
+      "url": {
+        "id": "f46af527-1c67-465f-aa7b-9f338633dcc9",
+        "resource": "https://tidal.com/artist/3587581"
+      },
+      "begin": null,
+      "attribute-values": {}
+    },
+    {
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url",
+      "target-credit": "",
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "type": "streaming",
+      "ended": false,
+      "end": null,
+      "url": {
+        "resource": "https://us.napster.com/artist/jungle-rot",
+        "id": "16291e4c-9a61-4e47-b193-8b2233e0b6fe"
+      },
+      "begin": null,
+      "attribute-values": {}
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "resource": "http://viaf.org/viaf/123957878",
+        "id": "02bd7883-3483-4623-a91c-cf3e7107de2e"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "e8571dcc-35d4-4e91-a577-a3382fd84460",
+      "type": "VIAF",
+      "ended": false
+    },
+    {
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": "",
+      "type-id": "689870a4-a1e4-4912-b17f-7b2664215698",
+      "target-credit": "",
+      "ended": false,
+      "type": "wikidata",
+      "begin": null,
+      "url": {
+        "id": "13949602-dd7b-4fcf-9c1a-7a1d51c557e1",
+        "resource": "https://www.wikidata.org/wiki/Q743790"
+      },
+      "end": null,
+      "attribute-values": {}
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "id": "db7794d6-0d39-47c5-8638-5ba3a2ac7bf4",
+        "resource": "https://www.youtube.com/junglerotmusic"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "6a540e5b-58c6-4192-b6ba-dbc71ec8fcf0",
+      "type": "youtube",
+      "ended": false
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "begin": null,
+      "url": {
+        "id": "b4f0318d-602e-4165-8a9f-af8ea35b67fd",
+        "resource": "https://www.youtube.com/channel/UCuqunF0lmMsOFcb-RqOe0Yw"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "6a540e5b-58c6-4192-b6ba-dbc71ec8fcf0",
+      "target-credit": "",
+      "type": "youtube",
+      "ended": true
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "id": "d6831e26-d753-4d88-871f-bd7047e17dfa",
+        "resource": "https://music.youtube.com/channel/UCxYpK12nORvztF7A7kvCdCQ"
+      },
+      "begin": null,
+      "ended": false,
+      "type": "youtube music",
+      "target-credit": "",
+      "type-id": "631712a0-7525-42ba-b7a3-605aa7a238c4"
+    }
+  ],
+  "gender-id": null,
+  "isnis": [
+    "0000000085753204"
+  ],
+  "gender": null,
+  "end-area": null,
+  "type": "Group",
+  "sort-name": "Jungle Rot",
+  "type-id": "e431f5f6-b5d2-343d-8b36-72607fffb74b"
+}
