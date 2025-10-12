@@ -35,8 +35,6 @@ app.get( '/act/:id', async ( req, res ) => {
     const actData = musicbrainzTransformer.transformArtistData( mbData );
 
     return res.json( {
-      'type': 'act',
-      'act': actData,
       'meta': {
         'attribution': {
           'sources': [ 'MusicBrainz', 'Bandsintown', 'Songkick' ],
@@ -45,7 +43,9 @@ app.get( '/act/:id', async ( req, res ) => {
         },
         'license': 'AGPL-3.0',
         'repository': 'https://github.com/b-uwe/musicFavorites'
-      }
+      },
+      'type': 'act',
+      'act': actData
     } );
   } catch ( error ) {
     return res.status( 500 ).json( {

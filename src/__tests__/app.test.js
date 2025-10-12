@@ -125,6 +125,20 @@ describe( 'GET /act/:id - Error handling', () => {
 
 describe( 'GET /act/:id - Response metadata', () => {
   /**
+   * Test that meta is the first property in response
+   */
+  test( 'meta is the first property in JSON response', async () => {
+    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const response = await request( app ).
+      get( `/act/${actId}` ).
+      expect( 200 );
+
+    const [ firstKey ] = Object.keys( response.body );
+
+    expect( firstKey ).toBe( 'meta' );
+  } );
+
+  /**
    * Test attribution information
    */
   test( 'response includes attribution information', async () => {
