@@ -17,7 +17,8 @@ describe( 'GET /act/:id - Basic functionality', () => {
       expect( 'Content-Type', /json/u );
 
     expect( response.body.type ).toBe( 'act' );
-    expect( response.body.id ).toBe( actId );
+    expect( response.body.act ).toBeDefined();
+    expect( response.body.act.musicbrainzId ).toBe( actId );
     expect( response.body.meta ).toBeDefined();
     expect( response.body.meta.attribution.sources ).toContain( 'MusicBrainz' );
     expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
@@ -33,7 +34,8 @@ describe( 'GET /act/:id - Basic functionality', () => {
       expect( 200 );
 
     expect( response.body.type ).toBe( 'act' );
-    expect( response.body.id ).toBe( actId );
+    expect( response.body.act ).toBeDefined();
+    expect( response.body.act.musicbrainzId ).toBe( actId );
   } );
 
   /**
@@ -44,6 +46,22 @@ describe( 'GET /act/:id - Basic functionality', () => {
     await request( app ).
       get( `/invalid/${actId}` ).
       expect( 404 );
+  } );
+} );
+
+describe( 'GET /act/:id - Error handling', () => {
+  /**
+   * Test error handling for invalid MusicBrainz ID
+   */
+  test( 'returns 500 error for invalid MusicBrainz ID', async () => {
+    const invalidId = 'invalid-id-format';
+    const response = await request( app ).
+      get( `/act/${invalidId}` ).
+      expect( 500 );
+
+    expect( response.body.type ).toBe( 'error' );
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
   } );
 } );
 
