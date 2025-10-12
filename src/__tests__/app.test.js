@@ -47,7 +47,9 @@ describe( 'GET /act/:id - Basic functionality', () => {
       get( `/invalid/${actId}` ).
       expect( 404 );
   } );
+} );
 
+describe( 'GET /act/:id - Error handling', () => {
   /**
    * Test error handling for invalid MusicBrainz ID
    */

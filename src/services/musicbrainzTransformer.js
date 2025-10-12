@@ -19,29 +19,34 @@ const detectSocialPlatform = ( url ) => {
 const EXCLUDED_TYPES = [ 'free streaming', 'streaming', 'purchase for download', 'other databases' ];
 
 /**
- * Processes a single relation and adds it to the relations object
+ * Processes a single relation and returns key-value pair for relations object
  * @param {object} relation - A MusicBrainz relation object
- * @param {object} relations - The relations object to populate
- * @returns {void}
+ * @returns {object|null} Object with key and url properties, or null if excluded
  */
-const processRelation = ( relation, relations ) => {
+const processRelation = ( relation ) => {
   const { type } = relation;
   const url = relation.url.resource;
 
   if ( EXCLUDED_TYPES.includes( type ) ) {
-    return;
+    return null;
   }
 
   if ( type === 'social network' ) {
     const platform = detectSocialPlatform( url );
     if ( platform ) {
-      relations[ platform ] = url;
+      return {
+        'key': platform,
+        url
+      };
     }
-    return;
+    return null;
   }
 
   const key = type.toLowerCase().replace( /[ .]/gu, '' );
-  relations[ key ] = url;
+  return {
+    key,
+    url
+  };
 };
 
 /**
@@ -50,11 +55,13 @@ const processRelation = ( relation, relations ) => {
  * @returns {object} Transformed artist data
  */
 const transformArtistData = ( mbData ) => {
-  const relations = {};
-
-  mbData.relations.forEach( ( relation ) => {
-    processRelation( relation, relations );
-  } );
+  const relations = mbData.relations.
+    map( processRelation ).
+    filter( ( entry ) => entry !== null ).
+    reduce( ( acc, { key, url } ) => {
+      acc[ key ] = url;
+      return acc;
+    }, {} );
 
   const hasEndDate = Boolean( mbData[ 'life-span' ].end );
   const isMarkedEnded = Boolean( mbData[ 'life-span' ].ended );
