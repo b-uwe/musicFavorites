@@ -18,7 +18,7 @@ This project is fully open-source and designed for **educational and non-commerc
 
 ### Prerequisites
 
-- Node.js v18+  
+- Node.js v24+
 - npm or yarn  
 
 ### Installation
@@ -38,7 +38,6 @@ npm start
 ## API Documentation
 
 Endpoints are documented with request and response examples.
-The API schema and aggregation logic are licensed under CC BY-NC-SA 4.0
 
 ## Third-Party Data
 
@@ -48,20 +47,24 @@ This project aggregates publicly available data from:
 - Bandsintown — https://www.bandsintown.com
 - Songkick — https://www.songkick.com
 
+The maintainers of this project do **not** own or claim ownership of any data provided by these sources.
+
 Please see DATA_NOTICE.md for full disclaimers, terms, and attribution requirements.
 
 ## Contributing
 
 Contributions are very welcome!
+
 All contributions must be compatible with the AGPLv3 license.
 
 ## License
 
-* Code: AGPL-3.0
-* API Schema & Aggregation Logic: CC BY-NC-SA 4.0
-* Third-Party Data: See DATA_NOTICE.md
+This project is licensed under **AGPL-3.0** (see [LICENSE](LICENSE)).
+
+**Important:** While the code is AGPL-3.0, the third-party data aggregated by this service remains subject to the terms of the original providers (MusicBrainz, Bandsintown, Songkick). See [DATA_NOTICE.md](DATA_NOTICE.md) for details on your responsibilities when using this software.
 
 ## Disclaimer
 
 This project is provided as is, without any warranty.
+
 The maintainers are not responsible for the accuracy or availability of third-party data.
