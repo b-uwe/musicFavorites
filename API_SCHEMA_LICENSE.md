@@ -2,21 +2,28 @@
 
 The **API schema** (endpoints, request/response structures) and **aggregation logic** of the **Music Favorites API** are licensed under:
 
-**Creative Commons Attribution–NonCommercial–ShareAlike 4.0 International (CC BY-NC-SA 4.0)**
+**GNU Affero General Public License v3.0 (AGPL-3.0)**
 
-## Terms
+This is the same license as the source code, providing a unified licensing approach.
 
-This means:
+## What This Means:
 
-- **Attribution required:** You must give appropriate credit to the *Music Favorites API* project.  
-- **Non-commercial use only:** You may not use this schema or aggregation logic for commercial purposes.  
-- **ShareAlike:** If you modify or adapt the schema or logic, you must distribute your contributions under the same license.  
-- **No warranty:** This license is provided *as is*, without any warranty. Use at your own risk.
+- **Freedom to use:** You can use this API and code for any purpose
+- **Freedom to modify:** You can modify the code and API implementation
+- **Share source code:** If you run a modified version (including over a network), you must make your source code available under AGPL-3.0
+- **Attribution required:** You must give appropriate credit and maintain license notices
+- **No warranty:** This software is provided as-is, without any warranty
+
+## Important Notice About Third-Party Data:
+
+This software is licensed under AGPL-3.0, but the third-party data it aggregates (from MusicBrainz, Bandsintown, and Songkick) remains subject to those providers' terms. You are responsible for complying with upstream data provider terms when using this software.
+
+## Network Use Provision:
+
+The AGPL-3.0 license includes a special provision: **if you run this software to provide a service over a network** (like hosting your own instance of this API), you must make your modified source code available to users of that service.
 
 ---
 
-**Note:**  
-This license applies **only** to the API schema and aggregation logic.  
-It does **not** cover:
-- The underlying source code (licensed under [AGPL-3.0](LICENSE))  
-- Any third-party data (see [DATA_NOTICE.md](DATA_NOTICE.md))
+**Note:**
+This license applies to the code and API design.
+It does **not** cover third-party data aggregated by this service (see [DATA_NOTICE.md](DATA_NOTICE.md)).
