@@ -4,3 +4,6 @@ CLAUDE.md
 # npm
 package-lock.json
 node_modules/
+
+# Test coverage
+coverage/
