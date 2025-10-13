@@ -65,7 +65,8 @@ const transformArtistData = ( mbData ) => {
 
   const hasEndDate = Boolean( mbData[ 'life-span' ].end );
   const isMarkedEnded = Boolean( mbData[ 'life-span' ].ended );
-  const ended = hasEndDate || isMarkedEnded;
+  const isEnded = hasEndDate || isMarkedEnded;
+  const status = isEnded ? 'disbanded' : 'active';
 
   return {
     'musicbrainzId': mbData.id,
@@ -73,7 +74,7 @@ const transformArtistData = ( mbData ) => {
     'country': mbData.area.name,
     'region': mbData[ 'begin-area' ].name,
     'disambiguation': mbData.disambiguation,
-    ended,
+    status,
     relations
   };
 };
