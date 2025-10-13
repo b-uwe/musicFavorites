@@ -110,6 +110,52 @@ describe( 'Database Service', () => {
 
       expect( mockClient.connect ).toHaveBeenCalledTimes( 1 );
     } );
+
+    test( 'should throw error when ping verification fails', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 0
+      } );
+
+      await expect( database.connect() ).rejects.toThrow( 'MongoDB ping verification failed' );
+    } );
+
+    test( 'should reset client on ping failure to allow retry', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValueOnce( {
+        ok: 0
+      } );
+
+      // First attempt fails
+      await expect( database.connect() ).rejects.toThrow( 'MongoDB ping verification failed' );
+
+      // Set up successful connection for retry
+      mockDb.command.mockResolvedValueOnce( {
+        ok: 1
+      } );
+
+      // Second attempt should succeed (not blocked by failed client)
+      await expect( database.connect() ).resolves.not.toThrow();
+      expect( mockClient.connect ).toHaveBeenCalledTimes( 2 );
+    } );
+
+    test( 'should reset client on connection failure to allow retry', async () => {
+      const error = new Error( 'Connection failed' );
+      mockClient.connect.mockRejectedValueOnce( error );
+
+      // First attempt fails
+      await expect( database.connect() ).rejects.toThrow( 'Connection failed' );
+
+      // Set up successful connection for retry
+      mockClient.connect.mockResolvedValueOnce( mockClient );
+      mockDb.command.mockResolvedValueOnce( {
+        ok: 1
+      } );
+
+      // Second attempt should succeed (not blocked by failed client)
+      await expect( database.connect() ).resolves.not.toThrow();
+      expect( mockClient.connect ).toHaveBeenCalledTimes( 2 );
+    } );
   } );
 
   describe( 'disconnect', () => {

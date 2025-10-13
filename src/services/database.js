@@ -23,20 +23,31 @@ const connect = async () => {
     throw new Error( 'MONGODB_URI environment variable is not set' );
   }
 
-  client = new MongoClient( uri, {
-    'serverApi': {
-      'version': ServerApiVersion.v1,
-      'strict': true,
-      'deprecationErrors': true
+  try {
+    client = new MongoClient( uri, {
+      'serverApi': {
+        'version': ServerApiVersion.v1,
+        'strict': true,
+        'deprecationErrors': true
+      }
+    } );
+
+    await client.connect();
+
+    // Ping to confirm successful connection
+    const pingResult = await client.db( 'admin' ).command( {
+      'ping': 1
+    } );
+
+    // Verify ping response
+    if ( pingResult.ok !== 1 ) {
+      throw new Error( 'MongoDB ping verification failed' );
     }
-  } );
-
-  await client.connect();
-
-  // Ping to confirm successful connection
-  await client.db( 'admin' ).command( {
-    'ping': 1
-  } );
+  } catch ( error ) {
+    // Reset client on any failure to allow retry
+    client = null;
+    throw error;
+  }
 };
 
 /**
