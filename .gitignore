@@ -5,5 +5,8 @@ CLAUDE.md
 package-lock.json
 node_modules/
 
+# Environment variables
+.env
+
 # Test coverage
 coverage/
