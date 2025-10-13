@@ -5,8 +5,7 @@
 
 const express = require( 'express' );
 const path = require( 'path' );
-const musicbrainzClient = require( './services/musicbrainz' );
-const musicbrainzTransformer = require( './services/musicbrainzTransformer' );
+const artistService = require( './services/artistService' );
 
 const app = express();
 
@@ -38,8 +37,7 @@ app.get( '/act/:id', async ( req, res ) => {
   res.set( 'Expires', '0' );
 
   try {
-    const mbData = await musicbrainzClient.fetchArtist( id );
-    const actData = musicbrainzTransformer.transformArtistData( mbData );
+    const actData = await artistService.getArtist( id );
 
     return res.json( {
       'meta': {

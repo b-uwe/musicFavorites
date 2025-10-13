@@ -1,0 +1,619 @@
+{
+  "life-span": {
+    "begin": "1998",
+    "end": null,
+    "ended": false
+  },
+  "area": {
+    "iso-3166-1-codes": [
+      "SE"
+    ],
+    "sort-name": "Sweden",
+    "type-id": null,
+    "id": "23d10872-f5ae-3f0c-bf55-332788a16ecb",
+    "disambiguation": "",
+    "type": null,
+    "name": "Sweden"
+  },
+  "begin-area": {
+    "id": "4955495c-004d-4c7f-ba17-d9df26388cd0",
+    "disambiguation": "",
+    "type": null,
+    "name": "Uppsala",
+    "sort-name": "Uppsala",
+    "type-id": null
+  },
+  "ipis": [],
+  "aliases": [],
+  "name": "Watain",
+  "disambiguation": "Swedish black metal band",
+  "relations": [
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "1714b7a4-7b9d-4838-81bc-a4bb771ef36e",
+        "resource": "https://www.allmusic.com/artist/mn0000943094"
+      },
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "6b3e3c85-0002-4f34-aca6-80ace0d7e846",
+      "ended": false,
+      "type": "allmusic"
+    },
+    {
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "id": "f8459735-511b-4e90-87ff-53f8e6daf6ef",
+        "resource": "https://watainsom.bandcamp.com/"
+      },
+      "end": null,
+      "type": "bandcamp",
+      "ended": false,
+      "type-id": "c550166e-0548-4a18-b1d4-e2ae423a3e88",
+      "target-credit": "",
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": []
+    },
+    {
+      "begin": null,
+      "url": {
+        "id": "e44537b0-fc5b-44a4-bd85-2de4012b4b68",
+        "resource": "https://www.bandsintown.com/a/39920"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "ea45ed3d-2d5e-456e-8c32-94b6f51426e2",
+      "target-credit": "",
+      "ended": false,
+      "type": "bandsintown",
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward"
+    },
+    {
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": "",
+      "type-id": "04a5b104-a4c2-4bac-99a1-7b837c37d9e4",
+      "target-credit": "",
+      "type": "discogs",
+      "ended": false,
+      "begin": null,
+      "url": {
+        "id": "803679cc-0fd6-45c7-a5b4-06c0a39ea465",
+        "resource": "https://www.discogs.com/artist/263175"
+      },
+      "end": null,
+      "attribute-values": {}
+    },
+    {
+      "type-id": "769085a1-c2f7-4c24-a532-2375a77693bd",
+      "target-credit": "",
+      "ended": false,
+      "type": "free streaming",
+      "url": {
+        "id": "95d2196f-6903-4365-9c13-dc1179460243",
+        "resource": "https://open.spotify.com/artist/4OpHsZuhfJMU9PZ3zkyUQX"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url"
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "resource": "https://www.deezer.com/artist/57711",
+        "id": "27614c0c-fce4-4509-9800-bc449420e538"
+      },
+      "end": null,
+      "type": "free streaming",
+      "ended": false,
+      "type-id": "769085a1-c2f7-4c24-a532-2375a77693bd",
+      "target-credit": ""
+    },
+    {
+      "ended": false,
+      "type": "last.fm",
+      "type-id": "08db8098-c0df-4b78-82c3-c8697b4bba7f",
+      "target-credit": "",
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "resource": "https://www.last.fm/music/Watain",
+        "id": "c65ed16f-b5fe-4316-96b2-f83d85a4ac92"
+      },
+      "end": null,
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "url": {
+        "resource": "https://genius.com/artists/Watain",
+        "id": "b37b8d58-cae3-4ebc-bd82-68978d7133f4"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "type-id": "e4d73442-3762-45a8-905c-401da65544ed",
+      "target-credit": "",
+      "ended": false,
+      "type": "lyrics"
+    },
+    {
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "resource": "https://myspace.com/watainofficial",
+        "id": "2118e84b-3af3-4d60-9e9f-183b6fa00ce0"
+      },
+      "begin": null,
+      "type": "myspace",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "bac47923-ecde-4b59-822e-d08f0cd10156",
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {}
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "begin": null,
+      "url": {
+        "resource": "http://www.templeofwatain.com/",
+        "id": "e4a54f2f-9a6b-409b-a8b7-dd945a4fddde"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "fe33d22f-c3b0-4d68-bd53-a856badf2b15",
+      "target-credit": "",
+      "ended": false,
+      "type": "official homepage"
+    },
+    {
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url",
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "type": "other databases",
+      "ended": false,
+      "end": null,
+      "url": {
+        "resource": "http://id.loc.gov/authorities/names/no2013115521",
+        "id": "b60a2124-1491-46eb-abf7-f3d424481ecf"
+      },
+      "begin": null,
+      "attribute-values": {}
+    },
+    {
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "target-type": "url",
+      "source-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "target-credit": "",
+      "type": "other databases",
+      "ended": false,
+      "begin": null,
+      "url": {
+        "resource": "https://catalogue.bnf.fr/ark:/12148/cb15566415j",
+        "id": "4628da1e-8671-4ebd-8327-c5ce8d3c1bfb"
+      },
+      "end": null,
+      "attribute-values": {}
+    },
+    {
+      "ended": false,
+      "type": "other databases",
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "208e912e-20ad-4fb0-8cd3-85667c1932f5",
+        "resource": "https://rateyourmusic.com/artist/watain"
+      },
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "target-type": "url",
+      "source-credit": ""
+    },
+    {
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url",
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "ended": false,
+      "type": "other databases",
+      "end": null,
+      "url": {
+        "resource": "https://www.metal-archives.com/bands/Watain/5173",
+        "id": "e88f3eb3-538e-4b45-8b80-a73393a24826"
+      },
+      "begin": null,
+      "attribute-values": {}
+    },
+    {
+      "attribute-values": {},
+      "url": {
+        "id": "0c8d1ac1-5be6-4968-aa87-50d1975bf818",
+        "resource": "https://www.musik-sammler.de/artist/watain/"
+      },
+      "end": null,
+      "begin": null,
+      "type": "other databases",
+      "ended": false,
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "target-credit": "",
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": []
+    },
+    {
+      "attribute-values": {},
+      "url": {
+        "resource": "https://www.spirit-of-metal.com/en/band/Watain",
+        "id": "227d4103-9fc5-47bd-9555-f0f1d3997e80"
+      },
+      "end": null,
+      "begin": null,
+      "type": "other databases",
+      "ended": false,
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "target-credit": "",
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": []
+    },
+    {
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "182dd44c-9473-4b62-8191-528868a67110",
+        "resource": "https://www.worldcat.org/identities/lccn-no2013115521/"
+      },
+      "type": "other databases",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {}
+    },
+    {
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "target-type": "url",
+      "source-credit": "",
+      "type": "purchase for download",
+      "ended": false,
+      "type-id": "f8319a2f-f824-4617-81c8-be6560b3b203",
+      "target-credit": "",
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "resource": "https://music.apple.com/se/artist/218136854",
+        "id": "0d14cd30-1978-4830-8699-296f43d46847"
+      },
+      "end": null
+    },
+    {
+      "ended": false,
+      "type": "purchase for mail-order",
+      "target-credit": "",
+      "type-id": "611b1862-67af-4253-a64f-34adba305d1d",
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "resource": "https://secure.kingsroadmerch.com/watain/",
+        "id": "da6a5b3a-ed93-41d5-8381-4607464869da"
+      },
+      "begin": null,
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "source-credit": "",
+      "target-type": "url"
+    },
+    {
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "target-type": "url",
+      "source-credit": "",
+      "type": "setlistfm",
+      "ended": false,
+      "type-id": "bf5d0d5e-27a1-4e94-9df7-3cdc67b3b207",
+      "target-credit": "",
+      "attribute-values": {},
+      "begin": null,
+      "url": {
+        "id": "7712569e-9eea-4b75-975e-32b0da9989f0",
+        "resource": "https://www.setlist.fm/setlists/watain-4bd683e6.html"
+      },
+      "end": null
+    },
+    {
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "source-credit": "",
+      "target-type": "url",
+      "target-credit": "",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770",
+      "type": "social network",
+      "ended": false,
+      "end": null,
+      "url": {
+        "resource": "https://www.facebook.com/watainofficial",
+        "id": "2a432f5c-ae63-4e96-9b25-90221740d458"
+      },
+      "begin": null,
+      "attribute-values": {}
+    },
+    {
+      "target-type": "url",
+      "source-credit": "",
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "attribute-values": {},
+      "begin": null,
+      "end": null,
+      "url": {
+        "id": "ff6ae62d-751b-4e79-8c86-88eb110d300a",
+        "resource": "https://www.instagram.com/watainofficial/"
+      },
+      "ended": false,
+      "type": "social network",
+      "target-credit": "",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770"
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "attribute-values": {},
+      "url": {
+        "id": "c3aa104c-89d7-44f2-b046-eabeee68e643",
+        "resource": "https://www.reverbnation.com/watain"
+      },
+      "end": null,
+      "begin": null,
+      "ended": false,
+      "type": "social network",
+      "type-id": "99429741-f3f6-484b-84f8-23af51991770",
+      "target-credit": ""
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "url": {
+        "resource": "https://www.songkick.com/artists/402465",
+        "id": "377583f5-4c63-4ab1-8908-224731746371"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "type-id": "aac9c4bc-a5b9-30b8-9839-e3ac314c6e58",
+      "target-credit": "",
+      "type": "songkick",
+      "ended": false
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "url": {
+        "resource": "https://soundcloud.com/watain",
+        "id": "455f8362-db92-403c-9fa8-5be94f6ed3a0"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "type-id": "89e4a949-0976-440d-bda1-5f772c1e5710",
+      "target-credit": "",
+      "ended": false,
+      "type": "soundcloud"
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "direction": "forward",
+      "attribute-ids": {},
+      "attributes": [],
+      "attribute-values": {},
+      "url": {
+        "id": "0d14cd30-1978-4830-8699-296f43d46847",
+        "resource": "https://music.apple.com/se/artist/218136854"
+      },
+      "end": null,
+      "begin": null,
+      "ended": false,
+      "type": "streaming",
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "target-credit": ""
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "resource": "https://tidal.com/artist/3604134",
+        "id": "f164a67d-309d-453e-9277-fca661d89245"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "ended": false,
+      "type": "streaming"
+    },
+    {
+      "type": "streaming",
+      "ended": false,
+      "target-credit": "",
+      "type-id": "63cc5d1f-f096-4c94-a43f-ecb32ea94161",
+      "attribute-values": {},
+      "end": null,
+      "url": {
+        "id": "49d77ded-da05-48f5-9381-9fb1d1d39017",
+        "resource": "https://www.qobuz.com/us-en/interpreter/watain/776814"
+      },
+      "begin": null,
+      "direction": "forward",
+      "attributes": [],
+      "attribute-ids": {},
+      "source-credit": "",
+      "target-type": "url"
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward",
+      "url": {
+        "id": "350cd819-fb82-449c-98b4-9e836ac22f65",
+        "resource": "http://viaf.org/viaf/128263713"
+      },
+      "end": null,
+      "begin": null,
+      "attribute-values": {},
+      "type-id": "e8571dcc-35d4-4e91-a577-a3382fd84460",
+      "target-credit": "",
+      "ended": false,
+      "type": "VIAF"
+    },
+    {
+      "begin": null,
+      "url": {
+        "id": "726d1115-605d-4b51-a047-c0a0c358aa40",
+        "resource": "https://www.wikidata.org/wiki/Q1509682"
+      },
+      "end": null,
+      "attribute-values": {},
+      "type-id": "689870a4-a1e4-4912-b17f-7b2664215698",
+      "target-credit": "",
+      "type": "wikidata",
+      "ended": false,
+      "target-type": "url",
+      "source-credit": "",
+      "attribute-ids": {},
+      "attributes": [],
+      "direction": "forward"
+    },
+    {
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward",
+      "end": null,
+      "url": {
+        "id": "4cfbebd8-4d0f-427e-97d0-98e48bbd090a",
+        "resource": "https://www.youtube.com/channel/UCDQQwbMdDAkzyQvxzWRPnHg"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "6a540e5b-58c6-4192-b6ba-dbc71ec8fcf0",
+      "type": "youtube",
+      "ended": false
+    },
+    {
+      "end": null,
+      "url": {
+        "resource": "https://music.youtube.com/channel/UCn1rAeozFY75AqIxgBM2JPw",
+        "id": "ef711f09-88eb-4e56-adc7-3ed0d7e6c0a9"
+      },
+      "begin": null,
+      "attribute-values": {},
+      "target-credit": "",
+      "type-id": "631712a0-7525-42ba-b7a3-605aa7a238c4",
+      "type": "youtube music",
+      "ended": false,
+      "source-credit": "",
+      "target-type": "url",
+      "attributes": [],
+      "attribute-ids": {},
+      "direction": "forward"
+    }
+  ],
+  "id": "8c51b06d-b678-4bbf-aeac-7295dfb69d13",
+  "country": "SE",
+  "gender": null,
+  "isnis": [
+    "0000000088257724"
+  ],
+  "gender-id": null,
+  "type-id": "e431f5f6-b5d2-343d-8b36-72607fffb74b",
+  "sort-name": "Watain",
+  "type": "Group",
+  "end-area": null
+}

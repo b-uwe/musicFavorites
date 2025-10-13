@@ -1,0 +1,201 @@
+/**
+ * Tests for artist service with transparent caching
+ * @module __tests__/services/artistService
+ */
+
+const artistService = require( '../../services/artistService' );
+const database = require( '../../services/database' );
+const musicbrainzClient = require( '../../services/musicbrainz' );
+const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
+const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
+const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
+
+jest.mock( '../../services/database' );
+jest.mock( '../../services/musicbrainz' );
+
+describe( 'Artist Service', () => {
+  let transformedJungleRot;
+  let transformedTheKinks;
+
+  beforeEach( () => {
+    jest.clearAllMocks();
+    transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+    transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+  } );
+
+  describe( 'getArtist - cache hit', () => {
+    /**
+     * Test cache hit scenario - returns cached data without calling API
+     */
+    test( 'returns cached artist data when found in cache', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+      database.getArtistFromCache.mockResolvedValue( transformedJungleRot );
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
+      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
+      expect( result ).toEqual( transformedJungleRot );
+    } );
+  } );
+
+  describe( 'getArtist - cache miss', () => {
+    /**
+     * Test cache miss scenario - fetches from API, caches, and returns data
+     */
+    test( 'fetches from API and caches when not in cache', async () => {
+      const artistId = transformedTheKinks.musicbrainzId;
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedTheKinks );
+      expect( result ).toEqual( transformedTheKinks );
+    } );
+
+    /**
+     * Test that caching happens asynchronously (fire-and-forget)
+     */
+    test( 'returns data immediately without waiting for cache operation', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+      let cacheResolved = false;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      database.cacheArtist.mockImplementation( async () => {
+        await new Promise( ( resolve ) => {
+          setTimeout( () => {
+            cacheResolved = true;
+            resolve();
+          }, 100 );
+        } );
+      } );
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result ).toEqual( transformedJungleRot );
+      expect( cacheResolved ).toBe( false );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+    } );
+
+    /**
+     * Test that cache errors don't affect the response
+     */
+    test( 'returns data even if caching fails', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result ).toEqual( transformedJungleRot );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+    } );
+  } );
+
+  describe( 'getArtist - error handling', () => {
+    /**
+     * Test API error propagation
+     */
+    test( 'throws error when API fetch fails', async () => {
+      const artistId = 'invalid-id';
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz: API error' ) );
+
+      await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'MusicBrainz: API error' );
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test database error propagation - fail fast to avoid hammering upstream
+     */
+    test( 'throws error when DB is down without calling MusicBrainz API', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+      database.getArtistFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
+
+      await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'Database connection lost' );
+      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that we fail fast on DB errors to protect upstream services
+     */
+    test( 'does not fall back to API when cache lookup fails', async () => {
+      const artistId = transformedTheKinks.musicbrainzId;
+      database.getArtistFromCache.mockRejectedValue( new Error( 'MongoDB timeout' ) );
+
+      await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'MongoDB timeout' );
+      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+    } );
+  } );
+
+  describe( 'getArtist - cache-first behavior integration', () => {
+    /**
+     * Test the scenario you mentioned: first call misses cache, second call hits cache
+     */
+    test( 'first call fetches from API, second call returns from cache', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+
+      // First call - cache miss
+      database.getArtistFromCache.mockResolvedValueOnce( null );
+      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureJungleRot );
+      database.cacheArtist.mockResolvedValueOnce();
+
+      const firstResult = await artistService.getArtist( artistId );
+
+      expect( firstResult ).toEqual( transformedJungleRot );
+      expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+
+      // Second call - cache hit
+      database.getArtistFromCache.mockResolvedValueOnce( transformedJungleRot );
+
+      const secondResult = await artistService.getArtist( artistId );
+
+      expect( secondResult ).toEqual( transformedJungleRot );
+      expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+
+  describe( 'getArtist - circuit breaker pattern', () => {
+    /**
+     * Test circuit breaker: after cache write fails, next call tests cache health
+     */
+    test( 'tests cache health on next call after cache write failure', async () => {
+      const artistId = transformedJungleRot.musicbrainzId;
+
+      // First call - cache miss with write failure
+      database.getArtistFromCache.mockResolvedValueOnce( null );
+      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureJungleRot );
+      database.cacheArtist.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
+
+      // Wait for promise rejection to be handled
+      const firstResult = await artistService.getArtist( artistId );
+
+      expect( firstResult ).toEqual( transformedJungleRot );
+
+      // Give the catch handler time to run
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      // Second call - should test cache health before proceeding
+      database.testCacheHealth.mockRejectedValueOnce( new Error( 'Health check failed' ) );
+
+      await expect( artistService.getArtist( artistId ) ).
+        rejects.toThrow( 'Cache unavailable - service degraded' );
+      expect( database.testCacheHealth ).toHaveBeenCalledTimes( 1 );
+      expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+} );

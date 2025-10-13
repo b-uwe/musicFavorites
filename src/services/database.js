@@ -79,8 +79,112 @@ const getDatabase = ( dbName ) => {
   return client.db( dbName );
 };
 
+/**
+ * Gets artist data from cache
+ * @param {string} artistId - The MusicBrainz artist ID
+ * @returns {Promise<object|null>} Cached artist data or null if not found
+ * @throws {Error} When not connected to database
+ */
+const getArtistFromCache = async ( artistId ) => {
+  if ( !client ) {
+    throw new Error( 'Database not connected. Call connect() first.' );
+  }
+
+  const db = client.db( 'musicfavorites' );
+  const collection = db.collection( 'artists' );
+
+  const result = await collection.findOne( {
+    'musicbrainzId': artistId
+  } );
+
+  return result;
+};
+
+/**
+ * Caches artist data in database
+ * @param {object} artistData - Transformed artist data to cache
+ * @returns {Promise<void>} Resolves when artist is cached
+ * @throws {Error} When not connected, artistData missing musicbrainzId, or write not acknowledged
+ */
+const cacheArtist = async ( artistData ) => {
+  if ( !client ) {
+    throw new Error( 'Database not connected. Call connect() first.' );
+  }
+
+  if ( !artistData.musicbrainzId ) {
+    throw new Error( 'Artist data must include musicbrainzId' );
+  }
+
+  const db = client.db( 'musicfavorites' );
+  const collection = db.collection( 'artists' );
+
+  const result = await collection.updateOne(
+    {
+      'musicbrainzId': artistData.musicbrainzId
+    },
+    {
+      '$set': artistData
+    },
+    {
+      'upsert': true
+    }
+  );
+
+  if ( !result.acknowledged ) {
+    throw new Error( 'Cache write not acknowledged by database' );
+  }
+};
+
+/**
+ * Tests cache health with a dummy write-then-delete operation
+ * @returns {Promise<void>} Resolves if cache is healthy
+ * @throws {Error} When cache is unavailable or operations not acknowledged
+ */
+const testCacheHealth = async () => {
+  if ( !client ) {
+    throw new Error( 'Database not connected. Call connect() first.' );
+  }
+
+  const db = client.db( 'musicfavorites' );
+  const collection = db.collection( 'artists' );
+  const testId = '__health_check__';
+
+  // Write dummy document
+  const writeResult = await collection.updateOne(
+    {
+      'musicbrainzId': testId
+    },
+    {
+      '$set': {
+        'musicbrainzId': testId,
+        'name': 'Health Check',
+        'testEntry': true
+      }
+    },
+    {
+      'upsert': true
+    }
+  );
+
+  if ( !writeResult.acknowledged ) {
+    throw new Error( 'Health check write not acknowledged by database' );
+  }
+
+  // Immediately delete it
+  const deleteResult = await collection.deleteOne( {
+    'musicbrainzId': testId
+  } );
+
+  if ( !deleteResult.acknowledged ) {
+    throw new Error( 'Health check delete not acknowledged by database' );
+  }
+};
+
 module.exports = {
   connect,
   disconnect,
-  getDatabase
+  getDatabase,
+  getArtistFromCache,
+  cacheArtist,
+  testCacheHealth
 };
