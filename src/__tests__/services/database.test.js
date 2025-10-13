@@ -4,6 +4,9 @@
  */
 
 const { MongoClient } = require( 'mongodb' );
+const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
+const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
+const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
 // Mock MongoClient
 jest.mock( 'mongodb', () => ( {
@@ -12,6 +15,7 @@ jest.mock( 'mongodb', () => ( {
     v1: 'v1'
   }
 } ) );
+
 
 describe( 'Database Service', () => {
   let mockClient;
@@ -227,6 +231,244 @@ describe( 'Database Service', () => {
 
     test( 'should throw error when not connected', () => {
       expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow( 'Database not connected. Call connect() first.' );
+    } );
+  } );
+
+  describe( 'getArtistFromCache', () => {
+    let mockCollection;
+    let transformedJungleRot;
+
+    beforeEach( () => {
+      mockCollection = {
+        findOne: jest.fn()
+      };
+      mockDb.collection = jest.fn( () => mockCollection );
+      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+    } );
+
+    test( 'should return artist data from cache when found', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.findOne.mockResolvedValue( transformedJungleRot );
+
+      await database.connect();
+      const result = await database.getArtistFromCache( transformedJungleRot._id );
+
+      expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
+      expect( mockCollection.findOne ).toHaveBeenCalledWith( {
+        _id: transformedJungleRot._id
+      } );
+
+      // Result should have musicbrainzId (not _id) and all other fields
+      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result._id ).toBeUndefined();
+      expect( result.name ).toBe( transformedJungleRot.name );
+      expect( result.country ).toBe( transformedJungleRot.country );
+    } );
+
+    test( 'should return null when artist not found in cache', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      const artistId = 'nonexistent-id';
+      mockCollection.findOne.mockResolvedValue( null );
+
+      await database.connect();
+      const result = await database.getArtistFromCache( artistId );
+
+      expect( mockCollection.findOne ).toHaveBeenCalledWith( {
+        _id: artistId
+      } );
+      expect( result ).toBeNull();
+    } );
+
+    test( 'should throw error when not connected', async () => {
+      await expect( database.getArtistFromCache( 'some-id' ) ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+    } );
+  } );
+
+  describe( 'cacheArtist', () => {
+    let mockCollection;
+    let transformedTheKinks;
+
+    beforeEach( () => {
+      mockCollection = {
+        updateOne: jest.fn()
+      };
+      mockDb.collection = jest.fn( () => mockCollection );
+      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    } );
+
+    test( 'should cache artist data', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockResolvedValue( {
+        acknowledged: true
+      } );
+
+      await database.connect();
+      await database.cacheArtist( transformedTheKinks );
+
+      expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
+      expect( mockCollection.updateOne ).toHaveBeenCalledWith(
+        {
+          _id: transformedTheKinks._id
+        },
+        {
+          $set: transformedTheKinks
+        },
+        {
+          upsert: true
+        }
+      );
+    } );
+
+    test( 'should throw error when not connected', async () => {
+      const artistData = {
+        _id: 'some-id',
+        name: 'Test Artist'
+      };
+
+      await expect( database.cacheArtist( artistData ) ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+    } );
+
+    test( 'should throw error when artistData is missing _id', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      await database.connect();
+
+      const invalidArtistData = {
+        name: 'Test Artist'
+      };
+
+      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow( 'Artist data must include _id' );
+    } );
+
+    test( 'should throw error when write not acknowledged', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockResolvedValue( {
+        acknowledged: false
+      } );
+
+      await database.connect();
+
+      await expect( database.cacheArtist( transformedTheKinks ) ).rejects.toThrow( 'Cache write not acknowledged by database' );
+    } );
+  } );
+
+  describe( 'testCacheHealth', () => {
+    let mockCollection;
+
+    beforeEach( () => {
+      mockCollection = {
+        updateOne: jest.fn(),
+        deleteOne: jest.fn()
+      };
+      mockDb.collection = jest.fn( () => mockCollection );
+    } );
+
+    test( 'should write and delete health check document', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockResolvedValue( {
+        acknowledged: true
+      } );
+      mockCollection.deleteOne.mockResolvedValue( {
+        acknowledged: true
+      } );
+
+      await database.connect();
+      await database.testCacheHealth();
+
+      expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
+      expect( mockCollection.updateOne ).toHaveBeenCalledWith(
+        {
+          _id: '__health_check__'
+        },
+        {
+          $set: {
+            _id: '__health_check__',
+            name: 'Health Check',
+            testEntry: true
+          }
+        },
+        {
+          upsert: true
+        }
+      );
+      expect( mockCollection.deleteOne ).toHaveBeenCalledWith( {
+        _id: '__health_check__'
+      } );
+    } );
+
+    test( 'should throw error when not connected', async () => {
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+    } );
+
+    test( 'should throw error when write fails', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockRejectedValue( new Error( 'Write failed' ) );
+
+      await database.connect();
+
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Write failed' );
+      expect( mockCollection.deleteOne ).not.toHaveBeenCalled();
+    } );
+
+    test( 'should throw error when write not acknowledged', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockResolvedValue( {
+        acknowledged: false
+      } );
+
+      await database.connect();
+
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Health check write not acknowledged by database' );
+      expect( mockCollection.deleteOne ).not.toHaveBeenCalled();
+    } );
+
+    test( 'should throw error when delete not acknowledged', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      mockCollection.updateOne.mockResolvedValue( {
+        acknowledged: true
+      } );
+      mockCollection.deleteOne.mockResolvedValue( {
+        acknowledged: false
+      } );
+
+      await database.connect();
+
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Health check delete not acknowledged by database' );
     } );
   } );
 } );

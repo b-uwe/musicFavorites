@@ -4,13 +4,30 @@
 
 const request = require( 'supertest' );
 const app = require( '../app' );
+const artistService = require( '../services/artistService' );
+const musicbrainzTransformer = require( '../services/musicbrainzTransformer' );
+const fixtureJungleRot = require( './fixtures/musicbrainz-jungle-rot.json' );
+const fixtureTheKinks = require( './fixtures/musicbrainz-the-kinks.json' );
+const fixtureMiseryIndex = require( './fixtures/musicbrainz-misery-index.json' );
+const fixtureWatain = require( './fixtures/musicbrainz-watain.json' );
+
+jest.mock( '../services/artistService' );
+
+// Transform fixtures to output format
+const transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+const transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+const transformedMiseryIndex = musicbrainzTransformer.transformArtistData( fixtureMiseryIndex );
+const transformedWatain = musicbrainzTransformer.transformArtistData( fixtureWatain );
 
 describe( 'GET /act/:id - Basic functionality', () => {
   /**
    * Test basic act endpoint response
    */
   test( 'returns act data with valid MusicBrainz UUID', async () => {
-    const actId = '53689c08-f234-4c47-9256-58c8568f06d1';
+    const actId = transformedJungleRot.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 ).
@@ -28,7 +45,10 @@ describe( 'GET /act/:id - Basic functionality', () => {
    * Test with different UUID
    */
   test( 'returns act data with different MusicBrainz UUID', async () => {
-    const actId = 'b10bbbfc-cf9e-42e0-be17-e2c3e1d2600d';
+    const actId = transformedTheKinks.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedTheKinks );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -42,7 +62,8 @@ describe( 'GET /act/:id - Basic functionality', () => {
    * Test invalid route handling
    */
   test( 'returns 404 for invalid route', async () => {
-    const actId = '53689c08-f234-4c47-9256-58c8568f06d1';
+    const actId = transformedJungleRot.musicbrainzId;
+
     await request( app ).
       get( `/invalid/${actId}` ).
       expect( 404 );
@@ -113,6 +134,9 @@ describe( 'GET /act/:id - Error handling', () => {
    */
   test( 'returns 500 error for invalid MusicBrainz ID', async () => {
     const invalidId = 'invalid-id-format';
+
+    artistService.getArtist.mockRejectedValue( new Error( 'Invalid artist ID format' ) );
+
     const response = await request( app ).
       get( `/act/${invalidId}` ).
       expect( 500 );
@@ -128,7 +152,10 @@ describe( 'GET /act/:id - Response metadata', () => {
    * Test that meta is the first property in response
    */
   test( 'meta is the first property in JSON response', async () => {
-    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const actId = transformedMiseryIndex.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -142,7 +169,10 @@ describe( 'GET /act/:id - Response metadata', () => {
    * Test attribution information
    */
   test( 'response includes attribution information', async () => {
-    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const actId = transformedMiseryIndex.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -152,12 +182,17 @@ describe( 'GET /act/:id - Response metadata', () => {
     expect( response.body.meta.attribution.sources ).
       toEqual( expect.arrayContaining( [ 'MusicBrainz', 'Bandsintown', 'Songkick' ] ) );
   } );
+} );
 
+describe( 'GET /act/:id - Response license', () => {
   /**
    * Test metadata fields
    */
   test( 'response includes metadata', async () => {
-    const actId = '8bfac288-ccc5-448d-9573-c33ea2aa5c30';
+    const actId = transformedWatain.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedWatain );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -173,7 +208,10 @@ describe( 'GET /act/:id - JSON formatting', () => {
    * Test default JSON response is compact (one-liner)
    */
   test( 'response is compact JSON by default', async () => {
-    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const actId = transformedMiseryIndex.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -192,7 +230,10 @@ describe( 'GET /act/:id - JSON formatting', () => {
    * Test ?pretty query parameter returns beautified JSON
    */
   test( 'response is beautified with ?pretty query parameter', async () => {
-    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const actId = transformedMiseryIndex.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+
     const response = await request( app ).
       get( `/act/${actId}?pretty` ).
       expect( 200 );
@@ -212,7 +253,10 @@ describe( 'GET /act/:id - HTTP headers', () => {
    * Test robot blocking headers
    */
   test( 'response includes robot blocking headers', async () => {
-    const actId = '53689c08-f234-4c47-9256-58c8568f06d1';
+    const actId = transformedJungleRot.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );
@@ -225,7 +269,10 @@ describe( 'GET /act/:id - HTTP headers', () => {
    * Test no-cache headers
    */
   test( 'response includes no-cache headers', async () => {
-    const actId = '53689c08-f234-4c47-9256-58c8568f06d1';
+    const actId = transformedJungleRot.musicbrainzId;
+
+    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+
     const response = await request( app ).
       get( `/act/${actId}` ).
       expect( 200 );

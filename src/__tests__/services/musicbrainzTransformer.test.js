@@ -20,7 +20,7 @@ describe( 'MusicBrainz Data Transformer', () => {
      * Test basic artist metadata transformation for active band
      */
     test( 'transforms basic artist metadata correctly for active band', () => {
-      expect( resultJungleRot.musicbrainzId ).toBe( 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317' );
+      expect( resultJungleRot._id ).toBe( 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317' );
       expect( resultJungleRot.name ).toBe( 'Jungle Rot' );
       expect( resultJungleRot.country ).toBe( 'United States' );
       expect( resultJungleRot.region ).toBe( 'Wisconsin' );
@@ -34,7 +34,7 @@ describe( 'MusicBrainz Data Transformer', () => {
     test( 'transforms basic artist metadata correctly for disbanded band', () => {
       const result = resultTheKinks;
 
-      expect( result.musicbrainzId ).toBe( '17b53d9f-5c63-4a09-a593-dde4608e0db9' );
+      expect( result._id ).toBe( '17b53d9f-5c63-4a09-a593-dde4608e0db9' );
       expect( result.name ).toBe( 'The Kinks' );
       expect( result.country ).toBe( 'United Kingdom' );
       expect( result.region ).toBe( 'London' );
