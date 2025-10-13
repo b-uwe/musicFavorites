@@ -175,6 +175,40 @@ describe( 'Database Service', () => {
     test( 'should not throw error when disconnecting without connection', async () => {
       await expect( database.disconnect() ).resolves.not.toThrow();
     } );
+
+    test( 'should throw error when close fails', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+      const closeError = new Error( 'Close failed' );
+      mockClient.close.mockRejectedValue( closeError );
+
+      await database.connect();
+
+      await expect( database.disconnect() ).rejects.toThrow( 'Close failed' );
+    } );
+
+    test( 'should keep client reference when close fails to allow retry', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+      const closeError = new Error( 'Close failed' );
+      mockClient.close.mockRejectedValueOnce( closeError );
+
+      await database.connect();
+
+      // First disconnect attempt fails
+      await expect( database.disconnect() ).rejects.toThrow( 'Close failed' );
+
+      // Set up successful close for retry
+      mockClient.close.mockResolvedValueOnce();
+
+      // Second attempt should succeed (client reference was kept)
+      await expect( database.disconnect() ).resolves.not.toThrow();
+      expect( mockClient.close ).toHaveBeenCalledTimes( 2 );
+    } );
   } );
 
   describe( 'getDatabase', () => {

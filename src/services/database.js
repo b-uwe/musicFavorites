@@ -53,6 +53,7 @@ const connect = async () => {
 /**
  * Disconnects from MongoDB database
  * @returns {Promise<void>} Resolves when disconnection is complete
+ * @throws {Error} When disconnection fails
  */
 const disconnect = async () => {
   if ( !client ) {
@@ -60,6 +61,7 @@ const disconnect = async () => {
   }
 
   await client.close();
+  // Only reset client after successful close
   client = null;
 };
 
