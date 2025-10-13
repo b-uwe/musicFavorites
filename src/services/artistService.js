@@ -45,7 +45,13 @@ const getArtist = async ( artistId ) => {
     cacheHealthy = false;
   } );
 
-  return transformedData;
+  // Map _id to musicbrainzId for API response
+  const { _id, ...artistData } = transformedData;
+
+  return {
+    'musicbrainzId': _id,
+    ...artistData
+  };
 };
 
 module.exports = {

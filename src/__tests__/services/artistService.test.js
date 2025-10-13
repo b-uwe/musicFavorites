@@ -28,15 +28,25 @@ describe( 'Artist Service', () => {
      * Test cache hit scenario - returns cached data without calling API
      */
     test( 'returns cached artist data when found in cache', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
-      database.getArtistFromCache.mockResolvedValue( transformedJungleRot );
+      const artistId = transformedJungleRot._id;
+      // getArtistFromCache returns data with musicbrainzId (API format)
+      const cachedData = {
+        'musicbrainzId': transformedJungleRot._id,
+        'name': transformedJungleRot.name,
+        'country': transformedJungleRot.country,
+        'region': transformedJungleRot.region,
+        'disambiguation': transformedJungleRot.disambiguation,
+        'status': transformedJungleRot.status,
+        'relations': transformedJungleRot.relations
+      };
+      database.getArtistFromCache.mockResolvedValue( cachedData );
 
       const result = await artistService.getArtist( artistId );
 
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
       expect( database.cacheArtist ).not.toHaveBeenCalled();
-      expect( result ).toEqual( transformedJungleRot );
+      expect( result ).toEqual( cachedData );
     } );
   } );
 
@@ -45,7 +55,7 @@ describe( 'Artist Service', () => {
      * Test cache miss scenario - fetches from API, caches, and returns data
      */
     test( 'fetches from API and caches when not in cache', async () => {
-      const artistId = transformedTheKinks.musicbrainzId;
+      const artistId = transformedTheKinks._id;
       database.getArtistFromCache.mockResolvedValue( null );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
@@ -55,14 +65,18 @@ describe( 'Artist Service', () => {
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
       expect( database.cacheArtist ).toHaveBeenCalledWith( transformedTheKinks );
-      expect( result ).toEqual( transformedTheKinks );
+
+      // Result should have musicbrainzId (API format), not _id
+      expect( result.musicbrainzId ).toBe( transformedTheKinks._id );
+      expect( result._id ).toBeUndefined();
+      expect( result.name ).toBe( transformedTheKinks.name );
     } );
 
     /**
      * Test that caching happens asynchronously (fire-and-forget)
      */
     test( 'returns data immediately without waiting for cache operation', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
+      const artistId = transformedJungleRot._id;
       let cacheResolved = false;
 
       database.getArtistFromCache.mockResolvedValue( null );
@@ -78,7 +92,10 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result ).toEqual( transformedJungleRot );
+      // Result should have musicbrainzId (API format), not _id
+      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result._id ).toBeUndefined();
+      expect( result.name ).toBe( transformedJungleRot.name );
       expect( cacheResolved ).toBe( false );
       expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
     } );
@@ -87,14 +104,17 @@ describe( 'Artist Service', () => {
      * Test that cache errors don't affect the response
      */
     test( 'returns data even if caching fails', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
+      const artistId = transformedJungleRot._id;
       database.getArtistFromCache.mockResolvedValue( null );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
       database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result ).toEqual( transformedJungleRot );
+      // Result should have musicbrainzId (API format), not _id
+      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result._id ).toBeUndefined();
+      expect( result.name ).toBe( transformedJungleRot.name );
       expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
     } );
   } );
@@ -116,7 +136,7 @@ describe( 'Artist Service', () => {
      * Test database error propagation - fail fast to avoid hammering upstream
      */
     test( 'throws error when DB is down without calling MusicBrainz API', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
+      const artistId = transformedJungleRot._id;
       database.getArtistFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
 
       await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'Database connection lost' );
@@ -128,7 +148,7 @@ describe( 'Artist Service', () => {
      * Test that we fail fast on DB errors to protect upstream services
      */
     test( 'does not fall back to API when cache lookup fails', async () => {
-      const artistId = transformedTheKinks.musicbrainzId;
+      const artistId = transformedTheKinks._id;
       database.getArtistFromCache.mockRejectedValue( new Error( 'MongoDB timeout' ) );
 
       await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'MongoDB timeout' );
@@ -141,7 +161,7 @@ describe( 'Artist Service', () => {
      * Test the scenario you mentioned: first call misses cache, second call hits cache
      */
     test( 'first call fetches from API, second call returns from cache', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
+      const artistId = transformedJungleRot._id;
 
       // First call - cache miss
       database.getArtistFromCache.mockResolvedValueOnce( null );
@@ -150,17 +170,32 @@ describe( 'Artist Service', () => {
 
       const firstResult = await artistService.getArtist( artistId );
 
-      expect( firstResult ).toEqual( transformedJungleRot );
+      // First result should have musicbrainzId (API format), not _id
+      expect( firstResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( firstResult._id ).toBeUndefined();
+      expect( firstResult.name ).toBe( transformedJungleRot.name );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
       expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
 
-      // Second call - cache hit
-      database.getArtistFromCache.mockResolvedValueOnce( transformedJungleRot );
+      // Second call - cache hit (getArtistFromCache already returns musicbrainzId format)
+      const cachedData = {
+        'musicbrainzId': transformedJungleRot._id,
+        'name': transformedJungleRot.name,
+        'country': transformedJungleRot.country,
+        'region': transformedJungleRot.region,
+        'disambiguation': transformedJungleRot.disambiguation,
+        'status': transformedJungleRot.status,
+        'relations': transformedJungleRot.relations
+      };
+      database.getArtistFromCache.mockResolvedValueOnce( cachedData );
 
       const secondResult = await artistService.getArtist( artistId );
 
-      expect( secondResult ).toEqual( transformedJungleRot );
+      // Second result should also have musicbrainzId (API format)
+      expect( secondResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( secondResult._id ).toBeUndefined();
+      expect( secondResult.name ).toBe( transformedJungleRot.name );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 2 );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
       expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
@@ -172,7 +207,7 @@ describe( 'Artist Service', () => {
      * Test circuit breaker: after cache write fails, next call tests cache health
      */
     test( 'tests cache health on next call after cache write failure', async () => {
-      const artistId = transformedJungleRot.musicbrainzId;
+      const artistId = transformedJungleRot._id;
 
       // First call - cache miss with write failure
       database.getArtistFromCache.mockResolvedValueOnce( null );
@@ -182,7 +217,10 @@ describe( 'Artist Service', () => {
       // Wait for promise rejection to be handled
       const firstResult = await artistService.getArtist( artistId );
 
-      expect( firstResult ).toEqual( transformedJungleRot );
+      // First result should have musicbrainzId (API format), not _id
+      expect( firstResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( firstResult._id ).toBeUndefined();
+      expect( firstResult.name ).toBe( transformedJungleRot.name );
 
       // Give the catch handler time to run
       await new Promise( ( resolve ) => {
