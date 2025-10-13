@@ -1,0 +1,152 @@
+/**
+ * Database connection module tests
+ * @module __tests__/services/database
+ */
+
+const { MongoClient } = require( 'mongodb' );
+
+// Mock MongoClient
+jest.mock( 'mongodb', () => ( {
+  MongoClient: jest.fn(),
+  ServerApiVersion: {
+    v1: 'v1'
+  }
+} ) );
+
+describe( 'Database Service', () => {
+  let mockClient;
+  let mockDb;
+  let database;
+
+  beforeEach( () => {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+
+    // Clear the module from cache to reset its internal state
+    jest.resetModules();
+
+    // Re-mock mongodb after reset
+    jest.doMock( 'mongodb', () => ( {
+      MongoClient: jest.fn(),
+      ServerApiVersion: {
+        v1: 'v1'
+      }
+    } ) );
+
+    // Create mock database object
+    mockDb = {
+      command: jest.fn()
+    };
+
+    // Create mock client object
+    mockClient = {
+      connect: jest.fn(),
+      db: jest.fn( () => mockDb ),
+      close: jest.fn()
+    };
+
+    // Get the mocked MongoClient
+    const { MongoClient: MockedMongoClient } = require( 'mongodb' );
+
+    // Mock MongoClient constructor
+    MockedMongoClient.mockImplementation( () => mockClient );
+
+    // Re-require the database module with fresh state AFTER mocking
+    database = require( '../../services/database' );
+
+    // Set test environment variable
+    process.env.MONGODB_URI = 'mongodb+srv://test:password@test.mongodb.net/?retryWrites=true&w=majority';
+  } );
+
+  describe( 'connect', () => {
+    test( 'should connect to MongoDB successfully', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      await database.connect();
+
+      // Get the mocked MongoClient for assertion
+      const { MongoClient: MockedMongoClient } = require( 'mongodb' );
+
+      expect( MockedMongoClient ).toHaveBeenCalledWith(
+        process.env.MONGODB_URI,
+        expect.objectContaining( {
+          serverApi: expect.objectContaining( {
+            version: 'v1',
+            strict: true,
+            deprecationErrors: true
+          } )
+        } )
+      );
+      expect( mockClient.connect ).toHaveBeenCalled();
+      expect( mockDb.command ).toHaveBeenCalledWith( {
+        ping: 1
+      } );
+    } );
+
+    test( 'should throw error when MONGODB_URI is not set', async () => {
+      delete process.env.MONGODB_URI;
+
+      await expect( database.connect() ).rejects.toThrow( 'MONGODB_URI environment variable is not set' );
+    } );
+
+    test( 'should throw error when connection fails', async () => {
+      const error = new Error( 'Connection failed' );
+      mockClient.connect.mockRejectedValue( error );
+
+      await expect( database.connect() ).rejects.toThrow( 'Connection failed' );
+    } );
+
+    test( 'should not reconnect if already connected', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      await database.connect();
+      await database.connect();
+
+      expect( mockClient.connect ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+
+  describe( 'disconnect', () => {
+    test( 'should disconnect from MongoDB successfully', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+      mockClient.close.mockResolvedValue();
+
+      await database.connect();
+      await database.disconnect();
+
+      expect( mockClient.close ).toHaveBeenCalled();
+    } );
+
+    test( 'should not throw error when disconnecting without connection', async () => {
+      await expect( database.disconnect() ).resolves.not.toThrow();
+    } );
+  } );
+
+  describe( 'getDatabase', () => {
+    test( 'should return database instance', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        ok: 1
+      } );
+
+      await database.connect();
+      const db = database.getDatabase( 'musicfavorites' );
+
+      expect( mockClient.db ).toHaveBeenCalledWith( 'musicfavorites' );
+      expect( db ).toBe( mockDb );
+    } );
+
+    test( 'should throw error when not connected', () => {
+      expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow( 'Database not connected. Call connect() first.' );
+    } );
+  } );
+} );
