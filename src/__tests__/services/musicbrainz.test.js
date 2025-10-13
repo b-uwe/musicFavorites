@@ -43,9 +43,9 @@ describe( 'MusicBrainz API Client', () => {
     /**
      * Test API error handling
      * MOCKED: axios.get throws an error
-     * TESTED: fetchArtist() error propagation path
+     * TESTED: fetchArtist() error propagation path with backend-specific message
      */
-    test( 'throws error when API request fails', async () => {
+    test( 'throws backend-specific error when API request fails', async () => {
       const artistId = 'invalid-id';
       const errorMessage = 'Request failed with status code 404';
 
@@ -53,23 +53,23 @@ describe( 'MusicBrainz API Client', () => {
 
       await expect( musicbrainzClient.fetchArtist( artistId ) ).
         rejects.
-        toThrow( errorMessage );
+        toThrow( 'MusicBrainz: Request failed with status code 404' );
     } );
 
 
     /**
      * Test network timeout handling
      * MOCKED: axios.get throws timeout error
-     * TESTED: fetchArtist() timeout error propagation path
+     * TESTED: fetchArtist() timeout error propagation path with backend prefix
      */
-    test( 'handles network timeout', async () => {
+    test( 'handles network timeout with backend prefix', async () => {
       const artistId = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
 
       axios.get.mockRejectedValue( new Error( 'timeout of 10000ms exceeded' ) );
 
       await expect( musicbrainzClient.fetchArtist( artistId ) ).
         rejects.
-        toThrow( 'timeout' );
+        toThrow( 'MusicBrainz: timeout of 10000ms exceeded' );
     } );
   } );
 } );
