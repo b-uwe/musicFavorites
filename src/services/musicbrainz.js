@@ -4,6 +4,7 @@
  */
 
 const axios = require( 'axios' );
+const { version } = require( '../../package.json' );
 
 const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
 
@@ -19,7 +20,7 @@ const fetchArtist = async ( artistId ) => {
   try {
     const response = await axios.get( url, {
       'headers': {
-        'User-Agent': 'MusicFavorites/0.0.1 (https://github.com/b-uwe/musicFavorites)'
+        'User-Agent': `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites)`
       },
       'timeout': 10000
     } );
