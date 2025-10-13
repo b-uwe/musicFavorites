@@ -94,25 +94,35 @@ const getArtistFromCache = async ( artistId ) => {
   const collection = db.collection( 'artists' );
 
   const result = await collection.findOne( {
-    'musicbrainzId': artistId
+    '_id': artistId
   } );
 
-  return result;
+  if ( !result ) {
+    return null;
+  }
+
+  // Map MongoDB _id to musicbrainzId for API response
+  const { _id, ...artistData } = result;
+
+  return {
+    'musicbrainzId': _id,
+    ...artistData
+  };
 };
 
 /**
  * Caches artist data in database
  * @param {object} artistData - Transformed artist data to cache
  * @returns {Promise<void>} Resolves when artist is cached
- * @throws {Error} When not connected, artistData missing musicbrainzId, or write not acknowledged
+ * @throws {Error} When not connected, artistData missing _id, or write not acknowledged
  */
 const cacheArtist = async ( artistData ) => {
   if ( !client ) {
     throw new Error( 'Database not connected. Call connect() first.' );
   }
 
-  if ( !artistData.musicbrainzId ) {
-    throw new Error( 'Artist data must include musicbrainzId' );
+  if ( !artistData._id ) {
+    throw new Error( 'Artist data must include _id' );
   }
 
   const db = client.db( 'musicfavorites' );
@@ -120,7 +130,7 @@ const cacheArtist = async ( artistData ) => {
 
   const result = await collection.updateOne(
     {
-      'musicbrainzId': artistData.musicbrainzId
+      '_id': artistData._id
     },
     {
       '$set': artistData
@@ -152,11 +162,11 @@ const testCacheHealth = async () => {
   // Write dummy document
   const writeResult = await collection.updateOne(
     {
-      'musicbrainzId': testId
+      '_id': testId
     },
     {
       '$set': {
-        'musicbrainzId': testId,
+        '_id': testId,
         'name': 'Health Check',
         'testEntry': true
       }
@@ -172,7 +182,7 @@ const testCacheHealth = async () => {
 
   // Immediately delete it
   const deleteResult = await collection.deleteOne( {
-    'musicbrainzId': testId
+    '_id': testId
   } );
 
   if ( !deleteResult.acknowledged ) {

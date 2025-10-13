@@ -133,7 +133,9 @@ module.exports = [
       'no-nested-ternary': 'error',
       'no-new-object': 'error',
       'no-trailing-spaces': 'error',
-      'no-underscore-dangle': 'error',
+      'no-underscore-dangle': [ 'error', {
+        'allow': [ '_id' ]
+      } ],
       'no-unneeded-ternary': 'error',
       'no-whitespace-before-property': 'error',
       'nonblock-statement-body-position': 'error',

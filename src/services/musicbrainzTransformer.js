@@ -69,7 +69,7 @@ const transformArtistData = ( mbData ) => {
   const status = isEnded ? 'disbanded' : 'active';
 
   return {
-    'musicbrainzId': mbData.id,
+    '_id': mbData.id,
     'name': mbData.name,
     'country': mbData.area.name,
     'region': mbData[ 'begin-area' ].name,

@@ -16,6 +16,7 @@ jest.mock( 'mongodb', () => ( {
   }
 } ) );
 
+
 describe( 'Database Service', () => {
   let mockClient;
   let mockDb;
@@ -254,13 +255,18 @@ describe( 'Database Service', () => {
       mockCollection.findOne.mockResolvedValue( transformedJungleRot );
 
       await database.connect();
-      const result = await database.getArtistFromCache( transformedJungleRot.musicbrainzId );
+      const result = await database.getArtistFromCache( transformedJungleRot._id );
 
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.findOne ).toHaveBeenCalledWith( {
-        musicbrainzId: transformedJungleRot.musicbrainzId
+        _id: transformedJungleRot._id
       } );
-      expect( result ).toEqual( transformedJungleRot );
+
+      // Result should have musicbrainzId (not _id) and all other fields
+      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result._id ).toBeUndefined();
+      expect( result.name ).toBe( transformedJungleRot.name );
+      expect( result.country ).toBe( transformedJungleRot.country );
     } );
 
     test( 'should return null when artist not found in cache', async () => {
@@ -276,7 +282,7 @@ describe( 'Database Service', () => {
       const result = await database.getArtistFromCache( artistId );
 
       expect( mockCollection.findOne ).toHaveBeenCalledWith( {
-        musicbrainzId: artistId
+        _id: artistId
       } );
       expect( result ).toBeNull();
     } );
@@ -314,7 +320,7 @@ describe( 'Database Service', () => {
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         {
-          musicbrainzId: transformedTheKinks.musicbrainzId
+          _id: transformedTheKinks._id
         },
         {
           $set: transformedTheKinks
@@ -327,14 +333,14 @@ describe( 'Database Service', () => {
 
     test( 'should throw error when not connected', async () => {
       const artistData = {
-        musicbrainzId: 'some-id',
+        _id: 'some-id',
         name: 'Test Artist'
       };
 
       await expect( database.cacheArtist( artistData ) ).rejects.toThrow( 'Database not connected. Call connect() first.' );
     } );
 
-    test( 'should throw error when artistData is missing musicbrainzId', async () => {
+    test( 'should throw error when artistData is missing _id', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
         ok: 1
@@ -346,7 +352,7 @@ describe( 'Database Service', () => {
         name: 'Test Artist'
       };
 
-      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow( 'Artist data must include musicbrainzId' );
+      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow( 'Artist data must include _id' );
     } );
 
     test( 'should throw error when write not acknowledged', async () => {
@@ -395,11 +401,11 @@ describe( 'Database Service', () => {
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         {
-          musicbrainzId: '__health_check__'
+          _id: '__health_check__'
         },
         {
           $set: {
-            musicbrainzId: '__health_check__',
+            _id: '__health_check__',
             name: 'Health Check',
             testEntry: true
           }
@@ -409,7 +415,7 @@ describe( 'Database Service', () => {
         }
       );
       expect( mockCollection.deleteOne ).toHaveBeenCalledWith( {
-        musicbrainzId: '__health_check__'
+        _id: '__health_check__'
       } );
     } );
 
