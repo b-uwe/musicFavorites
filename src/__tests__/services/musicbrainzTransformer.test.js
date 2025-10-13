@@ -25,20 +25,20 @@ describe( 'MusicBrainz Data Transformer', () => {
       expect( resultJungleRot.country ).toBe( 'United States' );
       expect( resultJungleRot.region ).toBe( 'Wisconsin' );
       expect( resultJungleRot.disambiguation ).toBe( 'United States death metal' );
-      expect( resultJungleRot.ended ).toBe( false );
+      expect( resultJungleRot.status ).toBe( 'active' );
     } );
 
     /**
-     * Test basic artist metadata transformation for ended band
+     * Test basic artist metadata transformation for disbanded band
      */
-    test( 'transforms basic artist metadata correctly for ended band', () => {
+    test( 'transforms basic artist metadata correctly for disbanded band', () => {
       const result = resultTheKinks;
 
       expect( result.musicbrainzId ).toBe( '17b53d9f-5c63-4a09-a593-dde4608e0db9' );
       expect( result.name ).toBe( 'The Kinks' );
       expect( result.country ).toBe( 'United Kingdom' );
       expect( result.region ).toBe( 'London' );
-      expect( result.ended ).toBe( true );
+      expect( result.status ).toBe( 'disbanded' );
     } );
 
     /**
