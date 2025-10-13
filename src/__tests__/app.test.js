@@ -168,6 +168,45 @@ describe( 'GET /act/:id - Response metadata', () => {
   } );
 } );
 
+describe( 'GET /act/:id - JSON formatting', () => {
+  /**
+   * Test default JSON response is compact (one-liner)
+   */
+  test( 'response is compact JSON by default', async () => {
+    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const response = await request( app ).
+      get( `/act/${actId}` ).
+      expect( 200 );
+
+    // Get raw response text
+    const rawText = response.text;
+
+    // Compact JSON should not have newlines (except potentially at the very end)
+    const trimmedText = rawText.trim();
+
+    expect( trimmedText ).not.toMatch( /\{\s*\n/u );
+    expect( trimmedText ).not.toContain( '\n  ' );
+  } );
+
+  /**
+   * Test ?pretty query parameter returns beautified JSON
+   */
+  test( 'response is beautified with ?pretty query parameter', async () => {
+    const actId = 'cc197bad-dc9c-440d-a5b5-d52ba2e14234';
+    const response = await request( app ).
+      get( `/act/${actId}?pretty` ).
+      expect( 200 );
+
+    // Get raw response text
+    const rawText = response.text;
+
+    // Beautified JSON should contain newlines and 2-space indentation
+    expect( rawText ).toContain( '\n' );
+    expect( rawText ).toMatch( /\{\s*\n/u );
+    expect( rawText ).toMatch( /\n {2}"/u );
+  } );
+} );
+
 describe( 'GET /act/:id - HTTP headers', () => {
   /**
    * Test robot blocking headers

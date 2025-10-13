@@ -19,6 +19,13 @@ const app = express();
 app.get( '/act/:id', async ( req, res ) => {
   const { id } = req.params;
 
+  // Enable pretty-printing if ?pretty query parameter is present
+  if ( req.query.pretty !== undefined ) {
+    app.set( 'json spaces', 2 );
+  } else {
+    app.set( 'json spaces', 0 );
+  }
+
   // TODO: Remove robots blocking once caching layer is in place to protect upstream providers
   res.set( 'X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet' );
 
