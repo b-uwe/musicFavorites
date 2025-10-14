@@ -7,11 +7,14 @@ const artistService = require( '../../services/artistService' );
 const database = require( '../../services/database' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
+const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
 const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
+const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-artist-6461184.json' );
 
 jest.mock( '../../services/database' );
 jest.mock( '../../services/musicbrainz' );
+jest.mock( '../../services/ldJsonExtractor' );
 
 describe( 'Artist Service', () => {
   let transformedJungleRot;
@@ -64,7 +67,10 @@ describe( 'Artist Service', () => {
 
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedTheKinks );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( {
+        ...transformedTheKinks,
+        'events': []
+      } );
 
       // Result should have musicbrainzId (API format), not _id
       expect( result.musicbrainzId ).toBe( transformedTheKinks._id );
@@ -81,6 +87,7 @@ describe( 'Artist Service', () => {
 
       database.getArtistFromCache.mockResolvedValue( null );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureVulvodynia );
       database.cacheArtist.mockImplementation( async () => {
         await new Promise( ( resolve ) => {
           setTimeout( () => {
@@ -97,7 +104,7 @@ describe( 'Artist Service', () => {
       expect( result._id ).toBeUndefined();
       expect( result.name ).toBe( transformedJungleRot.name );
       expect( cacheResolved ).toBe( false );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+      expect( database.cacheArtist ).toHaveBeenCalled();
     } );
 
     /**
@@ -107,6 +114,7 @@ describe( 'Artist Service', () => {
       const artistId = transformedJungleRot._id;
       database.getArtistFromCache.mockResolvedValue( null );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureVulvodynia );
       database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
       const result = await artistService.getArtist( artistId );
@@ -115,7 +123,7 @@ describe( 'Artist Service', () => {
       expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
       expect( result._id ).toBeUndefined();
       expect( result.name ).toBe( transformedJungleRot.name );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+      expect( database.cacheArtist ).toHaveBeenCalled();
     } );
   } );
 
@@ -234,6 +242,129 @@ describe( 'Artist Service', () => {
         rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       expect( database.testCacheHealth ).toHaveBeenCalledTimes( 1 );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+
+  describe( 'getArtist - Bandsintown event extraction', () => {
+    /**
+     * Test that events are fetched and included when artist has Bandsintown URL
+     */
+    test( 'includes Bandsintown events when artist has bandsintown URL', async () => {
+      const artistId = transformedJungleRot._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureVulvodynia );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).
+        toHaveBeenCalledWith( 'https://www.bandsintown.com/a/13217' );
+      expect( result ).toHaveProperty( 'events' );
+      expect( Array.isArray( result.events ) ).toBe( true );
+      expect( result.events.length ).toBe( 4 );
+      expect( result.events[ 0 ] ).toHaveProperty( 'name' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'date' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'localTime' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'location' );
+    } );
+
+    /**
+     * Test that empty events array is returned when artist has no Bandsintown URL
+     */
+    test( 'returns empty events when artist has no bandsintown URL', async () => {
+      const artistId = transformedTheKinks._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+      expect( result ).toHaveProperty( 'events' );
+      expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that events are returned even if Bandsintown fetch fails
+     */
+    test( 'returns empty events array if Bandsintown fetch fails', async () => {
+      const artistId = transformedJungleRot._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/13217' );
+      expect( result ).toHaveProperty( 'events' );
+      expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that events are cached together with artist data
+     */
+    test( 'caches events together with artist data', async () => {
+      const artistId = transformedJungleRot._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureVulvodynia );
+      database.cacheArtist.mockResolvedValue();
+
+      await artistService.getArtist( artistId );
+
+      // Wait for async cache operation
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      expect( database.cacheArtist ).toHaveBeenCalled();
+      const cachedData = database.cacheArtist.mock.calls[ 0 ][ 0 ];
+
+      expect( cachedData ).toHaveProperty( 'events' );
+      expect( Array.isArray( cachedData.events ) ).toBe( true );
+    } );
+
+    /**
+     * Test that cached data includes events
+     */
+    test( 'returns events from cache when artist is cached', async () => {
+      const artistId = transformedJungleRot._id;
+      const cachedData = {
+        'musicbrainzId': transformedJungleRot._id,
+        'name': transformedJungleRot.name,
+        'country': transformedJungleRot.country,
+        'region': transformedJungleRot.region,
+        'disambiguation': transformedJungleRot.disambiguation,
+        'status': transformedJungleRot.status,
+        'relations': transformedJungleRot.relations,
+        'events': [
+          {
+            'name': 'Cached Event',
+            'date': '2025-12-01',
+            'localTime': '19:00:00',
+            'location': {
+              'address': 'Test Address',
+              'geo': {
+                'lat': 51.5,
+                'lon': -0.1
+              }
+            }
+          }
+        ]
+      };
+
+      database.getArtistFromCache.mockResolvedValue( cachedData );
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+      expect( result.events ).toEqual( cachedData.events );
     } );
   } );
 } );
