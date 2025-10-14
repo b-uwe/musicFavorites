@@ -4,7 +4,7 @@
  */
 
 const bandsintownTransformer = require( '../../services/bandsintownTransformer' );
-const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-artist-6461184.json' );
+const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 describe( 'Bandsintown Transformer', () => {
   describe( 'transformEvents', () => {

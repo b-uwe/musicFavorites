@@ -90,8 +90,8 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'extracts from real Bandsintown HTML', () => {
-      const html = loadFixture( 'bandsintown-artist-6461184.html' );
-      const expected = JSON.parse( loadFixture( 'bandsintown-artist-6461184.json' ) );
+      const html = loadFixture( 'bandsintown-vulvodynia.html' );
+      const expected = JSON.parse( loadFixture( 'bandsintown-vulvodynia.json' ) );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
