@@ -227,6 +227,5 @@ describe( 'MusicBrainz Data Transformer', () => {
       expect( resultJungleRot.relations.youtube ).toBeDefined();
       expect( resultJungleRot.relations.youtube ).toContain( 'youtube.com' );
     } );
-
   } );
 } );

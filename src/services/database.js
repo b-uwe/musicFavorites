@@ -20,7 +20,7 @@ const connect = async () => {
   const uri = process.env.MONGODB_URI;
 
   if ( !uri ) {
-    throw new Error( 'MONGODB_URI environment variable is not set' );
+    throw new Error( 'Service misconfigured. Please try again later. (Error: DB_001)' );
   }
 
   try {
@@ -41,12 +41,17 @@ const connect = async () => {
 
     // Verify ping response
     if ( pingResult.ok !== 1 ) {
-      throw new Error( 'MongoDB ping verification failed' );
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
     }
   } catch ( error ) {
     // Reset client on any failure to allow retry
     client = null;
-    throw error;
+    // If it's already a formatted error code, re-throw it unchanged
+    if ( error.message && error.message.includes( '(Error: DB_' ) ) {
+      throw error;
+    }
+    // Otherwise wrap raw errors in consumer-friendly message
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_011)' );
   }
 };
 
@@ -60,9 +65,14 @@ const disconnect = async () => {
     return;
   }
 
-  await client.close();
-  // Only reset client after successful close
-  client = null;
+  try {
+    await client.close();
+    // Only reset client after successful close
+    client = null;
+  } catch ( error ) {
+    // Wrap disconnection errors in consumer-friendly message
+    throw new Error( 'Service temporarily unavailable during disconnection. (Error: DB_012)' );
+  }
 };
 
 /**
@@ -73,7 +83,7 @@ const disconnect = async () => {
  */
 const getDatabase = ( dbName ) => {
   if ( !client ) {
-    throw new Error( 'Database not connected. Call connect() first.' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_003)' );
   }
 
   return client.db( dbName );
@@ -87,7 +97,7 @@ const getDatabase = ( dbName ) => {
  */
 const getArtistFromCache = async ( artistId ) => {
   if ( !client ) {
-    throw new Error( 'Database not connected. Call connect() first.' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
   }
 
   const db = client.db( 'musicfavorites' );
@@ -118,11 +128,11 @@ const getArtistFromCache = async ( artistId ) => {
  */
 const cacheArtist = async ( artistData ) => {
   if ( !client ) {
-    throw new Error( 'Database not connected. Call connect() first.' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
   }
 
   if ( !artistData._id ) {
-    throw new Error( 'Artist data must include _id' );
+    throw new Error( 'Invalid request. Please try again later. (Error: DB_006)' );
   }
 
   const db = client.db( 'musicfavorites' );
@@ -141,7 +151,7 @@ const cacheArtist = async ( artistData ) => {
   );
 
   if ( !result.acknowledged ) {
-    throw new Error( 'Cache write not acknowledged by database' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
   }
 };
 
@@ -152,7 +162,7 @@ const cacheArtist = async ( artistData ) => {
  */
 const testCacheHealth = async () => {
   if ( !client ) {
-    throw new Error( 'Database not connected. Call connect() first.' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_008)' );
   }
 
   const db = client.db( 'musicfavorites' );
@@ -177,7 +187,7 @@ const testCacheHealth = async () => {
   );
 
   if ( !writeResult.acknowledged ) {
-    throw new Error( 'Health check write not acknowledged by database' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_009)' );
   }
 
   // Immediately delete it
@@ -186,7 +196,7 @@ const testCacheHealth = async () => {
   } );
 
   if ( !deleteResult.acknowledged ) {
-    throw new Error( 'Health check delete not acknowledged by database' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
   }
 };
 

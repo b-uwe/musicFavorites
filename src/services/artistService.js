@@ -25,7 +25,7 @@ const getArtist = async ( artistId ) => {
       await database.testCacheHealth();
       cacheHealthy = true;
     } catch ( error ) {
-      throw new Error( 'Cache unavailable - service degraded' );
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
     }
   }
 

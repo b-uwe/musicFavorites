@@ -10,22 +10,23 @@ const { connect } = require( './services/database' );
 const PORT = process.env.PORT || 3000;
 
 /**
- * Starts the server and connects to MongoDB
- * @returns {Promise<void>} Resolves when server and database are ready
+ * Starts the server and attempts to connect to MongoDB
+ * Server starts regardless of database connection status
+ * @returns {Promise<void>} Resolves when server is ready
  */
 const startServer = async () => {
+  // Start Express server first (always succeeds)
+  app.listen( PORT, () => {
+    console.log( `Music Favorites API running on port ${PORT}` );
+  } );
+
+  // Attempt MongoDB connection (non-blocking)
   try {
-    // Connect to MongoDB
     await connect();
     console.log( 'Connected to MongoDB successfully' );
-
-    // Start Express server
-    app.listen( PORT, () => {
-      console.log( `Music Favorites API running on port ${PORT}` );
-    } );
   } catch ( error ) {
-    console.error( 'Failed to start server:', error.message );
-    process.exit( 1 );
+    console.error( 'MongoDB connection failed:', error.message );
+    console.error( 'Server running but database unavailable. API will return errors.' );
   }
 };
 
