@@ -20,15 +20,7 @@ const loadFixture = ( filename ) => {
 describe( 'LD+JSON Extractor', () => {
   describe( 'extractLdJson', () => {
     test( 'extracts single LD+JSON block from HTML', () => {
-      const html = `
-        <html>
-          <head>
-            <script type="application/ld+json">
-              {"@context": "https://schema.org", "@type": "Person", "name": "John Doe"}
-            </script>
-          </head>
-        </html>
-      `;
+      const html = loadFixture( 'single-block.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
@@ -42,18 +34,7 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'extracts multiple LD+JSON blocks from HTML', () => {
-      const html = `
-        <html>
-          <head>
-            <script type="application/ld+json">
-              {"@type": "Person", "name": "John"}
-            </script>
-            <script type="application/ld+json">
-              {"@type": "Organization", "name": "Acme"}
-            </script>
-          </head>
-        </html>
-      `;
+      const html = loadFixture( 'multiple-blocks.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
@@ -69,15 +50,7 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'returns empty array when no LD+JSON found', () => {
-      const html = `
-        <html>
-          <head>
-            <script type="text/javascript">
-              console.log('not ld+json');
-            </script>
-          </head>
-        </html>
-      `;
+      const html = loadFixture( 'google-no-ldjson.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
