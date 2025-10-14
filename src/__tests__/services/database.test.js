@@ -10,9 +10,9 @@ const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
 // Mock MongoClient
 jest.mock( 'mongodb', () => ( {
-  MongoClient: jest.fn(),
-  ServerApiVersion: {
-    v1: 'v1'
+  'MongoClient': jest.fn(),
+  'ServerApiVersion': {
+    'v1': 'v1'
   }
 } ) );
 
@@ -31,26 +31,26 @@ describe( 'Database Service', () => {
 
     // Re-mock mongodb after reset
     jest.doMock( 'mongodb', () => ( {
-      MongoClient: jest.fn(),
-      ServerApiVersion: {
-        v1: 'v1'
+      'MongoClient': jest.fn(),
+      'ServerApiVersion': {
+        'v1': 'v1'
       }
     } ) );
 
     // Create mock database object
     mockDb = {
-      command: jest.fn()
+      'command': jest.fn()
     };
 
     // Create mock client object
     mockClient = {
-      connect: jest.fn(),
-      db: jest.fn( () => mockDb ),
-      close: jest.fn()
+      'connect': jest.fn(),
+      'db': jest.fn( () => mockDb ),
+      'close': jest.fn()
     };
 
     // Get the mocked MongoClient
-    const { MongoClient: MockedMongoClient } = require( 'mongodb' );
+    const { 'MongoClient': MockedMongoClient } = require( 'mongodb' );
 
     // Mock MongoClient constructor
     MockedMongoClient.mockImplementation( () => mockClient );
@@ -66,47 +66,51 @@ describe( 'Database Service', () => {
     test( 'should connect to MongoDB successfully', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       await database.connect();
 
       // Get the mocked MongoClient for assertion
-      const { MongoClient: MockedMongoClient } = require( 'mongodb' );
+      const { 'MongoClient': MockedMongoClient } = require( 'mongodb' );
 
       expect( MockedMongoClient ).toHaveBeenCalledWith(
         process.env.MONGODB_URI,
         expect.objectContaining( {
-          serverApi: expect.objectContaining( {
-            version: 'v1',
-            strict: true,
-            deprecationErrors: true
+          'serverApi': expect.objectContaining( {
+            'version': 'v1',
+            'strict': true,
+            'deprecationErrors': true
           } )
         } )
       );
       expect( mockClient.connect ).toHaveBeenCalled();
       expect( mockDb.command ).toHaveBeenCalledWith( {
-        ping: 1
+        'ping': 1
       } );
     } );
 
     test( 'should throw error when MONGODB_URI is not set', async () => {
       delete process.env.MONGODB_URI;
 
-      await expect( database.connect() ).rejects.toThrow( 'MONGODB_URI environment variable is not set' );
+      await expect( database.connect() ).rejects.toThrow(
+        'Service misconfigured. Please try again later. (Error: DB_001)'
+      );
     } );
 
     test( 'should throw error when connection fails', async () => {
       const error = new Error( 'Connection failed' );
       mockClient.connect.mockRejectedValue( error );
 
-      await expect( database.connect() ).rejects.toThrow( 'Connection failed' );
+      await expect( database.connect() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_011)'
+      );
     } );
 
     test( 'should not reconnect if already connected', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       await database.connect();
@@ -118,24 +122,28 @@ describe( 'Database Service', () => {
     test( 'should throw error when ping verification fails', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 0
+        'ok': 0
       } );
 
-      await expect( database.connect() ).rejects.toThrow( 'MongoDB ping verification failed' );
+      await expect( database.connect() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_002)'
+      );
     } );
 
     test( 'should reset client on ping failure to allow retry', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValueOnce( {
-        ok: 0
+        'ok': 0
       } );
 
       // First attempt fails
-      await expect( database.connect() ).rejects.toThrow( 'MongoDB ping verification failed' );
+      await expect( database.connect() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_002)'
+      );
 
       // Set up successful connection for retry
       mockDb.command.mockResolvedValueOnce( {
-        ok: 1
+        'ok': 1
       } );
 
       // Second attempt should succeed (not blocked by failed client)
@@ -148,12 +156,14 @@ describe( 'Database Service', () => {
       mockClient.connect.mockRejectedValueOnce( error );
 
       // First attempt fails
-      await expect( database.connect() ).rejects.toThrow( 'Connection failed' );
+      await expect( database.connect() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_011)'
+      );
 
       // Set up successful connection for retry
       mockClient.connect.mockResolvedValueOnce( mockClient );
       mockDb.command.mockResolvedValueOnce( {
-        ok: 1
+        'ok': 1
       } );
 
       // Second attempt should succeed (not blocked by failed client)
@@ -166,7 +176,7 @@ describe( 'Database Service', () => {
     test( 'should disconnect from MongoDB successfully', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
       mockClient.close.mockResolvedValue();
 
@@ -183,20 +193,22 @@ describe( 'Database Service', () => {
     test( 'should throw error when close fails', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
       const closeError = new Error( 'Close failed' );
       mockClient.close.mockRejectedValue( closeError );
 
       await database.connect();
 
-      await expect( database.disconnect() ).rejects.toThrow( 'Close failed' );
+      await expect( database.disconnect() ).rejects.toThrow(
+        'Service temporarily unavailable during disconnection. (Error: DB_012)'
+      );
     } );
 
     test( 'should keep client reference when close fails to allow retry', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
       const closeError = new Error( 'Close failed' );
       mockClient.close.mockRejectedValueOnce( closeError );
@@ -204,7 +216,9 @@ describe( 'Database Service', () => {
       await database.connect();
 
       // First disconnect attempt fails
-      await expect( database.disconnect() ).rejects.toThrow( 'Close failed' );
+      await expect( database.disconnect() ).rejects.toThrow(
+        'Service temporarily unavailable during disconnection. (Error: DB_012)'
+      );
 
       // Set up successful close for retry
       mockClient.close.mockResolvedValueOnce();
@@ -219,7 +233,7 @@ describe( 'Database Service', () => {
     test( 'should return database instance', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       await database.connect();
@@ -230,7 +244,9 @@ describe( 'Database Service', () => {
     } );
 
     test( 'should throw error when not connected', () => {
-      expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow( 'Database not connected. Call connect() first.' );
+      expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_003)'
+      );
     } );
   } );
 
@@ -240,7 +256,7 @@ describe( 'Database Service', () => {
 
     beforeEach( () => {
       mockCollection = {
-        findOne: jest.fn()
+        'findOne': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
       transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
@@ -249,7 +265,7 @@ describe( 'Database Service', () => {
     test( 'should return artist data from cache when found', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.findOne.mockResolvedValue( transformedJungleRot );
@@ -259,7 +275,7 @@ describe( 'Database Service', () => {
 
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.findOne ).toHaveBeenCalledWith( {
-        _id: transformedJungleRot._id
+        '_id': transformedJungleRot._id
       } );
 
       // Result should have musicbrainzId (not _id) and all other fields
@@ -272,7 +288,7 @@ describe( 'Database Service', () => {
     test( 'should return null when artist not found in cache', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       const artistId = 'nonexistent-id';
@@ -282,13 +298,15 @@ describe( 'Database Service', () => {
       const result = await database.getArtistFromCache( artistId );
 
       expect( mockCollection.findOne ).toHaveBeenCalledWith( {
-        _id: artistId
+        '_id': artistId
       } );
       expect( result ).toBeNull();
     } );
 
     test( 'should throw error when not connected', async () => {
-      await expect( database.getArtistFromCache( 'some-id' ) ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+      await expect( database.getArtistFromCache( 'some-id' ) ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_004)'
+      );
     } );
   } );
 
@@ -298,7 +316,7 @@ describe( 'Database Service', () => {
 
     beforeEach( () => {
       mockCollection = {
-        updateOne: jest.fn()
+        'updateOne': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
       transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
@@ -307,11 +325,11 @@ describe( 'Database Service', () => {
     test( 'should cache artist data', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockResolvedValue( {
-        acknowledged: true
+        'acknowledged': true
       } );
 
       await database.connect();
@@ -320,54 +338,60 @@ describe( 'Database Service', () => {
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         {
-          _id: transformedTheKinks._id
+          '_id': transformedTheKinks._id
         },
         {
-          $set: transformedTheKinks
+          '$set': transformedTheKinks
         },
         {
-          upsert: true
+          'upsert': true
         }
       );
     } );
 
     test( 'should throw error when not connected', async () => {
       const artistData = {
-        _id: 'some-id',
-        name: 'Test Artist'
+        '_id': 'some-id',
+        'name': 'Test Artist'
       };
 
-      await expect( database.cacheArtist( artistData ) ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+      await expect( database.cacheArtist( artistData ) ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_005)'
+      );
     } );
 
     test( 'should throw error when artistData is missing _id', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       await database.connect();
 
       const invalidArtistData = {
-        name: 'Test Artist'
+        'name': 'Test Artist'
       };
 
-      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow( 'Artist data must include _id' );
+      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow(
+        'Invalid request. Please try again later. (Error: DB_006)'
+      );
     } );
 
     test( 'should throw error when write not acknowledged', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockResolvedValue( {
-        acknowledged: false
+        'acknowledged': false
       } );
 
       await database.connect();
 
-      await expect( database.cacheArtist( transformedTheKinks ) ).rejects.toThrow( 'Cache write not acknowledged by database' );
+      await expect( database.cacheArtist( transformedTheKinks ) ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_007)'
+      );
     } );
   } );
 
@@ -376,8 +400,8 @@ describe( 'Database Service', () => {
 
     beforeEach( () => {
       mockCollection = {
-        updateOne: jest.fn(),
-        deleteOne: jest.fn()
+        'updateOne': jest.fn(),
+        'deleteOne': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
     } );
@@ -385,14 +409,14 @@ describe( 'Database Service', () => {
     test( 'should write and delete health check document', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockResolvedValue( {
-        acknowledged: true
+        'acknowledged': true
       } );
       mockCollection.deleteOne.mockResolvedValue( {
-        acknowledged: true
+        'acknowledged': true
       } );
 
       await database.connect();
@@ -401,32 +425,34 @@ describe( 'Database Service', () => {
       expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         {
-          _id: '__health_check__'
+          '_id': '__health_check__'
         },
         {
-          $set: {
-            _id: '__health_check__',
-            name: 'Health Check',
-            testEntry: true
+          '$set': {
+            '_id': '__health_check__',
+            'name': 'Health Check',
+            'testEntry': true
           }
         },
         {
-          upsert: true
+          'upsert': true
         }
       );
       expect( mockCollection.deleteOne ).toHaveBeenCalledWith( {
-        _id: '__health_check__'
+        '_id': '__health_check__'
       } );
     } );
 
     test( 'should throw error when not connected', async () => {
-      await expect( database.testCacheHealth() ).rejects.toThrow( 'Database not connected. Call connect() first.' );
+      await expect( database.testCacheHealth() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_008)'
+      );
     } );
 
     test( 'should throw error when write fails', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockRejectedValue( new Error( 'Write failed' ) );
@@ -440,35 +466,39 @@ describe( 'Database Service', () => {
     test( 'should throw error when write not acknowledged', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockResolvedValue( {
-        acknowledged: false
+        'acknowledged': false
       } );
 
       await database.connect();
 
-      await expect( database.testCacheHealth() ).rejects.toThrow( 'Health check write not acknowledged by database' );
+      await expect( database.testCacheHealth() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_009)'
+      );
       expect( mockCollection.deleteOne ).not.toHaveBeenCalled();
     } );
 
     test( 'should throw error when delete not acknowledged', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
       mockDb.command.mockResolvedValue( {
-        ok: 1
+        'ok': 1
       } );
 
       mockCollection.updateOne.mockResolvedValue( {
-        acknowledged: true
+        'acknowledged': true
       } );
       mockCollection.deleteOne.mockResolvedValue( {
-        acknowledged: false
+        'acknowledged': false
       } );
 
       await database.connect();
 
-      await expect( database.testCacheHealth() ).rejects.toThrow( 'Health check delete not acknowledged by database' );
+      await expect( database.testCacheHealth() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_010)'
+      );
     } );
   } );
 } );

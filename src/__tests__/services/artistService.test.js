@@ -29,7 +29,7 @@ describe( 'Artist Service', () => {
      */
     test( 'returns cached artist data when found in cache', async () => {
       const artistId = transformedJungleRot._id;
-      // getArtistFromCache returns data with musicbrainzId (API format)
+      // GetArtistFromCache returns data with musicbrainzId (API format)
       const cachedData = {
         'musicbrainzId': transformedJungleRot._id,
         'name': transformedJungleRot.name,
@@ -231,7 +231,7 @@ describe( 'Artist Service', () => {
       database.testCacheHealth.mockRejectedValueOnce( new Error( 'Health check failed' ) );
 
       await expect( artistService.getArtist( artistId ) ).
-        rejects.toThrow( 'Cache unavailable - service degraded' );
+        rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       expect( database.testCacheHealth ).toHaveBeenCalledTimes( 1 );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
     } );
