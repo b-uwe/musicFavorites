@@ -350,14 +350,14 @@ describe( 'Artist Service', () => {
         'relations': transformedVulvodynia.relations,
         'events': [
           {
-            'name': 'Cached Event',
-            'date': '2025-12-01',
-            'localTime': '19:00:00',
+            'name': 'Vulvodynia @ O2 Academy Islington',
+            'date': '2025-11-25',
+            'localTime': '18:00:00',
             'location': {
-              'address': 'Test Address',
+              'address': 'N1 Centre 16 Parkfield St, N1 0PS, London, United Kingdom',
               'geo': {
-                'lat': 51.5,
-                'lon': -0.1
+                'lat': 51.5343501,
+                'lon': -0.1058837
               }
             }
           }
