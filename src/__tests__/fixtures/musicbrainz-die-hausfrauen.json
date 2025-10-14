@@ -1,0 +1,52 @@
+{
+  "aliases": [],
+  "disambiguation": "Germany",
+  "begin-area": null,
+  "end-area": null,
+  "type-id": null,
+  "gender": null,
+  "area": {
+    "disambiguation": "",
+    "name": "Germany",
+    "sort-name": "Germany",
+    "iso-3166-1-codes": [
+      "DE"
+    ],
+    "type": null,
+    "id": "85752fda-13c4-31a3-bee5-0e5cb1f51dad",
+    "type-id": null
+  },
+  "isnis": [],
+  "name": "Die Hausfrauen",
+  "country": "DE",
+  "id": "f35e1992-230b-4d63-9e63-a829caccbcd5",
+  "relations": [
+    {
+      "end": null,
+      "attributes": [],
+      "source-credit": "",
+      "begin": null,
+      "type": "discogs",
+      "attribute-ids": {},
+      "target-type": "url",
+      "url": {
+        "resource": "https://www.discogs.com/artist/5973894",
+        "id": "eab50095-5152-4f3b-9e72-ad27b9a4238b"
+      },
+      "attribute-values": {},
+      "ended": false,
+      "type-id": "04a5b104-a4c2-4bac-99a1-7b837c37d9e4",
+      "target-credit": "",
+      "direction": "forward"
+    }
+  ],
+  "life-span": {
+    "begin": null,
+    "end": null,
+    "ended": false
+  },
+  "gender-id": null,
+  "type": null,
+  "ipis": [],
+  "sort-name": "Hausfrauen, Die"
+}
