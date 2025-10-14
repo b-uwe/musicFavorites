@@ -7,20 +7,26 @@ const artistService = require( '../../services/artistService' );
 const database = require( '../../services/database' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
+const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
 const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
+const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
+const fixtureBandsintownVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 jest.mock( '../../services/database' );
 jest.mock( '../../services/musicbrainz' );
+jest.mock( '../../services/ldJsonExtractor' );
 
 describe( 'Artist Service', () => {
   let transformedJungleRot;
   let transformedTheKinks;
+  let transformedVulvodynia;
 
   beforeEach( () => {
     jest.clearAllMocks();
     transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
     transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
   } );
 
   describe( 'getArtist - cache hit', () => {
@@ -64,7 +70,10 @@ describe( 'Artist Service', () => {
 
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedTheKinks );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( {
+        ...transformedTheKinks,
+        'events': []
+      } );
 
       // Result should have musicbrainzId (API format), not _id
       expect( result.musicbrainzId ).toBe( transformedTheKinks._id );
@@ -76,11 +85,12 @@ describe( 'Artist Service', () => {
      * Test that caching happens asynchronously (fire-and-forget)
      */
     test( 'returns data immediately without waiting for cache operation', async () => {
-      const artistId = transformedJungleRot._id;
+      const artistId = transformedVulvodynia._id;
       let cacheResolved = false;
 
       database.getArtistFromCache.mockResolvedValue( null );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockImplementation( async () => {
         await new Promise( ( resolve ) => {
           setTimeout( () => {
@@ -93,29 +103,30 @@ describe( 'Artist Service', () => {
       const result = await artistService.getArtist( artistId );
 
       // Result should have musicbrainzId (API format), not _id
-      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result.musicbrainzId ).toBe( transformedVulvodynia._id );
       expect( result._id ).toBeUndefined();
-      expect( result.name ).toBe( transformedJungleRot.name );
+      expect( result.name ).toBe( transformedVulvodynia.name );
       expect( cacheResolved ).toBe( false );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+      expect( database.cacheArtist ).toHaveBeenCalled();
     } );
 
     /**
      * Test that cache errors don't affect the response
      */
     test( 'returns data even if caching fails', async () => {
-      const artistId = transformedJungleRot._id;
+      const artistId = transformedVulvodynia._id;
       database.getArtistFromCache.mockResolvedValue( null );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
       const result = await artistService.getArtist( artistId );
 
       // Result should have musicbrainzId (API format), not _id
-      expect( result.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( result.musicbrainzId ).toBe( transformedVulvodynia._id );
       expect( result._id ).toBeUndefined();
-      expect( result.name ).toBe( transformedJungleRot.name );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( transformedJungleRot );
+      expect( result.name ).toBe( transformedVulvodynia.name );
+      expect( database.cacheArtist ).toHaveBeenCalled();
     } );
   } );
 
@@ -136,7 +147,7 @@ describe( 'Artist Service', () => {
      * Test database error propagation - fail fast to avoid hammering upstream
      */
     test( 'throws error when DB is down without calling MusicBrainz API', async () => {
-      const artistId = transformedJungleRot._id;
+      const artistId = transformedVulvodynia._id;
       database.getArtistFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
 
       await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'Database connection lost' );
@@ -161,41 +172,42 @@ describe( 'Artist Service', () => {
      * Test the scenario you mentioned: first call misses cache, second call hits cache
      */
     test( 'first call fetches from API, second call returns from cache', async () => {
-      const artistId = transformedJungleRot._id;
+      const artistId = transformedVulvodynia._id;
 
       // First call - cache miss
       database.getArtistFromCache.mockResolvedValueOnce( null );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureJungleRot );
+      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValueOnce( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockResolvedValueOnce();
 
       const firstResult = await artistService.getArtist( artistId );
 
       // First result should have musicbrainzId (API format), not _id
-      expect( firstResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( firstResult.musicbrainzId ).toBe( transformedVulvodynia._id );
       expect( firstResult._id ).toBeUndefined();
-      expect( firstResult.name ).toBe( transformedJungleRot.name );
+      expect( firstResult.name ).toBe( transformedVulvodynia.name );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
       expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
 
       // Second call - cache hit (getArtistFromCache already returns musicbrainzId format)
       const cachedData = {
-        'musicbrainzId': transformedJungleRot._id,
-        'name': transformedJungleRot.name,
-        'country': transformedJungleRot.country,
-        'region': transformedJungleRot.region,
-        'disambiguation': transformedJungleRot.disambiguation,
-        'status': transformedJungleRot.status,
-        'relations': transformedJungleRot.relations
+        'musicbrainzId': transformedVulvodynia._id,
+        'name': transformedVulvodynia.name,
+        'country': transformedVulvodynia.country,
+        'region': transformedVulvodynia.region,
+        'disambiguation': transformedVulvodynia.disambiguation,
+        'status': transformedVulvodynia.status,
+        'relations': transformedVulvodynia.relations
       };
       database.getArtistFromCache.mockResolvedValueOnce( cachedData );
 
       const secondResult = await artistService.getArtist( artistId );
 
       // Second result should also have musicbrainzId (API format)
-      expect( secondResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( secondResult.musicbrainzId ).toBe( transformedVulvodynia._id );
       expect( secondResult._id ).toBeUndefined();
-      expect( secondResult.name ).toBe( transformedJungleRot.name );
+      expect( secondResult.name ).toBe( transformedVulvodynia.name );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 2 );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
       expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
@@ -207,20 +219,21 @@ describe( 'Artist Service', () => {
      * Test circuit breaker: after cache write fails, next call tests cache health
      */
     test( 'tests cache health on next call after cache write failure', async () => {
-      const artistId = transformedJungleRot._id;
+      const artistId = transformedVulvodynia._id;
 
       // First call - cache miss with write failure
       database.getArtistFromCache.mockResolvedValueOnce( null );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureJungleRot );
+      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValueOnce( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
 
       // Wait for promise rejection to be handled
       const firstResult = await artistService.getArtist( artistId );
 
       // First result should have musicbrainzId (API format), not _id
-      expect( firstResult.musicbrainzId ).toBe( transformedJungleRot._id );
+      expect( firstResult.musicbrainzId ).toBe( transformedVulvodynia._id );
       expect( firstResult._id ).toBeUndefined();
-      expect( firstResult.name ).toBe( transformedJungleRot.name );
+      expect( firstResult.name ).toBe( transformedVulvodynia.name );
 
       // Give the catch handler time to run
       await new Promise( ( resolve ) => {
@@ -234,6 +247,129 @@ describe( 'Artist Service', () => {
         rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       expect( database.testCacheHealth ).toHaveBeenCalledTimes( 1 );
       expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+
+  describe( 'getArtist - Bandsintown event extraction', () => {
+    /**
+     * Test that events are fetched and included when artist has Bandsintown URL
+     */
+    test( 'includes Bandsintown events when artist has bandsintown URL', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).
+        toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+      expect( result ).toHaveProperty( 'events' );
+      expect( Array.isArray( result.events ) ).toBe( true );
+      expect( result.events.length ).toBe( 4 );
+      expect( result.events[ 0 ] ).toHaveProperty( 'name' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'date' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'localTime' );
+      expect( result.events[ 0 ] ).toHaveProperty( 'location' );
+    } );
+
+    /**
+     * Test that empty events array is returned when artist has no Bandsintown URL
+     */
+    test( 'returns empty events when artist has no bandsintown URL', async () => {
+      const artistId = transformedTheKinks._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+      expect( result ).toHaveProperty( 'events' );
+      expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that events are returned even if Bandsintown fetch fails
+     */
+    test( 'returns empty events array if Bandsintown fetch fails', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+      expect( result ).toHaveProperty( 'events' );
+      expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that events are cached together with artist data
+     */
+    test( 'caches events together with artist data', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
+      database.cacheArtist.mockResolvedValue();
+
+      await artistService.getArtist( artistId );
+
+      // Wait for async cache operation
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      expect( database.cacheArtist ).toHaveBeenCalled();
+      const cachedData = database.cacheArtist.mock.calls[ 0 ][ 0 ];
+
+      expect( cachedData ).toHaveProperty( 'events' );
+      expect( Array.isArray( cachedData.events ) ).toBe( true );
+    } );
+
+    /**
+     * Test that cached data includes events
+     */
+    test( 'returns events from cache when artist is cached', async () => {
+      const artistId = transformedVulvodynia._id;
+      const cachedData = {
+        'musicbrainzId': transformedVulvodynia._id,
+        'name': transformedVulvodynia.name,
+        'country': transformedVulvodynia.country,
+        'region': transformedVulvodynia.region,
+        'disambiguation': transformedVulvodynia.disambiguation,
+        'status': transformedVulvodynia.status,
+        'relations': transformedVulvodynia.relations,
+        'events': [
+          {
+            'name': 'Vulvodynia @ O2 Academy Islington',
+            'date': '2025-11-25',
+            'localTime': '18:00:00',
+            'location': {
+              'address': 'N1 Centre 16 Parkfield St, N1 0PS, London, United Kingdom',
+              'geo': {
+                'lat': 51.5343501,
+                'lon': -0.1058837
+              }
+            }
+          }
+        ]
+      };
+
+      database.getArtistFromCache.mockResolvedValue( cachedData );
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+      expect( result.events ).toEqual( cachedData.events );
     } );
   } );
 } );

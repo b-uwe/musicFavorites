@@ -3,11 +3,29 @@
  * @module services/artistService
  */
 
+const bandsintownTransformer = require( './bandsintownTransformer' );
 const database = require( './database' );
+const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
 let cacheHealthy = true;
+
+/**
+ * Fetches Bandsintown events for an artist
+ * @param {object} artistData - Transformed artist data with relations
+ * @returns {Promise<Array>} Array of transformed events or empty array
+ */
+const fetchBandsintownEvents = async ( artistData ) => {
+  if ( !artistData.relations || !artistData.relations.bandsintown ) {
+    return [];
+  }
+
+  const bandsintownUrl = artistData.relations.bandsintown;
+  const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
+
+  return bandsintownTransformer.transformEvents( ldJsonData );
+};
 
 /**
  * Gets artist data with transparent caching
@@ -40,13 +58,21 @@ const getArtist = async ( artistId ) => {
   const mbData = await musicbrainzClient.fetchArtist( artistId );
   const transformedData = musicbrainzTransformer.transformArtistData( mbData );
 
+  // Fetch Bandsintown events if available
+  const events = await fetchBandsintownEvents( transformedData );
+
+  const dataWithEvents = {
+    ...transformedData,
+    events
+  };
+
   // Cache asynchronously (fire-and-forget) - don't wait for it
-  database.cacheArtist( transformedData ).catch( () => {
+  database.cacheArtist( dataWithEvents ).catch( () => {
     cacheHealthy = false;
   } );
 
   // Map _id to musicbrainzId for API response
-  const { _id, ...artistData } = transformedData;
+  const { _id, ...artistData } = dataWithEvents;
 
   return {
     'musicbrainzId': _id,
