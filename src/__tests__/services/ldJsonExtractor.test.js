@@ -58,21 +58,7 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'skips malformed JSON and continues with valid blocks', () => {
-      const html = `
-        <html>
-          <head>
-            <script type="application/ld+json">
-              {"@type": "Person", "name": "Valid"}
-            </script>
-            <script type="application/ld+json">
-              {invalid json here}
-            </script>
-            <script type="application/ld+json">
-              {"@type": "Organization", "name": "Also Valid"}
-            </script>
-          </head>
-        </html>
-      `;
+      const html = loadFixture( 'malformed-json.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
@@ -88,7 +74,7 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'handles HTML with no script tags', () => {
-      const html = '<html><body>Just text</body></html>';
+      const html = loadFixture( 'no-script-tags.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
@@ -96,7 +82,7 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     test( 'handles empty HTML string', () => {
-      const html = '';
+      const html = loadFixture( 'empty.html' );
 
       const result = ldJsonExtractor.extractLdJson( html );
 
