@@ -137,7 +137,7 @@ describe( 'LD+JSON Extractor', () => {
       const result = ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( expected );
-      expect( result ).toHaveLength( 3 );
+      expect( result ).toHaveLength( 25 );
     } );
 
     test( 'extracts from real Festivals United HTML', () => {

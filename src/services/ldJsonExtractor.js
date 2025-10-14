@@ -27,7 +27,12 @@ const extractLdJson = ( html ) => {
       if ( jsonText ) {
         const parsed = JSON.parse( jsonText );
 
-        ldJsonBlocks.push( parsed );
+        // If parsed is an array, add each element separately (flatten)
+        if ( Array.isArray( parsed ) ) {
+          ldJsonBlocks.push( ...parsed );
+        } else {
+          ldJsonBlocks.push( parsed );
+        }
       }
     } catch ( error ) {
       // Silently skip malformed JSON blocks

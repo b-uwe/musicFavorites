@@ -1,182 +1,180 @@
 [
-  [
-    {
-      "@context": "http://schema.org",
-      "@type": "MusicEvent",
-      "name": "Vulvodynia @ O2 Academy Islington",
-      "startDate": "2025-11-25T18:00:00",
-      "endDate": "2025-11-25",
+  {
+    "@context": "http://schema.org",
+    "@type": "MusicEvent",
+    "name": "Vulvodynia @ O2 Academy Islington",
+    "startDate": "2025-11-25T18:00:00",
+    "endDate": "2025-11-25",
+    "url": "https://www.bandsintown.com/e/1036117971-vulvodynia-at-o2-academy-islington?came_from=209",
+    "location": {
+      "@type": "Place",
+      "name": "O2 Academy Islington",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "United Kingdom",
+        "addressRegion": "",
+        "addressLocality": "London",
+        "streetAddress": "N1 Centre 16 Parkfield St",
+        "postalCode": "N1 0PS"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 51.5343501,
+        "longitude": -0.1058837
+      }
+    },
+    "performer": {
+      "@type": "PerformingGroup",
+      "name": "Vulvodynia"
+    },
+    "description": "Vulvodynia",
+    "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
+    "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "http://schema.org/EventScheduled",
+    "offers": {
+      "@type": "Offer",
       "url": "https://www.bandsintown.com/e/1036117971-vulvodynia-at-o2-academy-islington?came_from=209",
-      "location": {
-        "@type": "Place",
-        "name": "O2 Academy Islington",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "United Kingdom",
-          "addressRegion": "",
-          "addressLocality": "London",
-          "streetAddress": "N1 Centre 16 Parkfield St",
-          "postalCode": "N1 0PS"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 51.5343501,
-          "longitude": -0.1058837
-        }
-      },
-      "performer": {
-        "@type": "PerformingGroup",
-        "name": "Vulvodynia"
-      },
-      "description": "Vulvodynia",
-      "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
-      "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "http://schema.org/EventScheduled",
-      "offers": {
-        "@type": "Offer",
-        "url": "https://www.bandsintown.com/e/1036117971-vulvodynia-at-o2-academy-islington?came_from=209",
-        "availability": "https://schema.org/InStock",
-        "validFrom": "2025-07-30T19:24:48Z"
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Vulvodynia",
-        "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
-      }
+      "availability": "https://schema.org/InStock",
+      "validFrom": "2025-07-30T19:24:48Z"
     },
-    {
-      "@context": "http://schema.org",
-      "@type": "MusicEvent",
-      "name": "Vulvodynia @ Leeds University Stylus",
-      "startDate": "2025-11-28T17:30:00",
-      "endDate": "2025-11-28",
-      "url": "https://www.bandsintown.com/e/1035095196-vulvodynia-at-leeds-university-stylus?came_from=209",
-      "location": {
-        "@type": "Place",
-        "name": "Leeds University Stylus",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "United Kingdom",
-          "addressRegion": "",
-          "addressLocality": "Leeds",
-          "streetAddress": "Leeds University Union,, Lifton Pl",
-          "postalCode": "LS2 9JT"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 53.79648,
-          "longitude": -1.54785
-        }
-      },
-      "performer": {
-        "@type": "PerformingGroup",
-        "name": "Vulvodynia"
-      },
-      "description": "Vulvodynia",
-      "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
-      "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "http://schema.org/EventScheduled",
-      "offers": {
-        "@type": "Offer",
-        "url": "https://www.bandsintown.com/e/1035095196-vulvodynia-at-leeds-university-stylus?came_from=209",
-        "availability": "https://schema.org/InStock",
-        "validFrom": "2025-04-25T09:07:54Z"
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Vulvodynia",
-        "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "MusicEvent",
-      "name": "Vulvodynia @ Legend Club",
-      "startDate": "2025-12-03T20:00:00",
-      "endDate": "2025-12-03",
-      "url": "https://www.bandsintown.com/e/1035081270-vulvodynia-at-legend-club?came_from=209",
-      "location": {
-        "@type": "Place",
-        "name": "Legend Club",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "Italy",
-          "addressRegion": "",
-          "addressLocality": "Milano",
-          "streetAddress": "Viale Enrico Fermi",
-          "postalCode": "20161"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 45.516177,
-          "longitude": 9.1795117
-        }
-      },
-      "performer": {
-        "@type": "PerformingGroup",
-        "name": "Vulvodynia"
-      },
-      "description": "Vulvodynia",
-      "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
-      "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "http://schema.org/EventScheduled",
-      "offers": {
-        "@type": "Offer",
-        "url": "https://www.bandsintown.com/e/1035081270-vulvodynia-at-legend-club?came_from=209",
-        "availability": "https://schema.org/InStock",
-        "validFrom": "2025-04-24T13:57:57Z"
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Vulvodynia",
-        "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "MusicEvent",
-      "name": "Vulvodynia @ Rock Café",
-      "startDate": "2025-12-07T19:00:00",
-      "endDate": "2025-12-07",
-      "url": "https://www.bandsintown.com/e/1035107455-vulvodynia-at-rock-cafe?came_from=209",
-      "location": {
-        "@type": "Place",
-        "name": "Rock Café",
-        "address": {
-          "@type": "PostalAddress",
-          "addressCountry": "Czech Republic",
-          "addressRegion": "",
-          "addressLocality": "Praha 1",
-          "streetAddress": "Národní 20",
-          "postalCode": "11000"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 50.08201099999999,
-          "longitude": 14.418418
-        }
-      },
-      "performer": {
-        "@type": "PerformingGroup",
-        "name": "Vulvodynia"
-      },
-      "description": "Vulvodynia",
-      "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
-      "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
-      "eventStatus": "http://schema.org/EventScheduled",
-      "offers": {
-        "@type": "Offer",
-        "url": "https://www.bandsintown.com/e/1035107455-vulvodynia-at-rock-cafe?came_from=209",
-        "availability": "https://schema.org/InStock",
-        "validFrom": "2025-04-26T10:23:25Z"
-      },
-      "organizer": {
-        "@type": "Organization",
-        "name": "Vulvodynia",
-        "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
-      }
+    "organizer": {
+      "@type": "Organization",
+      "name": "Vulvodynia",
+      "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
     }
-  ],
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "MusicEvent",
+    "name": "Vulvodynia @ Leeds University Stylus",
+    "startDate": "2025-11-28T17:30:00",
+    "endDate": "2025-11-28",
+    "url": "https://www.bandsintown.com/e/1035095196-vulvodynia-at-leeds-university-stylus?came_from=209",
+    "location": {
+      "@type": "Place",
+      "name": "Leeds University Stylus",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "United Kingdom",
+        "addressRegion": "",
+        "addressLocality": "Leeds",
+        "streetAddress": "Leeds University Union,, Lifton Pl",
+        "postalCode": "LS2 9JT"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 53.79648,
+        "longitude": -1.54785
+      }
+    },
+    "performer": {
+      "@type": "PerformingGroup",
+      "name": "Vulvodynia"
+    },
+    "description": "Vulvodynia",
+    "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
+    "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "http://schema.org/EventScheduled",
+    "offers": {
+      "@type": "Offer",
+      "url": "https://www.bandsintown.com/e/1035095196-vulvodynia-at-leeds-university-stylus?came_from=209",
+      "availability": "https://schema.org/InStock",
+      "validFrom": "2025-04-25T09:07:54Z"
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "Vulvodynia",
+      "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "MusicEvent",
+    "name": "Vulvodynia @ Legend Club",
+    "startDate": "2025-12-03T20:00:00",
+    "endDate": "2025-12-03",
+    "url": "https://www.bandsintown.com/e/1035081270-vulvodynia-at-legend-club?came_from=209",
+    "location": {
+      "@type": "Place",
+      "name": "Legend Club",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Italy",
+        "addressRegion": "",
+        "addressLocality": "Milano",
+        "streetAddress": "Viale Enrico Fermi",
+        "postalCode": "20161"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 45.516177,
+        "longitude": 9.1795117
+      }
+    },
+    "performer": {
+      "@type": "PerformingGroup",
+      "name": "Vulvodynia"
+    },
+    "description": "Vulvodynia",
+    "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
+    "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "http://schema.org/EventScheduled",
+    "offers": {
+      "@type": "Offer",
+      "url": "https://www.bandsintown.com/e/1035081270-vulvodynia-at-legend-club?came_from=209",
+      "availability": "https://schema.org/InStock",
+      "validFrom": "2025-04-24T13:57:57Z"
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "Vulvodynia",
+      "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "MusicEvent",
+    "name": "Vulvodynia @ Rock Café",
+    "startDate": "2025-12-07T19:00:00",
+    "endDate": "2025-12-07",
+    "url": "https://www.bandsintown.com/e/1035107455-vulvodynia-at-rock-cafe?came_from=209",
+    "location": {
+      "@type": "Place",
+      "name": "Rock Café",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "Czech Republic",
+        "addressRegion": "",
+        "addressLocality": "Praha 1",
+        "streetAddress": "Národní 20",
+        "postalCode": "11000"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 50.08201099999999,
+        "longitude": 14.418418
+      }
+    },
+    "performer": {
+      "@type": "PerformingGroup",
+      "name": "Vulvodynia"
+    },
+    "description": "Vulvodynia",
+    "image": "https://photos.bandsintown.com/thumb/11258982.jpeg",
+    "eventAttendanceMode": "http://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "http://schema.org/EventScheduled",
+    "offers": {
+      "@type": "Offer",
+      "url": "https://www.bandsintown.com/e/1035107455-vulvodynia-at-rock-cafe?came_from=209",
+      "availability": "https://schema.org/InStock",
+      "validFrom": "2025-04-26T10:23:25Z"
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": "Vulvodynia",
+      "url": "https://www.bandsintown.com/a/6461184-vulvodynia?came_from=209"
+    }
+  },
   {
     "@context": "http://schema.org",
     "@type": "MusicGroup",
@@ -201,786 +199,784 @@
     "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
     "interactionCount": "40562 Followers"
   },
-  [
-    {
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
       "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
       },
-      "reviewBody": "Everyone was amazing!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
         "@type": "Person",
-        "name": "Drew"
-      }
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
     },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Vulvodynia one of the best deathcore bands out there!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 4.5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Lucki"
-      }
+    "reviewBody": "Everyone was amazing!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
     },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Great concert! Happy birthday Chris from Vulvodynia!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Stacey"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "What a bunch of super dope guys. So cool and grateful to play for us. Vicious vocals and powerful music.",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Dork Party"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Everyone was amazing!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "drew"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Venue is awesome, great place to see show. As much as I love Vulvodynia, they are not that great live. The drummer really struggles. The new vocalist did fine, it just could have been a lot better. Still love em tho and hope all the best in their future.",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 3.5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Mitchell"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Seems, it was good. Lukas killed it. 😉",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "ɖҽνɪʟɪη"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Absolutely cool dudes",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Driver"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Fantastic gig with VULVODYNIA & support the venue is one of my favourites visit quite often when there are heavy metal bands on this time was my birthday & it was awesome",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Amanda"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Excellent lineup, 4 great bands and nice atmosphere throughout the evening",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 3.5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "David"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Was awesome the concert, Dulcan has a great energy singing. They are humble personally too, really cool guys!! 🤘",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Danilo"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Awesome show! Down to earth group of guys too.",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Dan"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "This one was a banger if u missed it u lost out on sime good vibes and energy...not to mention the wild ass pit",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Lex"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Put on one of if not the best metal show experiences I've ever seen I hope they get to tour the states again because this is a show that you don't want to miss I promise!!!!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Brettley"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "It was amazing seeing them live with upon a Burning Body and Signs of the Swarm and decayer and Titvn!!! It was unforgettable!!",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Evan"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Was awesome the concert, Dulcan has a great energy singing. They are humble personally too, really cool guys!! 🤘",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Danilo"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Such a great band to see live! And very cool to meet the singer afterwards to buy merch 🤘🏻 10/10 highly recommend",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Sarah"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "It was at night I’ll never forget",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "10/10"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Vulvodoynia scumfuck cognitive fucking killed it favorite concert I've seen the bands deserved a way bigger more brutal audience",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Michael"
-      }
-    },
-    {
-      "@context": "http://schema.org",
-      "@type": "Review",
-      "itemReviewed": {
-        "@context": "http://schema.org",
-        "@type": "MusicGroup",
-        "name": "Vulvodynia",
-        "location": {
-          "@type": "Place",
-          "name": "Johannesburg, South Africa"
-        },
-        "genre": "Beatdown",
-        "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
-        "employees": {
-          "@type": "Person",
-          "name": [
-            "Lwandile Prusent",
-            "Chris Van Der Walt",
-            "Thomas Hughes",
-            "Kris Xenopoulos",
-            "Duncan Bentley",
-            "Luke Haarhoff"
-          ]
-        },
-        "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
-        "interactionCount": "40562 Followers"
-      },
-      "reviewBody": "Top 3 shows I’ve ever been too",
-      "reviewRating": {
-        "@type": "Rating",
-        "bestRating": 5,
-        "ratingValue": 5,
-        "worstRating": 1
-      },
-      "author": {
-        "@type": "Person",
-        "name": "Tim"
-      }
+    "author": {
+      "@type": "Person",
+      "name": "Drew"
     }
-  ]
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Vulvodynia one of the best deathcore bands out there!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 4.5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Lucki"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Great concert! Happy birthday Chris from Vulvodynia!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Stacey"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "What a bunch of super dope guys. So cool and grateful to play for us. Vicious vocals and powerful music.",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Dork Party"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Everyone was amazing!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "drew"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Venue is awesome, great place to see show. As much as I love Vulvodynia, they are not that great live. The drummer really struggles. The new vocalist did fine, it just could have been a lot better. Still love em tho and hope all the best in their future.",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 3.5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Mitchell"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Seems, it was good. Lukas killed it. 😉",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "ɖҽνɪʟɪη"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Absolutely cool dudes",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Driver"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Fantastic gig with VULVODYNIA & support the venue is one of my favourites visit quite often when there are heavy metal bands on this time was my birthday & it was awesome",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Amanda"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Excellent lineup, 4 great bands and nice atmosphere throughout the evening",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 3.5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "David"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Was awesome the concert, Dulcan has a great energy singing. They are humble personally too, really cool guys!! 🤘",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Danilo"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Awesome show! Down to earth group of guys too.",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Dan"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "This one was a banger if u missed it u lost out on sime good vibes and energy...not to mention the wild ass pit",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Lex"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Put on one of if not the best metal show experiences I've ever seen I hope they get to tour the states again because this is a show that you don't want to miss I promise!!!!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Brettley"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "It was amazing seeing them live with upon a Burning Body and Signs of the Swarm and decayer and Titvn!!! It was unforgettable!!",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Evan"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Was awesome the concert, Dulcan has a great energy singing. They are humble personally too, really cool guys!! 🤘",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Danilo"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Such a great band to see live! And very cool to meet the singer afterwards to buy merch 🤘🏻 10/10 highly recommend",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Sarah"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "It was at night I’ll never forget",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "10/10"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Vulvodoynia scumfuck cognitive fucking killed it favorite concert I've seen the bands deserved a way bigger more brutal audience",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Michael"
+    }
+  },
+  {
+    "@context": "http://schema.org",
+    "@type": "Review",
+    "itemReviewed": {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Vulvodynia",
+      "location": {
+        "@type": "Place",
+        "name": "Johannesburg, South Africa"
+      },
+      "genre": "Beatdown",
+      "sameAs": "https://www.shazam.com/artist/-/1032991537?utm_source=bandsintown",
+      "employees": {
+        "@type": "Person",
+        "name": [
+          "Lwandile Prusent",
+          "Chris Van Der Walt",
+          "Thomas Hughes",
+          "Kris Xenopoulos",
+          "Duncan Bentley",
+          "Luke Haarhoff"
+        ]
+      },
+      "description": "Looking in a medical textbook will tell you the following: Vulvodynia is a chronic, severe vaginal pain with no identifiable cause. While the severe part is dead-on, what a medical textbook won’t tell you is that Vulvodynia is also the pioneer in what is rapidly becoming South Africa‟s most eviscerating export.\nSlamming Brutal Death Metal. With lobotomizing, lurid riffs, skinshredding blast beats and slams gruesome and filthy enough to induce septic shock, Vulvodynia are a lethal plague, spreading throughout the flesh of today‟s heavy music scene—infecting one set of ears at a time, and leaving no survivors.\n\nSpawned in 2014 by Vocalist Duncan Bentley and Guitarist Luke Haarhoff, Vulvodynia is a South African slam juggernaut designed with one purpose: to make the craziest, most absurdly heavy music possible, while attempting to define themselves as more than just “another slam band.” If their mission was over-the-top heaviness, then consider it accomplished—from their debut release, \nLord of Plagues, Vulvodynia‟s penchant for skull-splitting technicality and eviscerating heaviness has been obvious.\n\nRapidly gaining popularity and recognition for their prodigal slam \nprowess, Lord of Plagues saw the band reach ears not just in their local scene, but around the world as well. As the band‟s popularity grew, their sound matured, drawing more from a greater array of influences and improving their musicianship and dynamic.\nIn August 2014 the band signed a two-album contract with Australian Label „Vicious Instinct Records‟ and added producer Byron Dunwoody in as the second guitarist, in October of 2014, the band released their debut full-length \nalbum, Cognizant Castigation. If 2014 was the year the band finally grew into their potential, 2015 was the year they shattered their own mold, evolving into an even more aggressive and creative display of no-holds-barred heaviness. The band released a lengthy-but-lurid eight track EP titled Finis Omnium Ignoratium, completing their contract with Vicious Instinct Records. \n\nNo longer satisfied with their status as a terrifying trio, the band sought to expand—searching South Africa for more like-minded musicians willing to bring forth brutality. \nVulvodynia‟s search was not in vain as they found Drummer Thomas Hughes (Fuzigish), Guitarist Kris Xenopoulos \n(Technopath), Bassist Chris Van Der Walt (Boargazm) & Lwandile Prusent to join the band. \n\nWith a full-fledged line-up confirmed, the band made \ntheir first moves with a signing to the legendary Czech-based label Lacerated Enemy Records. After signing to LE Records the band released their third studio album „Psychosadistic Design‟ along with their debut music video for the song „Flesh Tailor‟, The band then embarked on their first EU Tour in 2017 and went abroad twice more for Deathfeast Open Air (DE) & Fall In The Brawl (UK).In 2018 The band embarked on 2 tours through Europe as well as performed at Obscene Extreme Open Air. 2019 saw the band release their 4th studio album ‘Mob Justice’ which sent them touring the US and Australia/New Zealand for the first time as well as 2 Europe tours and a massive festival run.-- proof that there is no way to predict just how far or how fast Vulvodynia‟s sinister infection will spread.",
+      "interactionCount": "40562 Followers"
+    },
+    "reviewBody": "Top 3 shows I’ve ever been too",
+    "reviewRating": {
+      "@type": "Rating",
+      "bestRating": 5,
+      "ratingValue": 5,
+      "worstRating": 1
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Tim"
+    }
+  }
 ]
