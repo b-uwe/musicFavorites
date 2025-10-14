@@ -1,239 +1,257 @@
 {
-  "life-span": {
-    "end": null,
-    "begin": "1999-02",
-    "ended": false
-  },
-  "id": "1e51125d-6e05-47f7-94f7-f4390823f963",
-  "end-area": null,
-  "type-id": "e431f5f6-b5d2-343d-8b36-72607fffb74b",
-  "sort-name": "Six Reasons to Kill",
-  "name": "Six Reasons to Kill",
-  "disambiguation": "German metal band",
-  "relations": [
-    {
-      "type": "discogs",
-      "attributes": [],
-      "source-credit": "",
-      "target-credit": "",
-      "end": null,
-      "type-id": "04a5b104-a4c2-4bac-99a1-7b837c37d9e4",
-      "direction": "forward",
-      "attribute-values": {},
-      "attribute-ids": {},
-      "url": {
-        "resource": "https://www.discogs.com/artist/575965",
-        "id": "1442aa70-e5b9-4dce-baeb-a89589ffa2e8"
-      },
-      "begin": null,
-      "ended": false,
-      "target-type": "url"
+    "area": {
+        "name": "Germany",
+        "type": null,
+        "sort-name": "Germany",
+        "type-id": null,
+        "id": "85752fda-13c4-31a3-bee5-0e5cb1f51dad",
+        "iso-3166-1-codes": [
+            "DE"
+        ],
+        "disambiguation": ""
     },
-    {
-      "type": "myspace",
-      "attributes": [],
-      "source-credit": "",
-      "type-id": "bac47923-ecde-4b59-822e-d08f0cd10156",
-      "target-credit": "",
-      "end": null,
-      "attribute-ids": {},
-      "attribute-values": {},
-      "direction": "forward",
-      "ended": false,
-      "begin": null,
-      "url": {
-        "resource": "https://myspace.com/sixreasonstokill",
-        "id": "1525a68f-2068-46ba-b7b9-88d2a8282acb"
-      },
-      "target-type": "url"
+    "aliases": [],
+    "relations": [
+        {
+            "source-credit": "",
+            "attributes": [],
+            "type": "bandsintown",
+            "target-type": "url",
+            "url": {
+                "id": "37d7d2f8-5fb2-449e-97ec-eb3f416f3b19",
+                "resource": "https://www.bandsintown.com/a/63068"
+            },
+            "begin": null,
+            "ended": false,
+            "direction": "forward",
+            "attribute-values": {},
+            "attribute-ids": {},
+            "end": null,
+            "target-credit": "",
+            "type-id": "ea45ed3d-2d5e-456e-8c32-94b6f51426e2"
+        },
+        {
+            "source-credit": "",
+            "attributes": [],
+            "type": "discogs",
+            "target-type": "url",
+            "url": {
+                "id": "1442aa70-e5b9-4dce-baeb-a89589ffa2e8",
+                "resource": "https://www.discogs.com/artist/575965"
+            },
+            "begin": null,
+            "ended": false,
+            "direction": "forward",
+            "attribute-ids": {},
+            "attribute-values": {},
+            "target-credit": "",
+            "end": null,
+            "type-id": "04a5b104-a4c2-4bac-99a1-7b837c37d9e4"
+        },
+        {
+            "type": "myspace",
+            "attributes": [],
+            "source-credit": "",
+            "end": null,
+            "target-credit": "",
+            "type-id": "bac47923-ecde-4b59-822e-d08f0cd10156",
+            "direction": "forward",
+            "attribute-ids": {},
+            "attribute-values": {},
+            "begin": null,
+            "url": {
+                "id": "1525a68f-2068-46ba-b7b9-88d2a8282acb",
+                "resource": "https://myspace.com/sixreasonstokill"
+            },
+            "ended": false,
+            "target-type": "url"
+        },
+        {
+            "begin": null,
+            "url": {
+                "id": "74cdc02a-03c4-431f-857c-5cbde22ddccd",
+                "resource": "http://www.sixreasonstokill.de/"
+            },
+            "ended": false,
+            "target-type": "url",
+            "end": null,
+            "target-credit": "",
+            "type-id": "fe33d22f-c3b0-4d68-bd53-a856badf2b15",
+            "direction": "forward",
+            "attribute-values": {},
+            "attribute-ids": {},
+            "attributes": [],
+            "source-credit": "",
+            "type": "official homepage"
+        },
+        {
+            "type": "other databases",
+            "attributes": [],
+            "source-credit": "",
+            "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+            "target-credit": "",
+            "end": null,
+            "attribute-values": {},
+            "attribute-ids": {},
+            "direction": "forward",
+            "ended": false,
+            "begin": null,
+            "url": {
+                "resource": "http://id.loc.gov/authorities/names/no2008004592",
+                "id": "247175cd-f1f9-4b44-93a5-e64811526cfd"
+            },
+            "target-type": "url"
+        },
+        {
+            "source-credit": "",
+            "attributes": [],
+            "type": "other databases",
+            "target-type": "url",
+            "ended": false,
+            "begin": null,
+            "url": {
+                "resource": "https://d-nb.info/gnd/16102297-2",
+                "id": "3993258b-5079-4e33-8807-0e3939790124"
+            },
+            "attribute-ids": {},
+            "attribute-values": {},
+            "direction": "forward",
+            "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+            "target-credit": "",
+            "end": null
+        },
+        {
+            "direction": "forward",
+            "attribute-values": {},
+            "attribute-ids": {},
+            "end": null,
+            "target-credit": "",
+            "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+            "target-type": "url",
+            "begin": null,
+            "url": {
+                "resource": "https://www.metal-archives.com/bands/Six_Reasons_to_Kill/16921",
+                "id": "95778bc9-2a76-49e0-81cf-96df88d69044"
+            },
+            "ended": false,
+            "type": "other databases",
+            "source-credit": "",
+            "attributes": []
+        },
+        {
+            "type": "other databases",
+            "source-credit": "",
+            "attributes": [],
+            "attribute-values": {},
+            "attribute-ids": {},
+            "direction": "forward",
+            "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+            "end": null,
+            "target-credit": "",
+            "target-type": "url",
+            "ended": false,
+            "url": {
+                "resource": "https://www.worldcat.org/identities/lccn-no2008004592",
+                "id": "3165440d-19df-4fb5-aa79-abbdcbf1be81"
+            },
+            "begin": null
+        },
+        {
+            "target-type": "url",
+            "ended": false,
+            "begin": null,
+            "url": {
+                "resource": "http://www.musik-sammler.de/artist/9418",
+                "id": "734fb9b0-5944-42ef-ba0b-4c88b7a91acc"
+            },
+            "attribute-values": {},
+            "attribute-ids": {},
+            "direction": "forward",
+            "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
+            "target-credit": "",
+            "end": null,
+            "source-credit": "",
+            "attributes": [],
+            "type": "other databases"
+        },
+        {
+            "type": "songkick",
+            "source-credit": "",
+            "attributes": [],
+            "attribute-values": {},
+            "attribute-ids": {},
+            "direction": "forward",
+            "type-id": "aac9c4bc-a5b9-30b8-9839-e3ac314c6e58",
+            "end": null,
+            "target-credit": "",
+            "target-type": "url",
+            "ended": false,
+            "begin": null,
+            "url": {
+                "id": "d80fed4f-4fda-4f07-adaa-ac459f407e51",
+                "resource": "https://www.songkick.com/artists/113120"
+            }
+        },
+        {
+            "target-type": "url",
+            "ended": false,
+            "url": {
+                "resource": "http://viaf.org/viaf/134076907",
+                "id": "21d8ebd7-264d-4496-b03f-3a1887051946"
+            },
+            "begin": null,
+            "attribute-ids": {},
+            "attribute-values": {},
+            "direction": "forward",
+            "type-id": "e8571dcc-35d4-4e91-a577-a3382fd84460",
+            "target-credit": "",
+            "end": null,
+            "source-credit": "",
+            "attributes": [],
+            "type": "VIAF"
+        },
+        {
+            "type": "wikidata",
+            "attributes": [],
+            "source-credit": "",
+            "end": null,
+            "target-credit": "",
+            "type-id": "689870a4-a1e4-4912-b17f-7b2664215698",
+            "direction": "forward",
+            "attribute-values": {},
+            "attribute-ids": {},
+            "begin": null,
+            "url": {
+                "resource": "https://www.wikidata.org/wiki/Q1391120",
+                "id": "b8eb8a84-d566-4511-9063-3948b975b6da"
+            },
+            "ended": false,
+            "target-type": "url"
+        }
+    ],
+    "begin-area": {
+        "disambiguation": "",
+        "type-id": null,
+        "name": "Koblenz",
+        "type": null,
+        "sort-name": "Koblenz",
+        "id": "94ff83eb-5039-4883-b9ab-cfaba7bc133d"
     },
-    {
-      "ended": false,
-      "begin": null,
-      "url": {
-        "id": "74cdc02a-03c4-431f-857c-5cbde22ddccd",
-        "resource": "http://www.sixreasonstokill.de/"
-      },
-      "target-type": "url",
-      "type-id": "fe33d22f-c3b0-4d68-bd53-a856badf2b15",
-      "target-credit": "",
-      "end": null,
-      "attribute-ids": {},
-      "attribute-values": {},
-      "direction": "forward",
-      "attributes": [],
-      "source-credit": "",
-      "type": "official homepage"
+    "type": "Group",
+    "ipis": [],
+    "isnis": [],
+    "gender": null,
+    "country": "DE",
+    "gender-id": null,
+    "disambiguation": "German metal band",
+    "type-id": "e431f5f6-b5d2-343d-8b36-72607fffb74b",
+    "end-area": null,
+    "name": "Six Reasons to Kill",
+    "sort-name": "Six Reasons to Kill",
+    "life-span": {
+        "ended": false,
+        "end": null,
+        "begin": "1999-02"
     },
-    {
-      "attribute-ids": {},
-      "attribute-values": {},
-      "direction": "forward",
-      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
-      "target-credit": "",
-      "end": null,
-      "target-type": "url",
-      "ended": false,
-      "url": {
-        "id": "247175cd-f1f9-4b44-93a5-e64811526cfd",
-        "resource": "http://id.loc.gov/authorities/names/no2008004592"
-      },
-      "begin": null,
-      "type": "other databases",
-      "source-credit": "",
-      "attributes": []
-    },
-    {
-      "url": {
-        "id": "3993258b-5079-4e33-8807-0e3939790124",
-        "resource": "https://d-nb.info/gnd/16102297-2"
-      },
-      "begin": null,
-      "ended": false,
-      "target-type": "url",
-      "target-credit": "",
-      "end": null,
-      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
-      "direction": "forward",
-      "attribute-ids": {},
-      "attribute-values": {},
-      "attributes": [],
-      "source-credit": "",
-      "type": "other databases"
-    },
-    {
-      "attributes": [],
-      "source-credit": "",
-      "type": "other databases",
-      "ended": false,
-      "begin": null,
-      "url": {
-        "id": "95778bc9-2a76-49e0-81cf-96df88d69044",
-        "resource": "https://www.metal-archives.com/bands/Six_Reasons_to_Kill/16921"
-      },
-      "target-type": "url",
-      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
-      "end": null,
-      "target-credit": "",
-      "attribute-ids": {},
-      "attribute-values": {},
-      "direction": "forward"
-    },
-    {
-      "type": "other databases",
-      "attributes": [],
-      "source-credit": "",
-      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
-      "end": null,
-      "target-credit": "",
-      "attribute-values": {},
-      "attribute-ids": {},
-      "direction": "forward",
-      "ended": false,
-      "begin": null,
-      "url": {
-        "id": "3165440d-19df-4fb5-aa79-abbdcbf1be81",
-        "resource": "https://www.worldcat.org/identities/lccn-no2008004592"
-      },
-      "target-type": "url"
-    },
-    {
-      "type": "other databases",
-      "source-credit": "",
-      "attributes": [],
-      "attribute-values": {},
-      "attribute-ids": {},
-      "direction": "forward",
-      "type-id": "d94fb61c-fa20-4e3c-a19a-71a949fb2c55",
-      "end": null,
-      "target-credit": "",
-      "target-type": "url",
-      "ended": false,
-      "begin": null,
-      "url": {
-        "resource": "http://www.musik-sammler.de/artist/9418",
-        "id": "734fb9b0-5944-42ef-ba0b-4c88b7a91acc"
-      }
-    },
-    {
-      "source-credit": "",
-      "attributes": [],
-      "type": "songkick",
-      "target-type": "url",
-      "begin": null,
-      "url": {
-        "resource": "https://www.songkick.com/artists/113120",
-        "id": "d80fed4f-4fda-4f07-adaa-ac459f407e51"
-      },
-      "ended": false,
-      "direction": "forward",
-      "attribute-values": {},
-      "attribute-ids": {},
-      "end": null,
-      "target-credit": "",
-      "type-id": "aac9c4bc-a5b9-30b8-9839-e3ac314c6e58"
-    },
-    {
-      "source-credit": "",
-      "attributes": [],
-      "type": "VIAF",
-      "target-type": "url",
-      "begin": null,
-      "url": {
-        "resource": "http://viaf.org/viaf/134076907",
-        "id": "21d8ebd7-264d-4496-b03f-3a1887051946"
-      },
-      "ended": false,
-      "direction": "forward",
-      "attribute-values": {},
-      "attribute-ids": {},
-      "target-credit": "",
-      "end": null,
-      "type-id": "e8571dcc-35d4-4e91-a577-a3382fd84460"
-    },
-    {
-      "target-type": "url",
-      "begin": null,
-      "url": {
-        "id": "b8eb8a84-d566-4511-9063-3948b975b6da",
-        "resource": "https://www.wikidata.org/wiki/Q1391120"
-      },
-      "ended": false,
-      "direction": "forward",
-      "attribute-values": {},
-      "attribute-ids": {},
-      "end": null,
-      "target-credit": "",
-      "type-id": "689870a4-a1e4-4912-b17f-7b2664215698",
-      "source-credit": "",
-      "attributes": [],
-      "type": "wikidata"
-    }
-  ],
-  "area": {
-    "type-id": null,
-    "name": "Germany",
-    "sort-name": "Germany",
-    "type": null,
-    "disambiguation": "",
-    "id": "85752fda-13c4-31a3-bee5-0e5cb1f51dad",
-    "iso-3166-1-codes": [
-      "DE"
-    ]
-  },
-  "aliases": [],
-  "type": "Group",
-  "begin-area": {
-    "disambiguation": "",
-    "type-id": null,
-    "sort-name": "Koblenz",
-    "type": null,
-    "name": "Koblenz",
-    "id": "94ff83eb-5039-4883-b9ab-cfaba7bc133d"
-  },
-  "gender-id": null,
-  "country": "DE",
-  "isnis": [],
-  "gender": null,
-  "ipis": []
+    "id": "1e51125d-6e05-47f7-94f7-f4390823f963"
 }
