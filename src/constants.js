@@ -1,0 +1,24 @@
+/**
+ * Application-wide constants
+ * @module constants
+ */
+
+const { version } = require( '../package.json' );
+
+/**
+ * User-Agent string for HTTP requests
+ * Identifies the application to external services
+ * @constant {string}
+ */
+const USER_AGENT = `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites)`;
+
+/**
+ * Default timeout for HTTP requests in milliseconds
+ * @constant {number}
+ */
+const HTTP_TIMEOUT = 5000;
+
+module.exports = {
+  USER_AGENT,
+  HTTP_TIMEOUT
+};
