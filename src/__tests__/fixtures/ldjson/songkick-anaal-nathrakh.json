@@ -1,0 +1,312 @@
+[
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicEvent",
+      "name": "Anaal Nathrakh @ Sportcampus Lange Munte",
+      "url": "https://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/events/42738717/huge_avatar?series_id=41521",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Kortrijk",
+          "addressCountry": "Belgium",
+          "streetAddress": "Bad Godesberglaan 22",
+          "postalCode": "8500"
+        },
+        "name": "Sportcampus Lange Munte",
+        "sameAs": null,
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 50.80754,
+          "longitude": 3.30117
+        }
+      },
+      "eventStatus": "https://schema.org/EventScheduled",
+      "startDate": "2026-08-06",
+      "endDate": "2026-08-09",
+      "performer": [
+        {
+          "@type": "MusicGroup",
+          "name": "Anaal Nathrakh",
+          "genre": [
+            "metal",
+            "rock"
+          ],
+          "sameAs": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat"
+        }
+      ],
+      "description": "Anaal Nathrakh at Sportcampus Lange Munte at 2026-08-06",
+      "organizer": {
+        "@type": "Organization",
+        "name": "Anaal Nathrakh",
+        "url": "https://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "url": "http://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicEvent",
+      "name": "Anaal Nathrakh @ Sportcampus Lange Munte",
+      "url": "https://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/events/42738717/huge_avatar?series_id=41521",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Kortrijk",
+          "addressCountry": "Belgium",
+          "streetAddress": "Bad Godesberglaan 22",
+          "postalCode": "8500"
+        },
+        "name": "Sportcampus Lange Munte",
+        "sameAs": null,
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 50.80754,
+          "longitude": 3.30117
+        }
+      },
+      "eventStatus": "https://schema.org/EventScheduled",
+      "startDate": "2026-08-06",
+      "endDate": "2026-08-09",
+      "performer": [
+        {
+          "@type": "MusicGroup",
+          "name": "Anaal Nathrakh",
+          "genre": [
+            "metal",
+            "rock"
+          ],
+          "sameAs": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat"
+        }
+      ],
+      "description": "Anaal Nathrakh at Sportcampus Lange Munte at 2026-08-06",
+      "organizer": {
+        "@type": "Organization",
+        "name": "Anaal Nathrakh",
+        "url": "https://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "url": "http://www.songkick.com/festivals/41521-alcatraz/id/42738717-alcatraz-festival-2026?utm_medium=organic&utm_source=microformat"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicEvent",
+      "name": "Anaal Nathrakh @ Refshaleøen",
+      "url": "https://www.songkick.com/festivals/49231-copenhell/id/42180957-copenhell-2025?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/events/42180957/huge_avatar?series_id=49231",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Copenhagen",
+          "addressCountry": "Denmark",
+          "streetAddress": "Refshalevej 177",
+          "postalCode": "1432"
+        },
+        "name": "Refshaleøen",
+        "sameAs": null,
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 55.69233,
+          "longitude": 12.61543
+        }
+      },
+      "eventStatus": "https://schema.org/EventScheduled",
+      "startDate": "2025-06-20",
+      "endDate": "2025-06-21",
+      "performer": [
+        {
+          "@type": "MusicGroup",
+          "name": "Anaal Nathrakh",
+          "genre": [
+            "metal",
+            "hip_hop",
+            "electronic",
+            "rock",
+            "funk_soul",
+            "indie_alternative",
+            "folk_blues",
+            "pop",
+            "country"
+          ],
+          "sameAs": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat"
+        }
+      ],
+      "description": "Anaal Nathrakh at Refshaleøen at 2025-06-20",
+      "organizer": {
+        "@type": "Organization",
+        "name": "Anaal Nathrakh",
+        "url": "https://www.songkick.com/festivals/49231-copenhell/id/42180957-copenhell-2025?utm_medium=organic&utm_source=microformat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "url": "http://www.songkick.com/festivals/49231-copenhell/id/42180957-copenhell-2025?utm_medium=organic&utm_source=microformat"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicEvent",
+      "name": "Anaal Nathrakh @ Donington Park",
+      "url": "https://www.songkick.com/festivals/1948-download/id/42015849-download-festival-2025?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/events/42015849/huge_avatar?series_id=1948",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Derby",
+          "addressCountry": "UK",
+          "streetAddress": "Castle Donington",
+          "postalCode": "DE74 2RP"
+        },
+        "name": "Donington Park",
+        "sameAs": null,
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 52.84502,
+          "longitude": -1.3373
+        }
+      },
+      "eventStatus": "https://schema.org/EventScheduled",
+      "startDate": "2025-06-13T23:59:00",
+      "endDate": "2025-06-15",
+      "performer": [
+        {
+          "@type": "MusicGroup",
+          "name": "Anaal Nathrakh",
+          "genre": [
+            "rock",
+            "pop",
+            "indie_alternative",
+            "metal",
+            "hip_hop",
+            "classical",
+            "folk_blues",
+            "electronic",
+            "comedy"
+          ],
+          "sameAs": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat"
+        }
+      ],
+      "description": "Anaal Nathrakh at Donington Park at 2025-06-13T23:59:00+0100",
+      "organizer": {
+        "@type": "Organization",
+        "name": "Anaal Nathrakh",
+        "url": "https://www.songkick.com/festivals/1948-download/id/42015849-download-festival-2025?utm_medium=organic&utm_source=microformat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "url": "http://www.songkick.com/festivals/1948-download/id/42015849-download-festival-2025?utm_medium=organic&utm_source=microformat"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicEvent",
+      "name": "Anaal Nathrakh @ Hellraiser-Leipzig",
+      "url": "https://www.songkick.com/concerts/42348833-anaal-nathrakh-at-hellraiserleipzig?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/artists/277414/huge_avatar",
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+      "location": {
+        "@type": "Place",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Leipzig",
+          "addressCountry": "Germany",
+          "streetAddress": "Werkstättenstr. 4",
+          "postalCode": "04319"
+        },
+        "name": "Hellraiser-Leipzig",
+        "sameAs": "http://www.hellraiser-leipzig.de/",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 51.34191,
+          "longitude": 12.46184
+        }
+      },
+      "eventStatus": "https://schema.org/EventScheduled",
+      "startDate": "2025-05-31",
+      "endDate": "2025-05-31",
+      "performer": [
+        {
+          "@type": "MusicGroup",
+          "name": "Anaal Nathrakh",
+          "genre": [
+            "metal"
+          ],
+          "sameAs": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat"
+        },
+        {
+          "@type": "MusicGroup",
+          "name": "Sulphur Aeon",
+          "genre": [
+            "metal"
+          ],
+          "sameAs": "https://www.songkick.com/artists/6170254-sulphur-aeon?utm_medium=organic&utm_source=microformat"
+        },
+        {
+          "@type": "MusicGroup",
+          "name": "Wormrot",
+          "genre": [
+            "metal"
+          ],
+          "sameAs": "https://www.songkick.com/artists/1638712-wormrot?utm_medium=organic&utm_source=microformat"
+        }
+      ],
+      "description": "Anaal Nathrakh at Hellraiser-Leipzig at 2025-05-31",
+      "organizer": {
+        "@type": "Organization",
+        "name": "Anaal Nathrakh",
+        "url": "https://www.songkick.com/concerts/42348833-anaal-nathrakh-at-hellraiserleipzig?utm_medium=organic&utm_source=microformat"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "url": "http://www.songkick.com/concerts/42348833-anaal-nathrakh-at-hellraiserleipzig?utm_medium=organic&utm_source=microformat"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "@context": "http://schema.org",
+      "@type": "MusicGroup",
+      "name": "Anaal Nathrakh",
+      "url": "https://www.songkick.com/artists/277414-anaal-nathrakh?utm_medium=organic&utm_source=microformat",
+      "image": "https://images.sk-static.com/images/media/profile_images/artists/277414/card_avatar",
+      "logo": "https://images.sk-static.com/images/media/profile_images/artists/277414/card_avatar",
+      "interactionCount": "22976 UserLikes",
+      "review": {
+        "@type": "Review",
+        "reviewBody": "Amazing show - tried to do an encore past curfew but sadly denied! Great live band behind them and the masterminds so courteous with photo-ops afterwards. Recommended if you like any kind of extreme metal.",
+        "author": "DrJACameron"
+      }
+    }
+  ]
+]

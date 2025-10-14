@@ -2,7 +2,20 @@
  * Tests for LD+JSON extractor service
  */
 
+const fs = require( 'fs' );
+const path = require( 'path' );
 const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
+
+/**
+ * Loads a fixture file
+ * @param {string} filename - The fixture filename
+ * @returns {string} File contents
+ */
+const loadFixture = ( filename ) => {
+  const fixturePath = path.join( __dirname, '../fixtures/ldjson', filename );
+
+  return fs.readFileSync( fixturePath, 'utf8' );
+};
 
 describe( 'LD+JSON Extractor', () => {
   describe( 'extractLdJson', () => {
@@ -116,19 +129,40 @@ describe( 'LD+JSON Extractor', () => {
 
       expect( result ).toEqual( [] );
     } );
+
+    test( 'extracts from real Bandsintown HTML', () => {
+      const html = loadFixture( 'bandsintown-artist-6461184.html' );
+      const expected = JSON.parse( loadFixture( 'bandsintown-artist-6461184.json' ) );
+
+      const result = ldJsonExtractor.extractLdJson( html );
+
+      expect( result ).toEqual( expected );
+      expect( result ).toHaveLength( 3 );
+    } );
+
+    test( 'extracts from real Festivals United HTML', () => {
+      const html = loadFixture( 'festivalsunited-alcatraz.html' );
+      const expected = JSON.parse( loadFixture( 'festivalsunited-alcatraz.json' ) );
+
+      const result = ldJsonExtractor.extractLdJson( html );
+
+      expect( result ).toEqual( expected );
+      expect( result ).toHaveLength( 1 );
+      expect( result[ 0 ][ '@type' ] ).toBe( 'Festival' );
+    } );
+
+    test( 'extracts from real Songkick HTML', () => {
+      const html = loadFixture( 'songkick-anaal-nathrakh.html' );
+      const expected = JSON.parse( loadFixture( 'songkick-anaal-nathrakh.json' ) );
+
+      const result = ldJsonExtractor.extractLdJson( html );
+
+      expect( result ).toEqual( expected );
+      expect( result ).toHaveLength( 6 );
+    } );
   } );
 
   describe( 'fetchAndExtractLdJson', () => {
-    test( 'fetches URL and extracts LD+JSON', async () => {
-      const url = 'https://www.bandsintown.com/a/6461184';
-
-      const result = await ldJsonExtractor.fetchAndExtractLdJson( url );
-
-      expect( Array.isArray( result ) ).toBe( true );
-      // Should have at least some data from bandsintown
-      expect( result.length ).toBeGreaterThan( 0 );
-    } );
-
     test( 'returns empty array for unreachable URL', async () => {
       const url = 'https://invalid-domain-that-does-not-exist-12345.com';
 
