@@ -37,10 +37,10 @@ These fixtures test various scenarios of missing or present event provider data.
 ### musicbrainz-six-reasons-to-kill.json
 - **Artist:** Six Reasons to Kill
 - **MBID:** `1e51125d-6e05-47f7-94f7-f4390823f963`
-- **Purpose:** Test case for handling artists with **sparse event provider data**
-- **Relations:** 11 total relations
-- **Critical Missing Data:**
-  - ❌ NO Bandsintown (critical for this API!)
+- **Purpose:** Test case for artists with **complete event provider coverage**
+- **Relations:** 12 total relations
+- **Critical Event Provider Data:**
+  - ✅ HAS Bandsintown
   - ✅ HAS Songkick
 - **Other Notable Missing:**
   - No streaming services (Spotify, Apple Music, Deezer, Tidal)
