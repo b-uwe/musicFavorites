@@ -120,29 +120,16 @@ describe( 'Bandsintown Transformer', () => {
     } );
 
     /**
-     * Test date and time extraction from startDate
+     * Test date and time extraction from startDate using real fixture data
      */
     test( 'correctly extracts date and localTime from startDate', () => {
-      const testEvent = [ {
-        '@type': 'MusicEvent',
-        'name': 'Test Event',
-        'startDate': '2025-11-28T17:30:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': '123 Main St',
-            'postalCode': '12345',
-            'addressLocality': 'Test City',
-            'addressCountry': 'Test Country'
-          }
-        }
-      } ];
+      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const secondEvent = result[ 1 ];
 
-      const result = bandsintownTransformer.transformEvents( testEvent );
-
-      expect( result[ 0 ].date ).toBe( '2025-11-28' );
-      expect( result[ 0 ].localTime ).toBe( '17:30:00' );
+      // Second event: Leeds University Stylus @ 2025-11-28T17:30:00
+      expect( secondEvent.name ).toBe( 'Vulvodynia @ Leeds University Stylus' );
+      expect( secondEvent.date ).toBe( '2025-11-28' );
+      expect( secondEvent.localTime ).toBe( '17:30:00' );
     } );
 
     /**
