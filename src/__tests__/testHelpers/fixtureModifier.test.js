@@ -358,4 +358,216 @@ describe( 'Fixture Modifier', () => {
       expect( result[ 0 ].location.country ).toBe( 'UK' );
     } );
   } );
+
+  describe( 'normalizeDates', () => {
+    /**
+     * Helper to get UTC date N days in the future
+     * @param {number} daysInFuture - Number of days in the future
+     * @returns {string} ISO date string in YYYY-MM-DD format
+     */
+    const getUtcDateInFuture = ( daysInFuture ) => {
+      const date = new Date();
+
+      date.setUTCDate( date.getUTCDate() + daysInFuture );
+      date.setUTCHours( 0, 0, 0, 0 );
+
+      return date.toISOString().split( 'T' )[ 0 ];
+    };
+
+    /**
+     * Test basic date normalization with default offset
+     */
+    test( 'normalizes dates to 7 days in future by default', () => {
+      const fixture = {
+        'event': {
+          'startDate': '2025-11-25T18:00:00'
+        }
+      };
+      const expectedDate = getUtcDateInFuture( 7 );
+
+      const result = fixtureModifier.normalizeDates( fixture );
+
+      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+    } );
+
+    /**
+     * Test custom days in future
+     */
+    test( 'normalizes dates to custom days in future', () => {
+      const fixture = {
+        'event': {
+          'startDate': '2025-11-25T18:00:00'
+        }
+      };
+      const expectedDate = getUtcDateInFuture( 30 );
+
+      const result = fixtureModifier.normalizeDates( fixture, 30 );
+
+      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+    } );
+
+    /**
+     * Test preservation of time components
+     */
+    test( 'preserves time components from original dates', () => {
+      const fixture = {
+        'event1': {
+          'startDate': '2025-11-25T18:00:00'
+        },
+        'event2': {
+          'startDate': '2025-11-28T23:59:59'
+        }
+      };
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.event1.startDate ).toMatch( /T18:00:00$/u );
+      expect( result.event2.startDate ).toMatch( /T23:59:59$/u );
+    } );
+
+    /**
+     * Test handling of date-only strings
+     */
+    test( 'normalizes date-only strings without time component', () => {
+      const fixture = {
+        'date': '2025-11-25'
+      };
+      const expectedDate = getUtcDateInFuture( 7 );
+
+      const result = fixtureModifier.normalizeDates( fixture );
+
+      expect( result.date ).toBe( expectedDate );
+    } );
+
+    /**
+     * Test handling of dates with Z suffix
+     */
+    test( 'preserves Z suffix on dates that have it', () => {
+      const fixture = {
+        'withZ': '2025-11-25T18:00:00Z',
+        'withoutZ': '2025-11-25T18:00:00'
+      };
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.withZ ).toMatch( /Z$/u );
+      expect( result.withoutZ ).not.toMatch( /Z$/u );
+    } );
+
+    /**
+     * Test normalization of arrays
+     */
+    test( 'normalizes dates in arrays', () => {
+      const fixture = [
+        {
+          'startDate': '2025-11-25T18:00:00'
+        },
+        {
+          'startDate': '2025-11-28T17:30:00'
+        }
+      ];
+      const expectedDate = getUtcDateInFuture( 7 );
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result[ 0 ].startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+      expect( result[ 1 ].startDate ).toMatch( new RegExp( `^${expectedDate}T17:30:00$` ) );
+    } );
+
+    /**
+     * Test deep nested date normalization
+     */
+    test( 'normalizes deeply nested dates', () => {
+      const fixture = {
+        'events': [
+          {
+            'info': {
+              'dates': {
+                'start': '2025-11-25T18:00:00',
+                'end': '2025-11-25'
+              }
+            }
+          }
+        ]
+      };
+      const expectedDate = getUtcDateInFuture( 7 );
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.events[ 0 ].info.dates.start ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+      expect( result.events[ 0 ].info.dates.end ).toBe( expectedDate );
+    } );
+
+    /**
+     * Test that non-date strings are not modified
+     */
+    test( 'does not modify non-date strings', () => {
+      const fixture = {
+        'name': 'Test Event',
+        'description': '2025-11-25 is not a date in this context',
+        'startDate': '2025-11-25T18:00:00'
+      };
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.name ).toBe( 'Test Event' );
+      expect( result.description ).toBe( '2025-11-25 is not a date in this context' );
+    } );
+
+    /**
+     * Test that original fixture is not mutated
+     */
+    test( 'does not mutate original fixture', () => {
+      const fixture = {
+        'startDate': '2025-11-25T18:00:00'
+      };
+      const originalDate = fixture.startDate;
+
+      fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( fixture.startDate ).toBe( originalDate );
+    } );
+
+    /**
+     * Test handling of null and undefined values
+     */
+    test( 'handles null and undefined values', () => {
+      const fixture = {
+        'nullValue': null,
+        'undefinedValue': undefined,
+        'startDate': '2025-11-25T18:00:00'
+      };
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.nullValue ).toBeNull();
+      expect( result.undefinedValue ).toBeUndefined();
+      expect( result.startDate ).toMatch( /T18:00:00$/u );
+    } );
+
+    /**
+     * Test handling of non-ISO date formats
+     */
+    test( 'ignores non-ISO date formats', () => {
+      const fixture = {
+        'invalidDate1': '11/25/2025',
+        'invalidDate2': '25-11-2025',
+        'validDate': '2025-11-25T18:00:00'
+      };
+
+      const result = fixtureModifier.normalizeDates( fixture, 7 );
+
+      expect( result.invalidDate1 ).toBe( '11/25/2025' );
+      expect( result.invalidDate2 ).toBe( '25-11-2025' );
+      expect( result.validDate ).toMatch( /T18:00:00$/u );
+    } );
+
+    /**
+     * Test handling of empty fixtures
+     */
+    test( 'handles empty objects and arrays', () => {
+      expect( fixtureModifier.normalizeDates( {}, 7 ) ).toEqual( {} );
+      expect( fixtureModifier.normalizeDates( [], 7 ) ).toEqual( [] );
+    } );
+  } );
 } );
