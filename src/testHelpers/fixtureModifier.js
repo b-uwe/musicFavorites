@@ -102,7 +102,84 @@ const modifyArrayItem = ( arrayFixture, index, modifications ) => {
   return clonedArray;
 };
 
+/**
+ * Converts an ISO date string to a future date
+ * @param {string} dateStr - ISO date string to convert
+ * @param {number} daysInFuture - Number of days in the future
+ * @returns {string} Converted ISO date string
+ */
+const convertToFutureDate = ( dateStr, daysInFuture ) => {
+  const futureDate = new Date();
+
+  futureDate.setUTCDate( futureDate.getUTCDate() + daysInFuture );
+  futureDate.setUTCHours( 0, 0, 0, 0 );
+
+  const [ futureDateStr ] = futureDate.toISOString().split( 'T' );
+
+  // Preserve time component if original had one
+  if ( dateStr.includes( 'T' ) ) {
+    /*
+     * Extract time component from original string (after the T)
+     * This will always match because dateStr passed the ISO pattern check
+     */
+    const timeMatch = dateStr.match( /T(?<time>\d{2}:\d{2}:\d{2})/u );
+    const timeComponent = timeMatch.groups.time;
+
+    // Preserve whether original had Z suffix
+    const zSuffix = dateStr.endsWith( 'Z' ) ? 'Z' : '';
+
+    return `${futureDateStr}T${timeComponent}${zSuffix}`;
+  }
+
+  // Date only (YYYY-MM-DD)
+  return futureDateStr;
+};
+
+/**
+ * Normalizes dates in fixture data to be in the future
+ * Finds ISO date-time strings and replaces them with future dates
+ * @param {object|Array} fixture - Fixture data to normalize
+ * @param {number} daysInFuture - Number of days in the future (default: 7)
+ * @returns {object|Array} Fixture with normalized dates
+ */
+const normalizeDates = ( fixture, daysInFuture = 7 ) => {
+  const cloned = deepClone( fixture );
+
+  // Pattern to match ISO date-time strings (YYYY-MM-DD and optional THH:MM:SS)
+  const isoDatePattern = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2})?Z?$/u;
+
+  /**
+   * Recursively replaces date strings with future dates
+   * @param {*} obj - Object to process
+   * @returns {*} Processed object with replaced dates
+   */
+  const replaceDates = ( obj ) => {
+    if ( typeof obj === 'string' && isoDatePattern.test( obj ) ) {
+      return convertToFutureDate( obj, daysInFuture );
+    }
+
+    if ( Array.isArray( obj ) ) {
+      return obj.map( ( item ) => replaceDates( item ) );
+    }
+
+    if ( obj !== null && typeof obj === 'object' ) {
+      const processed = {};
+
+      Object.keys( obj ).forEach( ( key ) => {
+        processed[ key ] = replaceDates( obj[ key ] );
+      } );
+
+      return processed;
+    }
+
+    return obj;
+  };
+
+  return replaceDates( cloned );
+};
+
 module.exports = {
   modifyFixture,
-  modifyArrayItem
+  modifyArrayItem,
+  normalizeDates
 };
