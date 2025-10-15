@@ -15,7 +15,7 @@ let cacheHealthy = true;
  * Determines act status based on upcoming events
  * @param {Array} events - Array of event objects with date field
  * @param {string} musicbrainzStatus - Original status from MusicBrainz
- * @returns {string} Determined status: "On tour", "Tour planned", or original MusicBrainz status
+ * @returns {string} Determined status: "on tour", "tour planned", or original MusicBrainz status
  */
 const determineStatus = ( events, musicbrainzStatus ) => {
   if ( !events || events.length === 0 ) {
@@ -54,11 +54,11 @@ const determineStatus = ( events, musicbrainzStatus ) => {
   }
 
   if ( nearestEventDate <= threeMonthsFromNow ) {
-    return 'On tour';
+    return 'on tour';
   }
 
   if ( nearestEventDate <= nineMonthsFromNow ) {
-    return 'Tour planned';
+    return 'tour planned';
   }
 
   return musicbrainzStatus;

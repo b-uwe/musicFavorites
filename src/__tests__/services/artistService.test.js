@@ -405,7 +405,7 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result.status ).toBe( 'On tour' );
+      expect( result.status ).toBe( 'on tour' );
     } );
 
     /**
@@ -422,7 +422,7 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result.status ).toBe( 'Tour planned' );
+      expect( result.status ).toBe( 'tour planned' );
     } );
 
     /**
@@ -471,7 +471,7 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result.status ).toBe( 'On tour' );
+      expect( result.status ).toBe( 'on tour' );
     } );
 
     /**
@@ -488,7 +488,7 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result.status ).toBe( 'Tour planned' );
+      expect( result.status ).toBe( 'tour planned' );
     } );
 
     /**
@@ -505,7 +505,7 @@ describe( 'Artist Service', () => {
 
       const result = await artistService.getArtist( artistId );
 
-      expect( result.status ).toBe( 'Tour planned' );
+      expect( result.status ).toBe( 'tour planned' );
     } );
 
     /**
