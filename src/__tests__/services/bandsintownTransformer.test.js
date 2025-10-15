@@ -167,22 +167,11 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with missing geo coordinates', () => {
       // Use real O2 Academy Islington event but remove geo coordinates
-      const eventWithoutGeo = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ O2 Academy Islington',
-        'startDate': '2025-11-25T18:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'N1 Centre 16 Parkfield St',
-            'postalCode': 'N1 0PS',
-            'addressLocality': 'London',
-            'addressCountry': 'United Kingdom'
-          }
-          // geo field intentionally removed
-        }
-      } ];
+      const eventWithoutGeo = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'location.geo': undefined
+        } )[ 0 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithoutGeo );
 
@@ -195,26 +184,12 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of events with invalid geo coordinate types
      */
     test( 'handles events with non-number geo coordinates', () => {
-      const eventWithInvalidGeo = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ O2 Academy Islington',
-        'startDate': '2025-11-25T18:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'N1 Centre 16 Parkfield St',
-            'postalCode': 'N1 0PS',
-            'addressLocality': 'London',
-            'addressCountry': 'United Kingdom'
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': '51.5343501',
-            'longitude': '-0.1058837'
-          }
-        }
-      } ];
+      const eventWithInvalidGeo = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'location.geo.latitude': '51.5343501',
+          'location.geo.longitude': '-0.1058837'
+        } )[ 0 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithInvalidGeo );
 
@@ -241,12 +216,11 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with missing location gracefully', () => {
       // Use real Rock Café event but remove location entirely
-      const eventWithoutLocation = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Rock Café',
-        'startDate': '2025-12-07T19:00:00'
-        // location field intentionally removed
-      } ];
+      const eventWithoutLocation = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
+          'location': undefined
+        } )[ 3 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithoutLocation );
 
@@ -276,25 +250,12 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with partial address', () => {
       // Use real Legend Club event but remove street address and postal code
-      const eventWithPartialAddress = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Legend Club',
-        'startDate': '2025-12-03T20:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'addressLocality': 'Milano',
-            'addressCountry': 'Italy'
-            // streetAddress and postalCode intentionally removed
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 45.516177,
-            'longitude': 9.1795117
-          }
-        }
-      } ];
+      const eventWithPartialAddress = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+          'location.address.streetAddress': undefined,
+          'location.address.postalCode': undefined
+        } )[ 2 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithPartialAddress );
 
@@ -310,26 +271,15 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of events with empty address (all fields null/undefined)
      */
     test( 'handles events with completely empty address object', () => {
-      const eventWithEmptyAddress = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Unknown Venue',
-        'startDate': '2025-12-03T20:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': null,
-            'postalCode': null,
-            'addressLocality': null,
-            'addressCountry': null
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 45.516177,
-            'longitude': 9.1795117
-          }
-        }
-      } ];
+      const eventWithEmptyAddress = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+          'name': 'Vulvodynia @ Unknown Venue',
+          'location.address.streetAddress': null,
+          'location.address.postalCode': null,
+          'location.address.addressLocality': null,
+          'location.address.addressCountry': null
+        } )[ 2 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithEmptyAddress );
 
