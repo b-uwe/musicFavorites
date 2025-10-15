@@ -92,8 +92,37 @@ const transformEvent = ( event ) => ( {
 } );
 
 /**
+ * Checks if an event date is within the allowed range (2 days ago or newer in UTC)
+ * @param {string} startDate - ISO 8601 datetime string
+ * @returns {boolean} True if event is within range, false otherwise
+ */
+const isEventWithinRange = ( startDate ) => {
+  if ( !startDate || typeof startDate !== 'string' ) {
+    return false;
+  }
+
+  const eventDate = new Date( startDate );
+
+  if ( isNaN( eventDate.getTime() ) ) {
+    return false;
+  }
+
+  const cutoffDate = new Date();
+
+  cutoffDate.setUTCHours( 0, 0, 0, 0 );
+  cutoffDate.setUTCDate( cutoffDate.getUTCDate() - 2 );
+
+  const eventUtcMidnight = new Date( eventDate );
+
+  eventUtcMidnight.setUTCHours( 0, 0, 0, 0 );
+
+  return eventUtcMidnight >= cutoffDate;
+};
+
+/**
  * Transforms array of LD+JSON objects to event schema
  * Filters to include only MusicEvent type objects
+ * Filters out events older than 2 calendar days (UTC)
  * @param {Array<object>} ldJsonData - Array of LD+JSON objects
  * @returns {Array<object>} Array of transformed event objects
  */
@@ -104,6 +133,7 @@ const transformEvents = ( ldJsonData ) => {
 
   return ldJsonData.
     filter( ( item ) => item[ '@type' ] === 'MusicEvent' ).
+    filter( ( item ) => isEventWithinRange( item.startDate ) ).
     map( transformEvent );
 };
 
