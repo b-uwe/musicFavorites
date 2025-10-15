@@ -4,6 +4,7 @@
  */
 
 const bandsintownTransformer = require( '../../services/bandsintownTransformer' );
+const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 describe( 'Bandsintown Transformer', () => {
@@ -209,62 +210,28 @@ describe( 'Bandsintown Transformer', () => {
     /**
      * Test handling of missing startDate
      */
-    test( 'handles missing startDate gracefully', () => {
-      // Use real O2 Academy Islington event but remove startDate
-      const eventWithoutStartDate = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ O2 Academy Islington',
-        // startDate intentionally removed
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'N1 Centre 16 Parkfield St',
-            'postalCode': 'N1 0PS',
-            'addressLocality': 'London',
-            'addressCountry': 'United Kingdom'
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 51.5343501,
-            'longitude': -0.1058837
-          }
-        }
-      } ];
+    test( 'filters out events with missing startDate', () => {
+      const eventWithoutStartDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'startDate': undefined
+        } )[ 0 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithoutStartDate );
 
-      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
-      expect( result[ 0 ].date ).toBe( '' );
-      expect( result[ 0 ].localTime ).toBe( '' );
-      expect( result[ 0 ].location.address ).toBe( 'N1 Centre 16 Parkfield St, N1 0PS, London, United Kingdom' );
+      expect( result ).toEqual( [] );
     } );
 
     /**
      * Test handling of malformed startDate with missing time
      */
     test( 'handles startDate with missing time component', () => {
-      // Use real Rock Café event but modify startDate to date-only format
-      const eventWithDateOnly = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Rock Café',
-        'startDate': '2025-12-07', // Time component removed
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'Národní 20',
-            'postalCode': '11000',
-            'addressLocality': 'Praha 1',
-            'addressCountry': 'Czech Republic'
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 50.08201099999999,
-            'longitude': 14.418418
-          }
-        }
-      } ];
+      const futureDate = '2025-12-07';
+      const eventWithDateOnly = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
+          'startDate': futureDate
+        } )[ 3 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithDateOnly );
 
@@ -277,69 +244,173 @@ describe( 'Bandsintown Transformer', () => {
     /**
      * Test handling of invalid startDate format
      */
-    test( 'handles invalid startDate format', () => {
-      // Use real Leeds University event but corrupt the startDate
-      const eventWithInvalidDate = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Leeds University Stylus',
-        'startDate': 'invalid-date-format',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'Leeds University Union,, Lifton Pl',
-            'postalCode': 'LS2 9JT',
-            'addressLocality': 'Leeds',
-            'addressCountry': 'United Kingdom'
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 53.79648,
-            'longitude': -1.54785
-          }
-        }
-      } ];
+    test( 'filters out events with invalid startDate format', () => {
+      const eventWithInvalidDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 1, {
+          'startDate': 'invalid-date-format'
+        } )[ 1 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithInvalidDate );
 
-      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Leeds University Stylus' );
-      expect( result[ 0 ].date ).toBe( '' );
-      expect( result[ 0 ].localTime ).toBe( '' );
-      expect( result[ 0 ].location.address ).toBe( 'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom' );
+      expect( result ).toEqual( [] );
     } );
 
     /**
      * Test handling of non-string startDate
      */
-    test( 'handles non-string startDate', () => {
-      // Use real Legend Club event but set startDate as number instead of string
-      const eventWithNumberDate = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Legend Club',
-        'startDate': 1733259600000, // Unix timestamp instead of ISO string
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'Viale Enrico Fermi',
-            'postalCode': '20161',
-            'addressLocality': 'Milano',
-            'addressCountry': 'Italy'
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 45.516177,
-            'longitude': 9.1795117
-          }
-        }
-      } ];
+    test( 'filters out events with non-string startDate', () => {
+      const eventWithNumberDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+          'startDate': 1733259600000
+        } )[ 2 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithNumberDate );
 
-      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Legend Club' );
-      expect( result[ 0 ].date ).toBe( '' );
-      expect( result[ 0 ].localTime ).toBe( '' );
-      expect( result[ 0 ].location.address ).toBe( 'Viale Enrico Fermi, 20161, Milano, Italy' );
+      expect( result ).toEqual( [] );
+    } );
+  } );
+
+  describe( 'filterPastEvents', () => {
+    /**
+     * Helper to get UTC midnight of N days ago
+     * @param {number} daysAgo - Number of days in the past
+     * @returns {string} ISO date string in YYYY-MM-DD format
+     */
+    const getUtcDateDaysAgo = ( daysAgo ) => {
+      const date = new Date();
+
+      date.setUTCHours( 0, 0, 0, 0 );
+      date.setUTCDate( date.getUTCDate() - daysAgo );
+
+      return date.toISOString().split( 'T' )[ 0 ];
+    };
+
+    /**
+     * Test filtering events older than 2 days (UTC)
+     */
+    test( 'filters out events older than 2 days in UTC', () => {
+      const today = getUtcDateDaysAgo( 0 );
+      const yesterday = getUtcDateDaysAgo( 1 );
+      const twoDaysAgo = getUtcDateDaysAgo( 2 );
+      const threeDaysAgo = getUtcDateDaysAgo( 3 );
+
+      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${threeDaysAgo}T18:00:00Z`
+      } );
+      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${twoDaysAgo}T18:00:00Z`
+      } );
+      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${yesterday}T18:00:00Z`
+      } );
+      const event4 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${today}T18:00:00Z`
+      } );
+      const events = [ event1, event2, event3, event4 ];
+
+      const result = bandsintownTransformer.transformEvents( events );
+
+      expect( result.length ).toBe( 3 );
+      expect( result[ 0 ].date ).toBe( twoDaysAgo );
+      expect( result[ 1 ].date ).toBe( yesterday );
+      expect( result[ 2 ].date ).toBe( today );
+    } );
+
+    /**
+     * Test that exactly 2 days ago (UTC midnight) is included
+     */
+    test( 'includes events from exactly 2 calendar days ago', () => {
+      const twoDaysAgo = getUtcDateDaysAgo( 2 );
+      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${twoDaysAgo}T00:00:00Z`
+      } );
+      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+        'startDate': `${twoDaysAgo}T23:59:59Z`
+      } );
+      const events = [ event1, event2 ];
+
+      const result = bandsintownTransformer.transformEvents( events );
+
+      expect( result.length ).toBe( 2 );
+      expect( result[ 0 ].date ).toBe( twoDaysAgo );
+      expect( result[ 1 ].date ).toBe( twoDaysAgo );
+    } );
+
+    /**
+     * Test that 3 days ago is excluded
+     */
+    test( 'excludes events from 3 calendar days ago', () => {
+      const threeDaysAgo = getUtcDateDaysAgo( 3 );
+      const twoDaysAgo = getUtcDateDaysAgo( 2 );
+      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${threeDaysAgo}T23:59:59Z`
+      } );
+      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+        'startDate': `${twoDaysAgo}T00:00:00Z`
+      } );
+      const events = [ event1, event2 ];
+
+      const result = bandsintownTransformer.transformEvents( events );
+
+      expect( result.length ).toBe( 1 );
+      expect( result[ 0 ].date ).toBe( twoDaysAgo );
+    } );
+
+    /**
+     * Test handling of future events
+     */
+    test( 'includes all future events', () => {
+      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+
+      expect( result.length ).toBe( 4 );
+    } );
+
+    /**
+     * Test handling of events with missing dates
+     */
+    test( 'excludes events with missing or invalid dates', () => {
+      const today = getUtcDateDaysAgo( 0 );
+      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${today}T18:00:00Z`
+      } );
+      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+        'startDate': undefined
+      } );
+      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
+        'startDate': 'invalid-date'
+      } );
+      const events = [ event1, event2, event3 ];
+
+      const result = bandsintownTransformer.transformEvents( events );
+
+      expect( result.length ).toBe( 1 );
+      expect( result[ 0 ].date ).toBe( today );
+    } );
+
+    /**
+     * Test timezone-independent filtering
+     */
+    test( 'filters based on UTC calendar days regardless of local timezone', () => {
+      const twoDaysAgo = getUtcDateDaysAgo( 2 );
+      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+        'startDate': `${twoDaysAgo}T00:00:00Z`
+      } );
+      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+        'startDate': `${twoDaysAgo}T12:00:00Z`
+      } );
+      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
+        'startDate': `${twoDaysAgo}T23:59:59Z`
+      } );
+      const events = [ event1, event2, event3 ];
+
+      const result = bandsintownTransformer.transformEvents( events );
+
+      expect( result.length ).toBe( 3 );
+      result.forEach( ( event ) => {
+        expect( event.date ).toBe( twoDaysAgo );
+      } );
     } );
   } );
 } );
