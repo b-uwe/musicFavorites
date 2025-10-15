@@ -8,6 +8,73 @@ const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 describe( 'Bandsintown Transformer', () => {
+  describe( 'extractDate', () => {
+    /**
+     * Test extractDate with null input
+     */
+    test( 'returns empty string for null input', () => {
+      const result = bandsintownTransformer.extractDate( null );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractDate with non-string input (truthy value)
+     */
+    test( 'returns empty string for non-string truthy input', () => {
+      const result = bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractDate with valid ISO date string
+     */
+    test( 'extracts date from valid ISO datetime string', () => {
+      const result = bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
+
+      expect( result ).toBe( '2025-11-25' );
+    } );
+
+    /**
+     * Test extractDate with string that doesn't match date pattern
+     */
+    test( 'returns empty string for invalid date format', () => {
+      const result = bandsintownTransformer.extractDate( 'not-a-date' );
+
+      expect( result ).toBe( '' );
+    } );
+  } );
+
+  describe( 'extractLocalTime', () => {
+    /**
+     * Test extractLocalTime with null input
+     */
+    test( 'returns empty string for null input', () => {
+      const result = bandsintownTransformer.extractLocalTime( null );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractLocalTime with non-string input (truthy value)
+     */
+    test( 'returns empty string for non-string truthy input', () => {
+      const result = bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractLocalTime with valid ISO datetime string
+     */
+    test( 'extracts time from valid ISO datetime string', () => {
+      const result = bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
+
+      expect( result ).toBe( '18:00:00' );
+    } );
+  } );
+
   describe( 'transformEvents', () => {
     /**
      * Test transformation of valid MusicEvent objects to our event schema
@@ -125,6 +192,38 @@ describe( 'Bandsintown Transformer', () => {
     } );
 
     /**
+     * Test handling of events with invalid geo coordinate types
+     */
+    test( 'handles events with non-number geo coordinates', () => {
+      const eventWithInvalidGeo = [ {
+        '@type': 'MusicEvent',
+        'name': 'Vulvodynia @ O2 Academy Islington',
+        'startDate': '2025-11-25T18:00:00',
+        'location': {
+          '@type': 'Place',
+          'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': 'N1 Centre 16 Parkfield St',
+            'postalCode': 'N1 0PS',
+            'addressLocality': 'London',
+            'addressCountry': 'United Kingdom'
+          },
+          'geo': {
+            '@type': 'GeoCoordinates',
+            'latitude': '51.5343501',
+            'longitude': '-0.1058837'
+          }
+        }
+      } ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithInvalidGeo );
+
+      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
+      expect( result[ 0 ].location.geo ).toBeNull();
+      expect( result[ 0 ].location.address ).toBe( 'N1 Centre 16 Parkfield St, N1 0PS, London, United Kingdom' );
+    } );
+
+    /**
      * Test date and time extraction from startDate using real fixture data
      */
     test( 'correctly extracts date and localTime from startDate', () => {
@@ -208,6 +307,41 @@ describe( 'Bandsintown Transformer', () => {
     } );
 
     /**
+     * Test handling of events with empty address (all fields null/undefined)
+     */
+    test( 'handles events with completely empty address object', () => {
+      const eventWithEmptyAddress = [ {
+        '@type': 'MusicEvent',
+        'name': 'Vulvodynia @ Unknown Venue',
+        'startDate': '2025-12-03T20:00:00',
+        'location': {
+          '@type': 'Place',
+          'address': {
+            '@type': 'PostalAddress',
+            'streetAddress': null,
+            'postalCode': null,
+            'addressLocality': null,
+            'addressCountry': null
+          },
+          'geo': {
+            '@type': 'GeoCoordinates',
+            'latitude': 45.516177,
+            'longitude': 9.1795117
+          }
+        }
+      } ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithEmptyAddress );
+
+      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Unknown Venue' );
+      expect( result[ 0 ].location.address ).toBeNull();
+      expect( result[ 0 ].location.geo ).toEqual( {
+        'lat': 45.516177,
+        'lon': 9.1795117
+      } );
+    } );
+
+    /**
      * Test handling of missing startDate
      */
     test( 'filters out events with missing startDate', () => {
@@ -267,6 +401,36 @@ describe( 'Bandsintown Transformer', () => {
       ];
 
       const result = bandsintownTransformer.transformEvents( eventWithNumberDate );
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of null startDate
+     */
+    test( 'filters out events with null startDate', () => {
+      const eventWithNullDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'startDate': null
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithNullDate );
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of boolean startDate (truthy but not string)
+     */
+    test( 'filters out events with boolean startDate', () => {
+      const eventWithBooleanDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'startDate': true
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithBooleanDate );
 
       expect( result ).toEqual( [] );
     } );

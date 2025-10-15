@@ -151,6 +151,25 @@ describe( 'Fixture Modifier', () => {
     } );
 
     /**
+     * Test creating nested paths that don't exist
+     */
+    test( 'creates intermediate path objects when they do not exist', () => {
+      const fixture = {
+        'name': 'Test'
+      };
+      const modifications = {
+        'location.address.city': 'London'
+      };
+
+      const result = fixtureModifier.modifyFixture( fixture, modifications );
+
+      expect( result.name ).toBe( 'Test' );
+      expect( result.location ).toBeDefined();
+      expect( result.location.address ).toBeDefined();
+      expect( result.location.address.city ).toBe( 'London' );
+    } );
+
+    /**
      * Test handling of null values
      */
     test( 'sets properties to null when explicitly specified', () => {
