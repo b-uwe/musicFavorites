@@ -12,6 +12,59 @@ const musicbrainzTransformer = require( './musicbrainzTransformer' );
 let cacheHealthy = true;
 
 /**
+ * Determines act status based on upcoming events
+ * @param {Array} events - Array of event objects with date field
+ * @param {string} musicbrainzStatus - Original status from MusicBrainz
+ * @returns {string} Determined status: "on tour", "tour planned", or original MusicBrainz status
+ */
+const determineStatus = ( events, musicbrainzStatus ) => {
+  if ( !events || events.length === 0 ) {
+    return musicbrainzStatus;
+  }
+
+  const now = new Date();
+
+  now.setUTCHours( 0, 0, 0, 0 );
+
+  const threeMonthsFromNow = new Date( now );
+
+  threeMonthsFromNow.setUTCDate( threeMonthsFromNow.getUTCDate() + 90 );
+
+  const nineMonthsFromNow = new Date( now );
+
+  nineMonthsFromNow.setUTCDate( nineMonthsFromNow.getUTCDate() + 270 );
+
+  // Find the nearest valid event
+  let nearestEventDate = null;
+
+  for ( const event of events ) {
+    if ( event.date && typeof event.date === 'string' ) {
+      const eventDate = new Date( `${event.date}T00:00:00Z` );
+
+      if ( !isNaN( eventDate.getTime() ) ) {
+        if ( !nearestEventDate || eventDate < nearestEventDate ) {
+          nearestEventDate = eventDate;
+        }
+      }
+    }
+  }
+
+  if ( !nearestEventDate ) {
+    return musicbrainzStatus;
+  }
+
+  if ( nearestEventDate <= threeMonthsFromNow ) {
+    return 'on tour';
+  }
+
+  if ( nearestEventDate <= nineMonthsFromNow ) {
+    return 'tour planned';
+  }
+
+  return musicbrainzStatus;
+};
+
+/**
  * Fetches Bandsintown events for an artist
  * @param {object} artistData - Transformed artist data with relations
  * @returns {Promise<Array>} Array of transformed events or empty array
@@ -61,8 +114,12 @@ const getArtist = async ( artistId ) => {
   // Fetch Bandsintown events if available
   const events = await fetchBandsintownEvents( transformedData );
 
+  // Determine status based on events
+  const finalStatus = determineStatus( events, transformedData.status );
+
   const dataWithEvents = {
     ...transformedData,
+    'status': finalStatus,
     events
   };
 
@@ -81,5 +138,6 @@ const getArtist = async ( artistId ) => {
 };
 
 module.exports = {
+  determineStatus,
   getArtist
 };
