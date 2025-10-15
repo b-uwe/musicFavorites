@@ -5,6 +5,7 @@
 
 const artistService = require( '../../services/artistService' );
 const database = require( '../../services/database' );
+const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
 const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
@@ -16,6 +17,8 @@ const fixtureBandsintownVulvodynia = require( '../fixtures/ldjson/bandsintown-vu
 jest.mock( '../../services/database' );
 jest.mock( '../../services/musicbrainz' );
 jest.mock( '../../services/ldJsonExtractor' );
+
+const { determineStatus } = artistService;
 
 describe( 'Artist Service', () => {
   let transformedJungleRot;
@@ -370,6 +373,203 @@ describe( 'Artist Service', () => {
 
       expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
       expect( result.events ).toEqual( cachedData.events );
+    } );
+  } );
+
+  describe( 'getArtist - event-based status determination', () => {
+    /**
+     * Helper to get UTC date N days from now
+     * @param {number} daysFromNow - Number of days from today
+     * @returns {string} ISO date string in YYYY-MM-DD format
+     */
+    const getDateDaysFromNow = ( daysFromNow ) => {
+      const date = new Date();
+
+      date.setUTCHours( 0, 0, 0, 0 );
+      date.setUTCDate( date.getUTCDate() + daysFromNow );
+
+      return date.toISOString().split( 'T' )[ 0 ];
+    };
+
+    /**
+     * Test "On tour" status when events exist within 3 months (90 days)
+     */
+    test( 'returns "On tour" when events exist within 90 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsIn30Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 30 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsIn30Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'On tour' );
+    } );
+
+    /**
+     * Test "Tour planned" status when events exist between 91-270 days
+     */
+    test( 'returns "Tour planned" when events exist between 91-270 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsIn120Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 120 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsIn120Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'Tour planned' );
+    } );
+
+    /**
+     * Test MusicBrainz status preserved when events are beyond 270 days
+     */
+    test( 'returns MusicBrainz status when events are beyond 270 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsIn300Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 300 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsIn300Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'active' );
+    } );
+
+    /**
+     * Test MusicBrainz status preserved when no events exist
+     */
+    test( 'returns MusicBrainz status when no events exist', async () => {
+      const artistId = transformedTheKinks._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'disbanded' );
+    } );
+
+    /**
+     * Test boundary: 90 days is "On tour"
+     */
+    test( 'returns "On tour" for event at exactly 90 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsAt90Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 90 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsAt90Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'On tour' );
+    } );
+
+    /**
+     * Test boundary: 91 days is "Tour planned"
+     */
+    test( 'returns "Tour planned" for event at exactly 91 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsAt91Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 91 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsAt91Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'Tour planned' );
+    } );
+
+    /**
+     * Test boundary: 270 days is "Tour planned"
+     */
+    test( 'returns "Tour planned" for event at exactly 270 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsAt270Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 270 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsAt270Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'Tour planned' );
+    } );
+
+    /**
+     * Test boundary: 271 days returns MusicBrainz status
+     */
+    test( 'returns MusicBrainz status for event at exactly 271 days', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsAt271Days = fixtureModifier.normalizeDates( fixtureBandsintownVulvodynia, 271 );
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsAt271Days );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'active' );
+    } );
+
+    /**
+     * Test handling of events with all invalid dates
+     */
+    test( 'returns MusicBrainz status when all events have invalid dates', async () => {
+      const artistId = transformedVulvodynia._id;
+      const eventsWithInvalidDates = [
+        fixtureModifier.modifyArrayItem( fixtureBandsintownVulvodynia, 0, {
+          'startDate': 'invalid-date-format'
+        } )[ 0 ],
+        fixtureModifier.modifyArrayItem( fixtureBandsintownVulvodynia, 1, {
+          'startDate': undefined
+        } )[ 1 ]
+      ];
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( eventsWithInvalidDates );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getArtist( artistId );
+
+      expect( result.status ).toBe( 'active' );
+    } );
+  } );
+
+  describe( 'determineStatus - unit tests', () => {
+    /**
+     * Test line 53: all events have invalid dates in transformed format
+     */
+    test( 'returns MusicBrainz status when all transformed events have invalid dates', () => {
+      const eventsWithInvalidDates = [
+        {
+          'name': 'Event with invalid date',
+          'date': 'not-a-valid-date',
+          'location': {}
+        },
+        {
+          'name': 'Event with missing date',
+          'location': {}
+        }
+      ];
+
+      const result = determineStatus( eventsWithInvalidDates, 'active' );
+
+      expect( result ).toBe( 'active' );
     } );
   } );
 } );
