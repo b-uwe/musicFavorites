@@ -89,6 +89,14 @@ describe( 'LD+JSON Extractor', () => {
       expect( result ).toEqual( [] );
     } );
 
+    test( 'handles script tags with empty content', () => {
+      const html = '<html><head><script type="application/ld+json"></script></head></html>';
+
+      const result = ldJsonExtractor.extractLdJson( html );
+
+      expect( result ).toEqual( [] );
+    } );
+
     test( 'extracts from real Bandsintown HTML', () => {
       const html = loadFixture( 'bandsintown-vulvodynia.html' );
       const expected = JSON.parse( loadFixture( 'bandsintown-vulvodynia.json' ) );

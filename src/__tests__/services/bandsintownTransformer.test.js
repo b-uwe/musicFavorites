@@ -8,6 +8,73 @@ const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const fixtureVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 describe( 'Bandsintown Transformer', () => {
+  describe( 'extractDate', () => {
+    /**
+     * Test extractDate with null input
+     */
+    test( 'returns empty string for null input', () => {
+      const result = bandsintownTransformer.extractDate( null );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractDate with non-string input (truthy value)
+     */
+    test( 'returns empty string for non-string truthy input', () => {
+      const result = bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractDate with valid ISO date string
+     */
+    test( 'extracts date from valid ISO datetime string', () => {
+      const result = bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
+
+      expect( result ).toBe( '2025-11-25' );
+    } );
+
+    /**
+     * Test extractDate with string that doesn't match date pattern
+     */
+    test( 'returns empty string for invalid date format', () => {
+      const result = bandsintownTransformer.extractDate( 'not-a-date' );
+
+      expect( result ).toBe( '' );
+    } );
+  } );
+
+  describe( 'extractLocalTime', () => {
+    /**
+     * Test extractLocalTime with null input
+     */
+    test( 'returns empty string for null input', () => {
+      const result = bandsintownTransformer.extractLocalTime( null );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractLocalTime with non-string input (truthy value)
+     */
+    test( 'returns empty string for non-string truthy input', () => {
+      const result = bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
+
+      expect( result ).toBe( '' );
+    } );
+
+    /**
+     * Test extractLocalTime with valid ISO datetime string
+     */
+    test( 'extracts time from valid ISO datetime string', () => {
+      const result = bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
+
+      expect( result ).toBe( '18:00:00' );
+    } );
+  } );
+
   describe( 'transformEvents', () => {
     /**
      * Test transformation of valid MusicEvent objects to our event schema
@@ -100,24 +167,31 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with missing geo coordinates', () => {
       // Use real O2 Academy Islington event but remove geo coordinates
-      const eventWithoutGeo = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ O2 Academy Islington',
-        'startDate': '2025-11-25T18:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'streetAddress': 'N1 Centre 16 Parkfield St',
-            'postalCode': 'N1 0PS',
-            'addressLocality': 'London',
-            'addressCountry': 'United Kingdom'
-          }
-          // geo field intentionally removed
-        }
-      } ];
+      const eventWithoutGeo = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'location.geo': undefined
+        } )[ 0 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithoutGeo );
+
+      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
+      expect( result[ 0 ].location.geo ).toBeNull();
+      expect( result[ 0 ].location.address ).toBe( 'N1 Centre 16 Parkfield St, N1 0PS, London, United Kingdom' );
+    } );
+
+    /**
+     * Test handling of events with invalid geo coordinate types
+     */
+    test( 'handles events with non-number geo coordinates', () => {
+      const eventWithInvalidGeo = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'location.geo.latitude': '51.5343501',
+          'location.geo.longitude': '-0.1058837'
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithInvalidGeo );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
       expect( result[ 0 ].location.geo ).toBeNull();
@@ -142,12 +216,11 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with missing location gracefully', () => {
       // Use real Rock Café event but remove location entirely
-      const eventWithoutLocation = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Rock Café',
-        'startDate': '2025-12-07T19:00:00'
-        // location field intentionally removed
-      } ];
+      const eventWithoutLocation = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
+          'location': undefined
+        } )[ 3 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithoutLocation );
 
@@ -177,30 +250,41 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with partial address', () => {
       // Use real Legend Club event but remove street address and postal code
-      const eventWithPartialAddress = [ {
-        '@type': 'MusicEvent',
-        'name': 'Vulvodynia @ Legend Club',
-        'startDate': '2025-12-03T20:00:00',
-        'location': {
-          '@type': 'Place',
-          'address': {
-            '@type': 'PostalAddress',
-            'addressLocality': 'Milano',
-            'addressCountry': 'Italy'
-            // streetAddress and postalCode intentionally removed
-          },
-          'geo': {
-            '@type': 'GeoCoordinates',
-            'latitude': 45.516177,
-            'longitude': 9.1795117
-          }
-        }
-      } ];
+      const eventWithPartialAddress = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+          'location.address.streetAddress': undefined,
+          'location.address.postalCode': undefined
+        } )[ 2 ]
+      ];
 
       const result = bandsintownTransformer.transformEvents( eventWithPartialAddress );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Legend Club' );
       expect( result[ 0 ].location.address ).toBe( 'Milano, Italy' );
+      expect( result[ 0 ].location.geo ).toEqual( {
+        'lat': 45.516177,
+        'lon': 9.1795117
+      } );
+    } );
+
+    /**
+     * Test handling of events with empty address (all fields null/undefined)
+     */
+    test( 'handles events with completely empty address object', () => {
+      const eventWithEmptyAddress = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+          'name': 'Vulvodynia @ Unknown Venue',
+          'location.address.streetAddress': null,
+          'location.address.postalCode': null,
+          'location.address.addressLocality': null,
+          'location.address.addressCountry': null
+        } )[ 2 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithEmptyAddress );
+
+      expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Unknown Venue' );
+      expect( result[ 0 ].location.address ).toBeNull();
       expect( result[ 0 ].location.geo ).toEqual( {
         'lat': 45.516177,
         'lon': 9.1795117
@@ -267,6 +351,36 @@ describe( 'Bandsintown Transformer', () => {
       ];
 
       const result = bandsintownTransformer.transformEvents( eventWithNumberDate );
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of null startDate
+     */
+    test( 'filters out events with null startDate', () => {
+      const eventWithNullDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'startDate': null
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithNullDate );
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of boolean startDate (truthy but not string)
+     */
+    test( 'filters out events with boolean startDate', () => {
+      const eventWithBooleanDate = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'startDate': true
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithBooleanDate );
 
       expect( result ).toEqual( [] );
     } );

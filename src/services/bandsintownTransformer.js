@@ -138,5 +138,8 @@ const transformEvents = ( ldJsonData ) => {
 };
 
 module.exports = {
-  transformEvents
+  transformEvents,
+  // Exported for testing defensive guard clauses
+  extractDate,
+  extractLocalTime
 };
