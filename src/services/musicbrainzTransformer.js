@@ -24,7 +24,7 @@ const EXCLUDED_TYPES = [ 'free streaming', 'streaming', 'purchase for download',
  * @returns {object|null} Object with key and url properties, or null if excluded
  */
 const processRelation = ( relation ) => {
-  if ( !relation || !relation.url || !relation.url.resource ) {
+  if ( !relation?.url?.resource ) {
     return null;
   }
 
@@ -76,8 +76,8 @@ const transformArtistData = ( mbData ) => {
   return {
     '_id': mbData.id,
     'name': mbData.name,
-    'country': mbData.area ? mbData.area.name : null,
-    'region': mbData[ 'begin-area' ] ? mbData[ 'begin-area' ].name : null,
+    'country': mbData.area?.name ?? null,
+    'region': mbData[ 'begin-area' ]?.name ?? null,
     'disambiguation': mbData.disambiguation || '',
     status,
     relations

@@ -60,7 +60,7 @@ const buildAddress = ( address ) => {
  * @returns {object|null} Object with lat and lon, or null if no geo data
  */
 const extractGeo = ( location ) => {
-  if ( !location || !location.geo ) {
+  if ( !location?.geo ) {
     return null;
   }
 
