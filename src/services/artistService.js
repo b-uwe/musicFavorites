@@ -120,6 +120,7 @@ const getArtist = async ( artistId ) => {
   const dataWithEvents = {
     ...transformedData,
     'status': finalStatus,
+    'updatedAt': new Date().toString(),
     events
   };
 

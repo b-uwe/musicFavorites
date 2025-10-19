@@ -73,10 +73,12 @@ describe( 'Artist Service', () => {
 
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( {
-        ...transformedTheKinks,
-        'events': []
-      } );
+      expect( database.cacheArtist ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          ...transformedTheKinks,
+          events: []
+        } )
+      );
 
       // Result should have musicbrainzId (API format), not _id
       expect( result.musicbrainzId ).toBe( transformedTheKinks._id );
