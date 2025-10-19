@@ -81,52 +81,73 @@ const updateAct = async ( actId ) => {
 };
 
 /**
- * Starts the 24-hour update cycle
- * Runs perpetually in background, updating all cached acts
- * @returns {Promise<void>} Never resolves (infinite loop)
+ * Executes one complete update cycle for all cached acts
+ * @param {number} cycleIntervalMs - Cycle duration in milliseconds
+ * @param {number} retryDelayMs - Retry delay on error in milliseconds
+ * @returns {Promise<void>} Resolves when cycle completes
  */
-const start = async () => {
+const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
+  try {
+    // Fetch all act IDs from cache
+    const actIds = await database.getAllActIds();
+
+    if ( actIds.length === 0 ) {
+      console.log( `⏳ Cache is empty. Waiting ${cycleIntervalMs / 1000}s...` );
+      await sleep( cycleIntervalMs );
+
+      return;
+    }
+
+    // Calculate time slice: cycle interval divided by number of acts
+    const timeSlice = cycleIntervalMs / actIds.length;
+
+    console.log( `📊 Found ${actIds.length} acts. Time slice: ${Math.round( timeSlice / 1000 )}s` );
+
+    // Update each act in sequence
+    for ( const actId of actIds ) {
+      await updateAct( actId );
+      await sleep( timeSlice );
+    }
+
+    console.log( '✅ Cycle completed. Starting next cycle...' );
+  } catch ( error ) {
+    console.error( '❌ Cycle error:', error.message );
+    console.log( `⏳ Retrying in ${retryDelayMs / 1000}s...` );
+    await sleep( retryDelayMs );
+  }
+};
+
+/**
+ * Starts the update cycle
+ * Runs perpetually in background, updating all cached acts
+ * @param {object} options - Configuration options
+ * @param {number} options.cycleIntervalMs - Total cycle duration in ms (default: 24 hours)
+ * @param {number} options.retryDelayMs - Retry delay on error in ms (default: 1 minute)
+ * @param {number} options.maxCycles - Maximum cycles to run (default: Infinity for production)
+ * @returns {Promise<void>} Resolves when maxCycles reached or never (if Infinity)
+ */
+const start = async ( options = {} ) => {
+  const {
+    cycleIntervalMs = TWENTY_FOUR_HOURS_MS,
+    retryDelayMs = ONE_MINUTE_MS,
+    maxCycles = Infinity
+  } = options;
+
   console.log( '🔄 Starting cache update cycle...' );
 
-  /**
-   * Executes one complete update cycle for all cached acts
-   * @returns {Promise<void>} Resolves when cycle completes
-   */
-  const runCycle = async () => {
-    try {
-      // Fetch all act IDs from cache
-      const actIds = await database.getAllActIds();
+  // Run cycles perpetually (or until maxCycles reached)
+  let cyclesRun = 0;
 
-      if ( actIds.length === 0 ) {
-        console.log( '⏳ Cache is empty. Waiting 24 hours...' );
-        await sleep( TWENTY_FOUR_HOURS_MS );
-
-        return;
-      }
-
-      // Calculate time slice: 24 hours divided by number of acts
-      const timeSlice = TWENTY_FOUR_HOURS_MS / actIds.length;
-
-      console.log( `📊 Found ${actIds.length} acts. Time slice: ${Math.round( timeSlice / 1000 )}s` );
-
-      // Update each act in sequence
-      for ( const actId of actIds ) {
-        await updateAct( actId );
-        await sleep( timeSlice );
-      }
-
-      console.log( '✅ Cycle completed. Starting next cycle...' );
-    } catch ( error ) {
-      console.error( '❌ Cycle error:', error.message );
-      console.log( '⏳ Retrying in 1 minute...' );
-      await sleep( ONE_MINUTE_MS );
-    }
-  };
-
-  // Infinite loop - run cycles perpetually
   // eslint-disable-next-line no-constant-condition
   while ( true ) {
-    await runCycle();
+    await runCycle( cycleIntervalMs, retryDelayMs );
+    cyclesRun++;
+
+    if ( cyclesRun >= maxCycles ) {
+      console.log( `✅ Completed ${maxCycles} cycles. Stopping.` );
+
+      break;
+    }
   }
 };
 
