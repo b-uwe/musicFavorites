@@ -37,7 +37,7 @@ const updateAct = async ( actId ) => {
     // Replace cache entry
     await database.cacheArtist( dataToCache );
   } catch ( error ) {
-    console.error( `✗ Failed to update act ${actId}:`, error.message );
+    console.error( `Failed to update act ${actId}:`, error.message );
   }
 };
 
@@ -67,7 +67,7 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
       await sleep( timeSlice );
     }
   } catch ( error ) {
-    console.error( '❌ Cycle error:', error.message );
+    console.error( 'Cycle error:', error.message );
     await sleep( retryDelayMs );
   }
 };
@@ -81,11 +81,7 @@ const runSequentialUpdate = async () => {
     // Fetch all act IDs from cache
     const actIds = await database.getAllActIds();
 
-    console.log( `🔄 Starting sequential update for ${actIds.length} acts...` );
-
     if ( actIds.length === 0 ) {
-      console.log( '✓ Sequential update complete (cache empty)' );
-
       return 0;
     }
 
@@ -95,11 +91,9 @@ const runSequentialUpdate = async () => {
       await sleep( THIRTY_SECONDS_MS );
     }
 
-    console.log( `✓ Sequential update complete (${actIds.length} acts processed)` );
-
     return actIds.length;
   } catch ( error ) {
-    console.error( '❌ Sequential update error:', error.message );
+    console.error( 'Sequential update error:', error.message );
 
     return 0;
   }
@@ -121,11 +115,9 @@ const start = async ( options ) => {
   await runSequentialUpdate();
 
   // Phase 2: Wait 12 hours
-  console.log( '⏳ Waiting 12 hours before starting cycle-based updates...' );
   await sleep( TWELVE_HOURS_MS );
 
   // Phase 3: Start perpetual cycle-based updates
-  console.log( '🔁 Starting cycle-based update strategy...' );
   // eslint-disable-next-line no-constant-condition
   while ( true ) {
     await runCycle( cycleIntervalMs, retryDelayMs );
