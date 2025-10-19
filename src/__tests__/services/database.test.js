@@ -501,4 +501,92 @@ describe( 'Database Service', () => {
       );
     } );
   } );
+
+  describe( 'getAllActIds', () => {
+    let mockCollection;
+    let transformedJungleRot;
+    let transformedTheKinks;
+
+    beforeEach( () => {
+      mockCollection = {
+        'find': jest.fn()
+      };
+      mockDb.collection = jest.fn( () => mockCollection );
+      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    } );
+
+    /**
+     * Test that getAllActIds returns sorted array of _id values
+     */
+    test( 'should return sorted array of all cached act IDs', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': transformedTheKinks._id
+          },
+          {
+            '_id': transformedJungleRot._id
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActIds();
+
+      expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
+      expect( mockCollection.find ).toHaveBeenCalledWith(
+        {},
+        {
+          'projection': {
+            '_id': 1
+          }
+        }
+      );
+
+      expect( Array.isArray( result ) ).toBe( true );
+      expect( result ).toHaveLength( 2 );
+      expect( result ).toEqual( [
+        transformedJungleRot._id,
+        transformedTheKinks._id
+      ].sort() );
+    } );
+
+    /**
+     * Test that getAllActIds returns empty array when cache is empty
+     */
+    test( 'should return empty array when no acts in cache', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActIds();
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test that getAllActIds throws error when not connected
+     */
+    test( 'should throw error when not connected', async () => {
+      await expect( database.getAllActIds() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_013)'
+      );
+    } );
+  } );
 } );

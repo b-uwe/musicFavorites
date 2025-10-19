@@ -3,6 +3,7 @@
  */
 
 const transformer = require( '../../services/musicbrainzTransformer' );
+const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
@@ -226,6 +227,44 @@ describe( 'MusicBrainz Data Transformer', () => {
       // When multiple youtube relations exist, the last one processed is kept
       expect( resultJungleRot.relations.youtube ).toBeDefined();
       expect( resultJungleRot.relations.youtube ).toContain( 'youtube.com' );
+    } );
+
+    /**
+     * Test null-safety for missing relation.url
+     */
+    test( 'handles null relation gracefully', () => {
+      const dataWithNullRelation = fixtureModifier.modifyFixture( fixtureJungleRot, {
+        'relations': [
+          null,
+          { 'type': 'bandcamp', 'url': null },
+          { 'type': 'bandcamp', 'url': { 'resource': null } }
+        ]
+      } );
+
+      const result = transformer.transformArtistData( dataWithNullRelation );
+
+      expect( result.relations ).toEqual( {} );
+    } );
+
+    /**
+     * Test null-safety for missing artist metadata
+     */
+    test( 'handles missing artist metadata gracefully', () => {
+      const dataWithMissingFields = fixtureModifier.modifyFixture( fixtureJungleRot, {
+        'relations': undefined,
+        'area': null,
+        'begin-area': null,
+        'disambiguation': null,
+        'life-span': null
+      } );
+
+      const result = transformer.transformArtistData( dataWithMissingFields );
+
+      expect( result.country ).toBeNull();
+      expect( result.region ).toBeNull();
+      expect( result.disambiguation ).toBe( '' );
+      expect( result.status ).toBe( 'active' );
+      expect( result.relations ).toEqual( {} );
     } );
   } );
 } );

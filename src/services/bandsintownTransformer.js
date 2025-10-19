@@ -60,7 +60,7 @@ const buildAddress = ( address ) => {
  * @returns {object|null} Object with lat and lon, or null if no geo data
  */
 const extractGeo = ( location ) => {
-  if ( !location || !location.geo ) {
+  if ( !location?.geo ) {
     return null;
   }
 
@@ -82,7 +82,7 @@ const extractGeo = ( location ) => {
  * @returns {object} Transformed event object
  */
 const transformEvent = ( event ) => ( {
-  'name': event.name,
+  'name': event.name || '',
   'date': extractDate( event.startDate ),
   'localTime': extractLocalTime( event.startDate ),
   'location': {

@@ -73,10 +73,12 @@ describe( 'Artist Service', () => {
 
       expect( database.getArtistFromCache ).toHaveBeenCalledWith( artistId );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( artistId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( {
-        ...transformedTheKinks,
-        'events': []
-      } );
+      expect( database.cacheArtist ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          ...transformedTheKinks,
+          events: []
+        } )
+      );
 
       // Result should have musicbrainzId (API format), not _id
       expect( result.musicbrainzId ).toBe( transformedTheKinks._id );
@@ -296,9 +298,9 @@ describe( 'Artist Service', () => {
     } );
 
     /**
-     * Test that events are returned even if Bandsintown fetch fails
+     * Test that empty events array is returned when Bandsintown returns no events
      */
-    test( 'returns empty events array if Bandsintown fetch fails', async () => {
+    test( 'returns empty events array when Bandsintown returns no events', async () => {
       const artistId = transformedVulvodynia._id;
 
       database.getArtistFromCache.mockResolvedValue( null );
@@ -311,6 +313,21 @@ describe( 'Artist Service', () => {
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
       expect( result ).toHaveProperty( 'events' );
       expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that Bandsintown fetch errors cause getArtist to fail
+     */
+    test( 'throws error when Bandsintown fetch fails', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'Network error' );
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -570,6 +587,63 @@ describe( 'Artist Service', () => {
       const result = determineStatus( eventsWithInvalidDates, 'active' );
 
       expect( result ).toBe( 'active' );
+    } );
+  } );
+
+  describe( 'fetchBandintownEvents - unit tests', () => {
+    /**
+     * Test that silentFail undefined uses default (false) and throws error
+     */
+    test( 'throws error when Bandsintown fetch fails and silentFail is undefined', async () => {
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      await expect( artistService.fetchBandsintownEvents( transformedVulvodynia ) ).rejects.toThrow( 'Network error' );
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+    } );
+
+    /**
+     * Test that silentFail set to true fails silently
+     */
+    test( 'does NOT throw when Bandsintown fetch fails and silentFail is true', async () => {
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      const result = await artistService.fetchBandsintownEvents( transformedVulvodynia, true );
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+
+      expect( result ).toEqual( [] );
+    } );
+  } );
+
+  describe( 'fetchAndEnrichArtistData - direct tests', () => {
+    /**
+     * Test that silentEventFail=true returns empty events on Bandsintown error
+     */
+    test( 'returns empty events when Bandsintown fetch fails and silentEventFail=true', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      const result = await artistService.fetchAndEnrichArtistData( artistId, true );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+      expect( result ).toHaveProperty( 'events' );
+      expect( result.events ).toEqual( [] );
+      expect( result ).toHaveProperty( 'updatedAt' );
+      expect( result ).toHaveProperty( 'status' );
+    } );
+
+    /**
+     * Test that silentEventFail undefined uses default (false) and throws error
+     */
+    test( 'throws error when Bandsintown fetch fails and silentEventFail=undefined', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      await expect( artistService.fetchAndEnrichArtistData( artistId ) ).rejects.toThrow( 'Network error' );
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
     } );
   } );
 } );
