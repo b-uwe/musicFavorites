@@ -267,17 +267,55 @@ describe( 'Cache Updater Service', () => {
     }, 10000 );
 
     /**
-     * Test that start() defaults to Infinity maxCycles (can't test fully)
+     * Test that start() uses default for cycleIntervalMs when undefined
      */
-    test( 'uses default options when none provided', async () => {
-      database.getAllActIds.mockResolvedValue( [] );
+    test( 'uses default cycleIntervalMs when explicitly undefined', async () => {
+      jest.useFakeTimers();
 
-      // Start without options and immediately cancel by using maxCycles
-      const startPromise = cacheUpdater.start( { 'maxCycles': 1, 'cycleIntervalMs': 50 } );
+      // Return 1 act so it doesn't use the long sleep for empty cache
+      database.getAllActIds.mockResolvedValue( [ transformedTheKinks._id ] );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
 
+      // Pass undefined for cycleIntervalMs to test the ?? TWENTY_FOUR_HOURS_MS branch
+      const startPromise = cacheUpdater.start( {
+        'cycleIntervalMs': undefined,
+        'maxCycles': 1
+      } );
+
+      // Fast-forward through all timers (24-hour sleep becomes instant)
+      await jest.runAllTimersAsync();
       await startPromise;
 
       expect( database.getAllActIds ).toHaveBeenCalledTimes( 1 );
+
+      jest.useRealTimers();
     }, 10000 );
+
+    /**
+     * Test that start() uses default for maxCycles when undefined
+     */
+    test( 'uses default maxCycles (Infinity) when explicitly undefined', async () => {
+      jest.useFakeTimers();
+
+      // Mock to throw error immediately to break infinite loop
+      database.getAllActIds.mockRejectedValue( new Error( 'Stop infinite loop' ) );
+
+      // Pass undefined for maxCycles to test the ?? Infinity branch
+      const startPromise = cacheUpdater.start( {
+        'cycleIntervalMs': 50,
+        'retryDelayMs': 1,
+        'maxCycles': undefined
+      } );
+
+      // Advance timers just enough for first cycle attempt
+      await jest.advanceTimersByTimeAsync( 100 );
+
+      // The function will keep running infinitely, so we just verify it started
+      expect( database.getAllActIds ).toHaveBeenCalled();
+
+      jest.useRealTimers();
+    }, 10000 );
+
   } );
 } );

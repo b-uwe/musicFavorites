@@ -133,12 +133,11 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
  * @param {number} options.maxCycles - Maximum cycles to run (default: Infinity for production)
  * @returns {Promise<void>} Resolves when maxCycles reached or never (if Infinity)
  */
-const start = async ( options = {} ) => {
-  const {
-    cycleIntervalMs = TWENTY_FOUR_HOURS_MS,
-    retryDelayMs = ONE_MINUTE_MS,
-    maxCycles = Infinity
-  } = options;
+const start = async ( options ) => {
+  // Apply defaults explicitly to improve testability
+  const cycleIntervalMs = options?.cycleIntervalMs ?? TWENTY_FOUR_HOURS_MS;
+  const retryDelayMs = options?.retryDelayMs ?? ONE_MINUTE_MS;
+  const maxCycles = options?.maxCycles ?? Infinity;
 
   console.log( '🔄 Starting cache update cycle...' );
 
