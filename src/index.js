@@ -6,6 +6,7 @@
 require( 'dotenv' ).config();
 const app = require( './app' );
 const { connect } = require( './services/database' );
+const cacheUpdater = require( './services/cacheUpdater' );
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,6 +25,11 @@ const startServer = async () => {
   try {
     await connect();
     console.log( 'Connected to MongoDB successfully' );
+
+    // Start background cache update cycle (fire-and-forget)
+    cacheUpdater.start().catch( ( error ) => {
+      console.error( 'Cache updater crashed:', error.message );
+    } );
   } catch ( error ) {
     console.error( 'MongoDB connection failed:', error.message );
     console.error( 'Server running but database unavailable. API will return errors.' );
