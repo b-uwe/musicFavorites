@@ -169,5 +169,6 @@ module.exports = {
   determineStatus,
   getArtist,
   getBerlinTimestamp,
+  fetchBandsintownEvents,
   fetchAndEnrichArtistData
 };
