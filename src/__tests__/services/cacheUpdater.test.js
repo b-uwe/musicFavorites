@@ -298,8 +298,17 @@ describe( 'Cache Updater Service', () => {
     test( 'uses default maxCycles (Infinity) when explicitly undefined', async () => {
       jest.useFakeTimers();
 
-      // Mock to throw error immediately to break infinite loop
-      database.getAllActIds.mockRejectedValue( new Error( 'Stop infinite loop' ) );
+      let callCount = 0;
+
+      // Mock to allow one successful call, then throw to stop
+      database.getAllActIds.mockImplementation( async () => {
+        callCount++;
+        if ( callCount > 1 ) {
+          throw new Error( 'Stop' );
+        }
+
+        return [];
+      } );
 
       // Pass undefined for maxCycles to test the ?? Infinity branch
       const startPromise = cacheUpdater.start( {
@@ -308,10 +317,10 @@ describe( 'Cache Updater Service', () => {
         'maxCycles': undefined
       } );
 
-      // Advance timers just enough for first cycle attempt
-      await jest.advanceTimersByTimeAsync( 100 );
+      // Advance timers for 2 cycles
+      await jest.advanceTimersByTimeAsync( 150 );
 
-      // The function will keep running infinitely, so we just verify it started
+      // Verify it started with Infinity (would run forever without the error)
       expect( database.getAllActIds ).toHaveBeenCalled();
 
       jest.useRealTimers();

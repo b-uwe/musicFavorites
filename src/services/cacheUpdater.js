@@ -80,8 +80,6 @@ const updateAct = async ( actId ) => {
 
     // Replace cache entry
     await database.cacheArtist( dataToCache );
-
-    console.log( `✓ Updated act: ${actId}` );
   } catch ( error ) {
     console.error( `✗ Failed to update act ${actId}:`, error.message );
   }
@@ -99,7 +97,6 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
     const actIds = await database.getAllActIds();
 
     if ( actIds.length === 0 ) {
-      console.log( `⏳ Cache is empty. Waiting ${cycleIntervalMs / 1000}s...` );
       await sleep( cycleIntervalMs );
 
       return;
@@ -108,15 +105,11 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
     // Calculate time slice: cycle interval divided by number of acts
     const timeSlice = cycleIntervalMs / actIds.length;
 
-    console.log( `📊 Found ${actIds.length} acts. Time slice: ${Math.round( timeSlice / 1000 )}s` );
-
     // Update each act in sequence
     for ( const actId of actIds ) {
       await updateAct( actId );
       await sleep( timeSlice );
     }
-
-    console.log( '✅ Cycle completed. Starting next cycle...' );
   } catch ( error ) {
     console.error( '❌ Cycle error:', error.message );
     console.log( `⏳ Retrying in ${retryDelayMs / 1000}s...` );
@@ -139,8 +132,6 @@ const start = async ( options ) => {
   const retryDelayMs = options?.retryDelayMs ?? ONE_MINUTE_MS;
   const maxCycles = options?.maxCycles ?? Infinity;
 
-  console.log( '🔄 Starting cache update cycle...' );
-
   // Run cycles perpetually (or until maxCycles reached)
   let cyclesRun = 0;
 
@@ -150,8 +141,6 @@ const start = async ( options ) => {
     cyclesRun++;
 
     if ( cyclesRun >= maxCycles ) {
-      console.log( `✅ Completed ${maxCycles} cycles. Stopping.` );
-
       break;
     }
   }
