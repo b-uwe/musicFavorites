@@ -200,11 +200,36 @@ const testCacheHealth = async () => {
   }
 };
 
+/**
+ * Gets all act IDs from cache
+ * @returns {Promise<Array<string>>} Sorted array of all cached act IDs
+ * @throws {Error} When not connected to database
+ */
+const getAllActIds = async () => {
+  if ( !client ) {
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
+  }
+
+  const db = client.db( 'musicfavorites' );
+  const collection = db.collection( 'artists' );
+
+  const results = await collection.find( {}, {
+    'projection': {
+      '_id': 1
+    }
+  } ).toArray();
+
+  const ids = results.map( ( doc ) => doc._id );
+
+  return ids.sort();
+};
+
 module.exports = {
   connect,
   disconnect,
   getDatabase,
   getArtistFromCache,
   cacheArtist,
-  testCacheHealth
+  testCacheHealth,
+  getAllActIds
 };
