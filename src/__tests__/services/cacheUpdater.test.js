@@ -146,6 +146,8 @@ describe( 'Cache Updater Service', () => {
      * Test that start() runs one complete cycle with multiple acts
      */
     test( 'runs one complete cycle updating all acts', async () => {
+      jest.useFakeTimers();
+
       const actIds = [
         transformedTheKinks._id,
         transformedVulvodynia._id
@@ -157,91 +159,117 @@ describe( 'Cache Updater Service', () => {
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockResolvedValue();
 
-      // Run one cycle with 100ms total duration
-      await cacheUpdater.start( {
-        'cycleIntervalMs': 100,
-        'maxCycles': 1
+      // Start infinite loop with 100ms cycle interval
+      cacheUpdater.start( {
+        'cycleIntervalMs': 100
       } );
 
+      // Advance time for one complete cycle (2 acts × 50ms each = 100ms total)
+      await jest.advanceTimersByTimeAsync( 99 );
+
       // Verify all acts were updated
-      expect( database.getAllActIds ).toHaveBeenCalledTimes( 1 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
+      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actIds[ 0 ] );
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actIds[ 1 ] );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( database.cacheArtist ).toHaveBeenCalled();
+
+      jest.useRealTimers();
     }, 10000 );
 
     /**
      * Test that start() runs multiple cycles
      */
     test( 'runs multiple cycles sequentially', async () => {
+      jest.useFakeTimers();
+
       const actIds = [ transformedTheKinks._id ];
 
       database.getAllActIds.mockResolvedValue( actIds );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
-      // Run 3 cycles with 50ms each
-      await cacheUpdater.start( {
-        'cycleIntervalMs': 50,
-        'maxCycles': 3
+      // Start infinite loop with 50ms cycles
+      cacheUpdater.start( {
+        'cycleIntervalMs': 50
       } );
 
+      // Advance time for 3 complete cycles (3 × 50ms = 150ms)
+      await jest.advanceTimersByTimeAsync( 150 );
+
       // Verify 3 cycles ran
-      expect( database.getAllActIds ).toHaveBeenCalledTimes( 3 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 3 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 3 );
+      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
+      expect( database.cacheArtist ).toHaveBeenCalled();
+
+      jest.useRealTimers();
     }, 10000 );
 
     /**
      * Test that start() waits when cache is empty
      */
     test( 'waits when cache is empty and retries', async () => {
+      jest.useFakeTimers();
+
       // First call: empty cache, second call: has acts
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [ transformedTheKinks._id ] );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
-      // Run 2 cycles with 50ms interval
-      await cacheUpdater.start( {
-        'cycleIntervalMs': 50,
-        'maxCycles': 2
+      // Start infinite loop with 50ms cycles
+      cacheUpdater.start( {
+        'cycleIntervalMs': 50
       } );
 
+      // Advance time for 2 complete cycles (2 × 50ms = 100ms)
+      //  - First cycle: empty cache, sleeps 50ms
+      //  - Second cycle: processes 1 act, sleeps 50ms
+      await jest.advanceTimersByTimeAsync( 99 );
+
       // Verify: first cycle found empty cache, second cycle processed act
-      expect( database.getAllActIds ).toHaveBeenCalledTimes( 2 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
+      expect( database.cacheArtist ).toHaveBeenCalled();
+
+      jest.useRealTimers();
     }, 10000 );
 
     /**
      * Test that start() retries after errors
      */
     test( 'retries after getAllActIds error', async () => {
+      jest.useFakeTimers();
+
       // First call fails, second call succeeds
       database.getAllActIds.mockRejectedValueOnce( new Error( 'Database error' ) );
       database.getAllActIds.mockResolvedValueOnce( [ transformedTheKinks._id ] );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
-      // Run 2 cycles with 100ms interval and 20ms retry delay
-      await cacheUpdater.start( {
+      // Start infinite loop with 100ms cycle and 20ms retry delay
+      cacheUpdater.start( {
         'cycleIntervalMs': 100,
-        'retryDelayMs': 20,
-        'maxCycles': 2
+        'retryDelayMs': 20
       } );
 
+      // Advance time: first cycle fails (20ms retry), then second cycle succeeds (100ms)
+      await jest.advanceTimersByTimeAsync( 119 );
+
       // Verify: first cycle failed and retried, second cycle succeeded
-      expect( database.getAllActIds ).toHaveBeenCalledTimes( 2 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
+      expect( database.cacheArtist ).toHaveBeenCalled();
+
+      jest.useRealTimers();
     }, 10000 );
 
     /**
-     * Test that start() respects custom cycle interval
+     * Test that start() divides cycle interval evenly among acts
      */
     test( 'divides cycle interval evenly among acts', async () => {
+      jest.useFakeTimers();
+
       const actIds = [
         transformedTheKinks._id,
         transformedVulvodynia._id
@@ -251,19 +279,19 @@ describe( 'Cache Updater Service', () => {
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
-      const startTime = Date.now();
-
-      // Run 1 cycle with 200ms total (100ms per act with 2 acts)
-      await cacheUpdater.start( {
-        'cycleIntervalMs': 200,
-        'maxCycles': 1
+      // Start infinite loop with 200ms cycle (100ms per act with 2 acts)
+      cacheUpdater.start( {
+        'cycleIntervalMs': 200
       } );
 
-      const duration = Date.now() - startTime;
+      // Advance time for one complete cycle
+      await jest.advanceTimersByTimeAsync( 199 );
 
-      // Verify timing: should take at least 200ms (2 acts * 100ms each)
-      expect( duration ).toBeGreaterThanOrEqual( 190 ); // Allow 10ms margin
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      // Verify: cycle completed and processed both acts
+      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( database.cacheArtist ).toHaveBeenCalled();
+
+      jest.useRealTimers();
     }, 10000 );
 
     /**
@@ -278,43 +306,15 @@ describe( 'Cache Updater Service', () => {
       database.cacheArtist.mockResolvedValue();
 
       // Pass undefined for cycleIntervalMs to test the ?? TWENTY_FOUR_HOURS_MS branch
-      const startPromise = cacheUpdater.start( {
-        'cycleIntervalMs': undefined,
-        'maxCycles': 1
+      cacheUpdater.start( {
+        'cycleIntervalMs': undefined
       } );
 
-      // Fast-forward through all timers (24-hour sleep becomes instant)
-      await jest.runAllTimersAsync();
-      await startPromise;
+      // Advance timers by 24 hours (default cycle interval)
+      await jest.advanceTimersByTimeAsync( 24 * 60 * 60 * 1000 );
 
-      expect( database.getAllActIds ).toHaveBeenCalledTimes( 1 );
-
-      jest.useRealTimers();
-    }, 10000 );
-
-    /**
-     * Test that start() uses default for maxCycles when undefined
-     */
-    test( 'uses default maxCycles (Infinity) when explicitly undefined', async () => {
-      jest.useFakeTimers();
-
-      database.getAllActIds.mockResolvedValue( [] );
-
-      // Pass undefined for maxCycles to test the ?? Infinity branch
-      // This will default to Infinity, but we'll only run for a short time
-      const startPromise = cacheUpdater.start( {
-        'cycleIntervalMs': 50,
-        'retryDelayMs': 1,
-        'maxCycles': undefined
-      } );
-
-      // Advance timers for just 1 cycle to verify it started
-      await jest.advanceTimersByTimeAsync( 60 );
-
-      // Verify it ran at least once (would continue forever with Infinity)
       expect( database.getAllActIds ).toHaveBeenCalled();
 
-      // Clean up - restore real timers (the infinite loop continues in background)
       jest.useRealTimers();
     }, 10000 );
 

@@ -75,26 +75,17 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
  * @param {object} options - Configuration options
  * @param {number} options.cycleIntervalMs - Total cycle duration in ms (default: 24 hours)
  * @param {number} options.retryDelayMs - Retry delay on error in ms (default: 1 minute)
- * @param {number} options.maxCycles - Maximum cycles to run (default: Infinity for production)
- * @returns {Promise<void>} Resolves when maxCycles reached or never (if Infinity)
+ * @returns {Promise<void>} Never resolves (runs forever)
  */
 const start = async ( options ) => {
   // Apply defaults explicitly to improve testability
   const cycleIntervalMs = options?.cycleIntervalMs ?? TWENTY_FOUR_HOURS_MS;
   const retryDelayMs = options?.retryDelayMs ?? ONE_MINUTE_MS;
-  const maxCycles = options?.maxCycles ?? Infinity;
 
-  // Run cycles perpetually (or until maxCycles reached)
-  let cyclesRun = 0;
-
+  // Run cycles perpetually
   // eslint-disable-next-line no-constant-condition
   while ( true ) {
     await runCycle( cycleIntervalMs, retryDelayMs );
-    cyclesRun++;
-
-    if ( cyclesRun >= maxCycles ) {
-      break;
-    }
   }
 };
 
