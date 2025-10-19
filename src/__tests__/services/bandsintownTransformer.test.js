@@ -393,6 +393,22 @@ describe( 'Bandsintown Transformer', () => {
 
       expect( result ).toEqual( [] );
     } );
+
+    /**
+     * Test handling of null event name
+     */
+    test( 'handles events with null name gracefully', () => {
+      const eventWithNullName = [
+        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+          'name': null
+        } )[ 0 ]
+      ];
+
+      const result = bandsintownTransformer.transformEvents( eventWithNullName );
+
+      expect( result[ 0 ].name ).toBe( '' );
+      expect( result[ 0 ].date ).toMatch( /^\d{4}-\d{2}-\d{2}$/u );
+    } );
   } );
 
   describe( 'filterPastEvents', () => {
