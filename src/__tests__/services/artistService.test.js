@@ -298,9 +298,9 @@ describe( 'Artist Service', () => {
     } );
 
     /**
-     * Test that events are returned even if Bandsintown fetch fails
+     * Test that empty events array is returned when Bandsintown returns no events
      */
-    test( 'returns empty events array if Bandsintown fetch fails', async () => {
+    test( 'returns empty events array when Bandsintown returns no events', async () => {
       const artistId = transformedVulvodynia._id;
 
       database.getArtistFromCache.mockResolvedValue( null );
@@ -313,6 +313,21 @@ describe( 'Artist Service', () => {
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
       expect( result ).toHaveProperty( 'events' );
       expect( result.events ).toEqual( [] );
+    } );
+
+    /**
+     * Test that Bandsintown fetch errors cause getArtist to fail
+     */
+    test( 'throws error when Bandsintown fetch fails', async () => {
+      const artistId = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+
+      await expect( artistService.getArtist( artistId ) ).rejects.toThrow( 'Network error' );
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
     } );
 
     /**
