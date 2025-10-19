@@ -3,13 +3,9 @@
  * @module services/cacheUpdater
  */
 
-const bandsintownTransformer = require( './bandsintownTransformer' );
 const database = require( './database' );
-const ldJsonExtractor = require( './ldJsonExtractor' );
-const musicbrainzClient = require( './musicbrainz' );
-const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
-const { determineStatus, getBerlinTimestamp } = require( './artistService' );
+const { fetchAndEnrichArtistData } = require( './artistService' );
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
@@ -25,27 +21,6 @@ const sleep = ( ms ) => new Promise( ( resolve ) => {
 } );
 
 /**
- * Fetches Bandsintown events for an artist
- * @param {object} artistData - Transformed artist data with relations
- * @returns {Promise<Array>} Array of transformed events or empty array
- */
-const fetchEvents = async ( artistData ) => {
-  if ( !artistData.relations || !artistData.relations.bandsintown ) {
-    return [];
-  }
-
-  const bandsintownUrl = artistData.relations.bandsintown;
-
-  try {
-    const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
-
-    return bandsintownTransformer.transformEvents( ldJsonData );
-  } catch ( error ) {
-    return [];
-  }
-};
-
-/**
  * Updates a single act by fetching fresh data and replacing cache
  * Skips update on error without throwing
  * @param {string} actId - The MusicBrainz artist ID to update
@@ -53,23 +28,8 @@ const fetchEvents = async ( artistData ) => {
  */
 const updateAct = async ( actId ) => {
   try {
-    // Fetch fresh data from MusicBrainz
-    const mbData = await musicbrainzClient.fetchArtist( actId );
-    const transformedData = musicbrainzTransformer.transformArtistData( mbData );
-
-    // Fetch events if available
-    const events = await fetchEvents( transformedData );
-
-    // Determine status based on events
-    const finalStatus = determineStatus( events, transformedData.status );
-
-    // Prepare data with timestamp
-    const dataToCache = {
-      ...transformedData,
-      'status': finalStatus,
-      'updatedAt': getBerlinTimestamp(),
-      events
-    };
+    // Fetch and enrich artist data (with silent event failures)
+    const dataToCache = await fetchAndEnrichArtistData( actId, true );
 
     // Replace cache entry
     await database.cacheArtist( dataToCache );

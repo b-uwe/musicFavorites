@@ -74,17 +74,51 @@ const determineStatus = ( events, musicbrainzStatus ) => {
 /**
  * Fetches Bandsintown events for an artist
  * @param {object} artistData - Transformed artist data with relations
+ * @param {boolean} silentFail - If true, returns empty array on error instead of throwing
  * @returns {Promise<Array>} Array of transformed events or empty array
  */
-const fetchBandsintownEvents = async ( artistData ) => {
-  if ( !artistData.relations || !artistData.relations.bandsintown ) {
+const fetchBandsintownEvents = async ( artistData, silentFail = false ) => {
+  if ( !artistData.relations?.bandsintown ) {
     return [];
   }
 
   const bandsintownUrl = artistData.relations.bandsintown;
-  const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
 
-  return bandsintownTransformer.transformEvents( ldJsonData );
+  try {
+    const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
+
+    return bandsintownTransformer.transformEvents( ldJsonData );
+  } catch ( error ) {
+    if ( silentFail ) {
+      return [];
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetches and enriches artist data from MusicBrainz with events and computed status
+ * @param {string} artistId - The MusicBrainz artist ID
+ * @param {boolean} silentEventFail - If true, event fetch errors return empty array instead of throwing
+ * @returns {Promise<object>} Complete artist data with events, status, and timestamp
+ */
+const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => {
+  // Fetch fresh data from MusicBrainz
+  const mbData = await musicbrainzClient.fetchArtist( artistId );
+  const transformedData = musicbrainzTransformer.transformArtistData( mbData );
+
+  // Fetch Bandsintown events if available
+  const events = await fetchBandsintownEvents( transformedData, silentEventFail );
+
+  // Determine status based on events
+  const finalStatus = determineStatus( events, transformedData.status );
+
+  return {
+    ...transformedData,
+    'status': finalStatus,
+    'updatedAt': getBerlinTimestamp(),
+    events
+  };
 };
 
 /**
@@ -114,22 +148,8 @@ const getArtist = async ( artistId ) => {
     return cachedArtist;
   }
 
-  // Cache miss - fetch from MusicBrainz API
-  const mbData = await musicbrainzClient.fetchArtist( artistId );
-  const transformedData = musicbrainzTransformer.transformArtistData( mbData );
-
-  // Fetch Bandsintown events if available
-  const events = await fetchBandsintownEvents( transformedData );
-
-  // Determine status based on events
-  const finalStatus = determineStatus( events, transformedData.status );
-
-  const dataWithEvents = {
-    ...transformedData,
-    'status': finalStatus,
-    'updatedAt': getBerlinTimestamp(),
-    events
-  };
+  // Cache miss - fetch and enrich artist data
+  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
 
   // Cache asynchronously (fire-and-forget) - don't wait for it
   database.cacheArtist( dataWithEvents ).catch( () => {
@@ -148,5 +168,6 @@ const getArtist = async ( artistId ) => {
 module.exports = {
   determineStatus,
   getArtist,
-  getBerlinTimestamp
+  getBerlinTimestamp,
+  fetchAndEnrichArtistData
 };
