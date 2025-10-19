@@ -24,6 +24,10 @@ const EXCLUDED_TYPES = [ 'free streaming', 'streaming', 'purchase for download',
  * @returns {object|null} Object with key and url properties, or null if excluded
  */
 const processRelation = ( relation ) => {
+  if ( !relation || !relation.url || !relation.url.resource ) {
+    return null;
+  }
+
   const { type } = relation;
   const url = relation.url.resource;
 
@@ -55,7 +59,7 @@ const processRelation = ( relation ) => {
  * @returns {object} Transformed artist data
  */
 const transformArtistData = ( mbData ) => {
-  const relations = mbData.relations.
+  const relations = ( mbData.relations || [] ).
     map( processRelation ).
     filter( ( entry ) => entry !== null ).
     reduce( ( acc, { key, url } ) => {
@@ -63,17 +67,18 @@ const transformArtistData = ( mbData ) => {
       return acc;
     }, {} );
 
-  const hasEndDate = Boolean( mbData[ 'life-span' ].end );
-  const isMarkedEnded = Boolean( mbData[ 'life-span' ].ended );
+  const lifeSpan = mbData[ 'life-span' ] || {};
+  const hasEndDate = Boolean( lifeSpan.end );
+  const isMarkedEnded = Boolean( lifeSpan.ended );
   const isEnded = hasEndDate || isMarkedEnded;
   const status = isEnded ? 'disbanded' : 'active';
 
   return {
     '_id': mbData.id,
     'name': mbData.name,
-    'country': mbData.area.name,
-    'region': mbData[ 'begin-area' ].name,
-    'disambiguation': mbData.disambiguation,
+    'country': mbData.area ? mbData.area.name : null,
+    'region': mbData[ 'begin-area' ] ? mbData[ 'begin-area' ].name : null,
+    'disambiguation': mbData.disambiguation || '',
     status,
     relations
   };

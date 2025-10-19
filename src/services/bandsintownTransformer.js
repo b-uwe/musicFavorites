@@ -82,7 +82,7 @@ const extractGeo = ( location ) => {
  * @returns {object} Transformed event object
  */
 const transformEvent = ( event ) => ( {
-  'name': event.name,
+  'name': event.name || '',
   'date': extractDate( event.startDate ),
   'localTime': extractLocalTime( event.startDate ),
   'location': {
