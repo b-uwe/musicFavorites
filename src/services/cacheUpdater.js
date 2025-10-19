@@ -112,7 +112,6 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
     }
   } catch ( error ) {
     console.error( '❌ Cycle error:', error.message );
-    console.log( `⏳ Retrying in ${retryDelayMs / 1000}s...` );
     await sleep( retryDelayMs );
   }
 };
