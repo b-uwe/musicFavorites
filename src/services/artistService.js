@@ -12,6 +12,13 @@ const musicbrainzTransformer = require( './musicbrainzTransformer' );
 let cacheHealthy = true;
 
 /**
+ * Formats current timestamp in Berlin timezone
+ * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
+ * @returns {string} Timestamp (CET/CEST handled automatically)
+ */
+const getBerlinTimestamp = () => new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+/**
  * Determines act status based on upcoming events
  * @param {Array} events - Array of event objects with date field
  * @param {string} musicbrainzStatus - Original status from MusicBrainz
@@ -120,7 +127,7 @@ const getArtist = async ( artistId ) => {
   const dataWithEvents = {
     ...transformedData,
     'status': finalStatus,
-    'updatedAt': new Date().toString(),
+    'updatedAt': getBerlinTimestamp(),
     events
   };
 

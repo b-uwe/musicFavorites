@@ -75,9 +75,9 @@ describe( 'Cache Updater Service', () => {
     } );
 
     /**
-     * Test that updateAct includes human-readable timestamp
+     * Test that updateAct includes Berlin timezone timestamp
      */
-    test( 'includes human-readable updatedAt timestamp in cached data', async () => {
+    test( 'includes Berlin timezone updatedAt timestamp in cached data', async () => {
       const actId = transformedTheKinks._id;
 
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
@@ -90,7 +90,8 @@ describe( 'Cache Updater Service', () => {
 
       expect( cachedData ).toHaveProperty( 'updatedAt' );
       expect( typeof cachedData.updatedAt ).toBe( 'string' );
-      expect( cachedData.updatedAt ).toMatch( /^\w+ \w+ \d{1,2} \d{4} \d{2}:\d{2}:\d{2} GMT[+-]\d{4}/ );
+      // Format: YYYY-MM-DD HH:MM:SS (Berlin timezone, CET/CEST)
+      expect( cachedData.updatedAt ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
     } );
 
     /**
