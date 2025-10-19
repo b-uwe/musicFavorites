@@ -604,7 +604,7 @@ describe( 'Artist Service', () => {
     /**
      * Test that silentFail set to true fails silently
      */
-    test( 'throws error when Bandsintown fetch fails and silentFail is undefined', async () => {
+    test( 'does NOT throw when Bandsintown fetch fails and silentFail is true', async () => {
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
 
       const result = await artistService.fetchBandsintownEvents( transformedVulvodynia, true );
