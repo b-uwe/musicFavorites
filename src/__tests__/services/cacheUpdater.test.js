@@ -118,6 +118,27 @@ describe( 'Cache Updater Service', () => {
       await expect( cacheUpdater.updateAct( actId ) ).resolves.not.toThrow();
       expect( database.cacheArtist ).toHaveBeenCalled();
     } );
+
+    /**
+     * Test that updateAct handles Bandsintown fetch errors gracefully
+     */
+    test( 'handles Bandsintown fetch error and caches with empty events', async () => {
+      const actId = transformedVulvodynia._id;
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
+      database.cacheArtist.mockResolvedValue();
+
+      await cacheUpdater.updateAct( actId );
+
+      expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalled();
+      expect( database.cacheArtist ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          '_id': actId,
+          'events': []
+        } )
+      );
+    } );
   } );
 
   describe( 'start', () => {
