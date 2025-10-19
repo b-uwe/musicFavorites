@@ -147,5 +147,6 @@ const getArtist = async ( artistId ) => {
 
 module.exports = {
   determineStatus,
-  getArtist
+  getArtist,
+  getBerlinTimestamp
 };

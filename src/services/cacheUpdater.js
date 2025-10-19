@@ -9,14 +9,7 @@ const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
-const { determineStatus } = require( './artistService' );
-
-/**
- * Formats current timestamp in Berlin timezone
- * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
- * @returns {string} Timestamp (CET/CEST handled automatically)
- */
-const getBerlinTimestamp = () => new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+const { determineStatus, getBerlinTimestamp } = require( './artistService' );
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
