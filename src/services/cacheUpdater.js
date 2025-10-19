@@ -1,5 +1,6 @@
 /**
- * Cache updater service - 24-hour background update cycle
+ * Cache updater service - dual update strategy
+ * Sequential bootstrap on startup, then 24-hour cycle-based updates
  * @module services/cacheUpdater
  */
 
@@ -8,6 +9,8 @@ const database = require( './database' );
 const { fetchAndEnrichArtistData } = require( './artistService' );
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+const THIRTY_SECONDS_MS = 30 * 1000;
 const ONE_MINUTE_MS = 60 * 1000;
 
 /**
@@ -70,8 +73,40 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
 };
 
 /**
- * Starts the update cycle
- * Runs perpetually in background, updating all cached acts
+ * Runs a single sequential update of all acts with fixed 30s pauses
+ * @returns {Promise<number>} Number of acts processed
+ */
+const runSequentialUpdate = async () => {
+  try {
+    // Fetch all act IDs from cache
+    const actIds = await database.getAllActIds();
+
+    console.log( `🔄 Starting sequential update for ${actIds.length} acts...` );
+
+    if ( actIds.length === 0 ) {
+      console.log( '✓ Sequential update complete (cache empty)' );
+
+      return 0;
+    }
+
+    // Update each act with fixed 30s pause
+    for ( const actId of actIds ) {
+      await updateAct( actId );
+      await sleep( THIRTY_SECONDS_MS );
+    }
+
+    console.log( `✓ Sequential update complete (${actIds.length} acts processed)` );
+
+    return actIds.length;
+  } catch ( error ) {
+    console.error( '❌ Sequential update error:', error.message );
+
+    return 0;
+  }
+};
+
+/**
+ * Starts dual update strategy: sequential bootstrap then cycle-based
  * @param {object} options - Configuration options
  * @param {number} options.cycleIntervalMs - Total cycle duration in ms (default: 24 hours)
  * @param {number} options.retryDelayMs - Retry delay on error in ms (default: 1 minute)
@@ -82,7 +117,15 @@ const start = async ( options ) => {
   const cycleIntervalMs = options?.cycleIntervalMs ?? TWENTY_FOUR_HOURS_MS;
   const retryDelayMs = options?.retryDelayMs ?? ONE_MINUTE_MS;
 
-  // Run cycles perpetually
+  // Phase 1: Run sequential update once
+  await runSequentialUpdate();
+
+  // Phase 2: Wait 12 hours
+  console.log( '⏳ Waiting 12 hours before starting cycle-based updates...' );
+  await sleep( TWELVE_HOURS_MS );
+
+  // Phase 3: Start perpetual cycle-based updates
+  console.log( '🔁 Starting cycle-based update strategy...' );
   // eslint-disable-next-line no-constant-condition
   while ( true ) {
     await runCycle( cycleIntervalMs, retryDelayMs );
@@ -90,6 +133,7 @@ const start = async ( options ) => {
 };
 
 module.exports = {
+  runSequentialUpdate,
   start,
   updateAct
 };
