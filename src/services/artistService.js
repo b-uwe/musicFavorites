@@ -165,10 +165,113 @@ const getArtist = async ( artistId ) => {
   };
 };
 
+/**
+ * Categorizes acts as cached or missing
+ * @param {Array<string>} artistIds - Array of artist IDs
+ * @param {Array<object|null>} cacheResults - Corresponding cache results
+ * @returns {object} Object with cachedActs and missingIds arrays
+ */
+const categorizeActs = ( artistIds, cacheResults ) => {
+  const cachedActs = [];
+  const missingIds = [];
+
+  for ( let i = 0; i < artistIds.length; i += 1 ) {
+    if ( cacheResults[ i ] ) {
+      cachedActs.push( cacheResults[ i ] );
+    } else {
+      missingIds.push( artistIds[ i ] );
+    }
+  }
+
+  return {
+    cachedActs,
+    missingIds
+  };
+};
+
+/**
+ * Handles case where exactly 1 act is missing
+ * @param {string} missingId - The missing artist ID
+ * @param {Array<object>} cachedActs - Already cached acts
+ * @returns {Promise<object>} Result with all acts
+ */
+const handleSingleMissingAct = async ( missingId, cachedActs ) => {
+  const freshData = await fetchAndEnrichArtistData( missingId );
+
+  // Cache asynchronously (fire-and-forget)
+  database.cacheArtist( freshData ).catch( () => {
+    cacheHealthy = false;
+  } );
+
+  // Map _id to musicbrainzId for the freshly fetched act
+  const { _id, ...freshActData } = freshData;
+  const formattedFreshAct = {
+    'musicbrainzId': _id,
+    ...freshActData
+  };
+
+  return {
+    'acts': [ ...cachedActs, formattedFreshAct ]
+  };
+};
+
+/**
+ * Handles case where 2+ acts are missing
+ * @param {Array<string>} missingIds - Array of missing artist IDs
+ * @param {number} cachedCount - Number of cached acts
+ * @returns {object} Error response with background fetch notification
+ */
+const handleMultipleMissingActs = ( missingIds, cachedCount ) => {
+  const fetchQueue = require( './fetchQueue' );
+
+  // Trigger background sequential fetch (adds to queue, prevents duplicates)
+  fetchQueue.triggerBackgroundFetch( missingIds );
+
+  return {
+    'error': {
+      'message': `${missingIds.length} acts not cached. ` +
+        'Background fetch initiated. Please try again in a few minutes.',
+      'missingCount': missingIds.length,
+      cachedCount
+    }
+  };
+};
+
+/**
+ * Fetches multiple acts with smart caching strategy
+ * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
+ * @returns {Promise<object>} Result object with acts array or error
+ */
+const fetchMultipleActs = async ( artistIds ) => {
+  if ( !Array.isArray( artistIds ) || artistIds.length === 0 ) {
+    return {
+      'error': {
+        'message': 'Invalid input: artistIds must be a non-empty array'
+      }
+    };
+  }
+
+  const cacheResults = await Promise.all( artistIds.map( ( id ) => database.getArtistFromCache( id ) ) );
+  const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
+
+  if ( missingIds.length === 0 ) {
+    return {
+      'acts': cachedActs
+    };
+  }
+
+  if ( missingIds.length === 1 ) {
+    return handleSingleMissingAct( missingIds[ 0 ], cachedActs );
+  }
+
+  return handleMultipleMissingActs( missingIds, cachedActs.length );
+};
+
 module.exports = {
   determineStatus,
-  getArtist,
-  getBerlinTimestamp,
+  fetchAndEnrichArtistData,
   fetchBandsintownEvents,
-  fetchAndEnrichArtistData
+  fetchMultipleActs,
+  getArtist,
+  getBerlinTimestamp
 };
