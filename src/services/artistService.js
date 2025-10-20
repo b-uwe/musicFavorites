@@ -168,41 +168,6 @@ const getArtist = async ( artistId ) => {
   };
 };
 
-/**
- * Promise-based sleep utility
- * @param {number} ms - Milliseconds to sleep
- * @returns {Promise<void>} Resolves after delay
- */
-const sleep = ( ms ) => new Promise( ( resolve ) => {
-  /* global setTimeout */
-  setTimeout( resolve, ms );
-} );
-
-/**
- * Processes the fetch queue continuously until empty
- * Uses 30-second delays between fetches to protect upstream APIs
- * @returns {Promise<void>} Resolves when queue is empty
- */
-const processFetchQueue = async () => {
-  const THIRTY_SECONDS_MS = 30 * 1000;
-
-  // Process queue until empty
-  while ( fetchQueue.size > 0 ) {
-    // Get first item from Set
-    const [ artistId ] = fetchQueue;
-
-    // Remove from queue before processing
-    fetchQueue.delete( artistId );
-
-    // Fetch and cache the artist
-    await cacheUpdater.updateAct( artistId );
-
-    // Wait 30 seconds before next fetch (only if queue not empty)
-    if ( fetchQueue.size > 0 ) {
-      await sleep( THIRTY_SECONDS_MS );
-    }
-  }
-};
 
 /**
  * Triggers background sequential fetch for missing artist IDs
@@ -226,7 +191,7 @@ const triggerBackgroundSequentialFetch = ( artistIds ) => {
   isBackgroundFetchRunning = true;
 
   // Process queue in background (fire-and-forget)
-  processFetchQueue().
+  cacheUpdater.processFetchQueue( fetchQueue ).
     then( () => {
       isBackgroundFetchRunning = false;
     } ).

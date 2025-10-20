@@ -7,6 +7,7 @@ const database = require( '../../services/database' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
 const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
+const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
@@ -658,5 +659,111 @@ describe( 'Cache Updater Service', () => {
 
       jest.useRealTimers();
     }, 20000 );
+  } );
+
+  describe( 'processFetchQueue', () => {
+    /**
+     * Test basic queue processing with multiple items
+     */
+    test( 'processes all items in queue sequentially with 30s pauses', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id-1', 'id-2', 'id-3' ] );
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockResolvedValue();
+
+      const promise = cacheUpdater.processFetchQueue( queue );
+
+      // Process first item (no delay before first)
+      await jest.advanceTimersByTimeAsync( 0 );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+
+      // 30-second pause before second item
+      await jest.advanceTimersByTimeAsync( 30000 );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+
+      // 30-second pause before third item
+      await jest.advanceTimersByTimeAsync( 30000 );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 3 );
+
+      // No delay after last item - promise should resolve
+      await promise;
+
+      // Verify queue is empty
+      expect( queue.size ).toBe( 0 );
+
+      jest.useRealTimers();
+    } );
+
+    /**
+     * Test queue with single item (no delay)
+     */
+    test( 'processes single item without delay', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'single-id' ] );
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureJungleRot );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockResolvedValue();
+
+      const promise = cacheUpdater.processFetchQueue( queue );
+
+      // Should process immediately without delay
+      await jest.advanceTimersByTimeAsync( 0 );
+      await promise;
+
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+      expect( queue.size ).toBe( 0 );
+
+      jest.useRealTimers();
+    } );
+
+    /**
+     * Test empty queue (should return immediately)
+     */
+    test( 'returns immediately when queue is empty', async () => {
+      const queue = new Set();
+
+      await cacheUpdater.processFetchQueue( queue );
+
+      expect( database.cacheArtist ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test error handling - continues processing on individual errors
+     */
+    test( 'continues processing queue even when individual updates fail', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id-fail', 'id-success' ] );
+      const consoleSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      musicbrainzClient.fetchArtist.
+        mockRejectedValueOnce( new Error( 'Fetch failed' ) ).
+        mockResolvedValueOnce( fixtureJungleRot );
+
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockResolvedValue();
+
+      const promise = cacheUpdater.processFetchQueue( queue );
+
+      // Process failing item
+      await jest.advanceTimersByTimeAsync( 0 );
+      expect( consoleSpy ).toHaveBeenCalledWith( 'Failed to update act id-fail:', 'Fetch failed' );
+
+      // 30-second pause before success item
+      await jest.advanceTimersByTimeAsync( 30000 );
+      await promise;
+
+      // Verify successful item was processed
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+      expect( queue.size ).toBe( 0 );
+
+      consoleSpy.mockRestore();
+      jest.useRealTimers();
+    } );
   } );
 } );
