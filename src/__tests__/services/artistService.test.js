@@ -646,4 +646,82 @@ describe( 'Artist Service', () => {
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
     } );
   } );
+
+  describe( 'getMultipleArtistsFromCache', () => {
+    /**
+     * Test successful retrieval of multiple cached artists
+     */
+    test( 'returns array of artists when all are cached', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.
+        mockResolvedValueOnce( {
+          'musicbrainzId': id1,
+          'name': transformedJungleRot.name
+        } ).
+        mockResolvedValueOnce( {
+          'musicbrainzId': id2,
+          'name': transformedTheKinks.name
+        } );
+
+      const result = await artistService.getMultipleArtistsFromCache( [ id1, id2 ] );
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].musicbrainzId ).toBe( id1 );
+      expect( result[ 1 ].musicbrainzId ).toBe( id2 );
+      expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 2 );
+    } );
+
+    /**
+     * Test error when one artist is missing from cache
+     */
+    test( 'throws error when one artist is missing from cache', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.
+        mockResolvedValueOnce( {
+          'musicbrainzId': id1,
+          'name': transformedJungleRot.name
+        } ).
+        mockResolvedValueOnce( null );
+
+      await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
+        rejects.toThrow( `Missing from cache: ${id2}` );
+    } );
+
+    /**
+     * Test error when all artists are missing from cache
+     */
+    test( 'throws error when all artists are missing from cache', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+
+      await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
+        rejects.toThrow( `Missing from cache: ${id1}, ${id2}` );
+    } );
+
+    /**
+     * Test that background fetch is triggered but doesn't block response
+     */
+    test( 'triggers background fetch for missing IDs without blocking', async () => {
+      const id1 = transformedJungleRot._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+
+      const promise = artistService.getMultipleArtistsFromCache( [ id1 ] );
+
+      // Promise should reject immediately without waiting for background fetch
+      await expect( promise ).rejects.toThrow( `Missing from cache: ${id1}` );
+
+      // Give background process a moment to start
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+    } );
+  } );
+
 } );

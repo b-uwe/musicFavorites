@@ -37,7 +37,19 @@ app.get( '/acts/:id', async ( req, res ) => {
   res.set( 'Expires', '0' );
 
   try {
-    const actData = await artistService.getArtist( id );
+    // Check if multiple IDs requested (comma-separated)
+    const ids = id.split( ',' );
+    let actsData;
+
+    if ( ids.length > 1 ) {
+      // Multiple IDs: cache-only retrieval
+      actsData = await artistService.getMultipleArtistsFromCache( ids );
+    } else {
+      // Single ID: existing behavior with API fallback
+      const actData = await artistService.getArtist( id );
+
+      actsData = [ actData ];
+    }
 
     return res.json( {
       'meta': {
@@ -50,7 +62,7 @@ app.get( '/acts/:id', async ( req, res ) => {
         'repository': 'https://github.com/b-uwe/musicFavorites'
       },
       'type': 'acts',
-      'acts': [ actData ]
+      'acts': actsData
     } );
   } catch ( error ) {
     return res.status( 500 ).json( {

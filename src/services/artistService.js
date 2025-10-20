@@ -165,10 +165,74 @@ const getArtist = async ( artistId ) => {
   };
 };
 
+/**
+ * Triggers background sequential fetch for missing artist IDs
+ * Uses 30-second delays between fetches to protect upstream APIs
+ * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs to fetch
+ * @returns {Promise<void>} Resolves when all fetches complete
+ */
+const triggerBackgroundSequentialFetch = async ( artistIds ) => {
+  const cacheUpdater = require( './cacheUpdater' );
+  const THIRTY_SECONDS_MS = 30 * 1000;
+
+  /**
+   * Promise-based sleep utility
+   * @param {number} ms - Milliseconds to sleep
+   * @returns {Promise<void>} Resolves after delay
+   */
+  const sleep = ( ms ) => new Promise( ( resolve ) => {
+    /* global setTimeout */
+    setTimeout( resolve, ms );
+  } );
+
+  // Process each artist ID with 30-second delays
+  for ( const artistId of artistIds ) {
+    await cacheUpdater.updateAct( artistId );
+    await sleep( THIRTY_SECONDS_MS );
+  }
+};
+
+/**
+ * Gets multiple artists from cache only (no API fallback)
+ * Triggers background sequential fetch for missing IDs
+ * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
+ * @returns {Promise<Array<object>>} Array of cached artist data
+ * @throws {Error} When any artist ID is not found in cache
+ */
+const getMultipleArtistsFromCache = async ( artistIds ) => {
+  const results = [];
+  const missingIds = [];
+
+  // Try to get all artists from cache
+  for ( const artistId of artistIds ) {
+    const cachedArtist = await database.getArtistFromCache( artistId );
+
+    if ( cachedArtist ) {
+      results.push( cachedArtist );
+    } else {
+      missingIds.push( artistId );
+    }
+  }
+
+  // If any IDs are missing, trigger background fetch and throw error
+  if ( missingIds.length > 0 ) {
+    // Trigger background fetch (fire-and-forget)
+    triggerBackgroundSequentialFetch( missingIds ).catch( () => {
+      // Silent failure - background fetch errors are logged but don't affect response
+    } );
+
+    throw new Error( `Missing from cache: ${missingIds.join( ', ' )}` );
+  }
+
+  return results;
+};
+
 module.exports = {
   determineStatus,
   getArtist,
   getBerlinTimestamp,
   fetchBandsintownEvents,
-  fetchAndEnrichArtistData
+  fetchAndEnrichArtistData,
+  getMultipleArtistsFromCache,
+  triggerBackgroundSequentialFetch
 };

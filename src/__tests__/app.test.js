@@ -284,3 +284,67 @@ describe( 'GET /acts/:id - HTTP headers', () => {
     expect( response.headers.expires ).toBe( '0' );
   } );
 } );
+
+describe( 'GET /acts/:id - Multiple IDs success', () => {
+  /**
+   * Test multiple IDs with all cached
+   */
+  test( 'returns multiple acts when all IDs are cached', async () => {
+    const id1 = transformedJungleRot.musicbrainzId;
+    const id2 = transformedTheKinks.musicbrainzId;
+
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [
+      transformedJungleRot,
+      transformedTheKinks
+    ] );
+
+    const response = await request( app ).
+      get( `/acts/${id1},${id2}` ).
+      expect( 200 );
+
+    expect( response.body.type ).toBe( 'acts' );
+    expect( Array.isArray( response.body.acts ) ).toBe( true );
+    expect( response.body.acts ).toHaveLength( 2 );
+    expect( response.body.acts[ 0 ].musicbrainzId ).toBe( id1 );
+    expect( response.body.acts[ 1 ].musicbrainzId ).toBe( id2 );
+  } );
+} );
+
+describe( 'GET /acts/:id - Multiple IDs errors', () => {
+  /**
+   * Test error when one ID is missing from cache
+   */
+  test( 'returns error when one ID is not cached', async () => {
+    const id1 = transformedJungleRot.musicbrainzId;
+    const id2 = transformedTheKinks.musicbrainzId;
+    const errorMsg = `Missing from cache: ${id2}`;
+
+    artistService.getMultipleArtistsFromCache.mockRejectedValue( new Error( errorMsg ) );
+
+    const response = await request( app ).
+      get( `/acts/${id1},${id2}` ).
+      expect( 500 );
+
+    expect( response.body.type ).toBe( 'error' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toContain( 'Missing from cache' );
+  } );
+
+  /**
+   * Test error when all IDs are missing from cache
+   */
+  test( 'returns error when all IDs are not cached', async () => {
+    const id1 = transformedJungleRot.musicbrainzId;
+    const id2 = transformedTheKinks.musicbrainzId;
+    const errorMsg = `Missing from cache: ${id1}, ${id2}`;
+
+    artistService.getMultipleArtistsFromCache.mockRejectedValue( new Error( errorMsg ) );
+
+    const response = await request( app ).
+      get( `/acts/${id1},${id2}` ).
+      expect( 500 );
+
+    expect( response.body.type ).toBe( 'error' );
+    expect( response.body.error.details ).toContain( 'Missing from cache' );
+  } );
+} );
