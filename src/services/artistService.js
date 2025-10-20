@@ -4,6 +4,7 @@
  */
 
 const bandsintownTransformer = require( './bandsintownTransformer' );
+const cacheUpdater = require( './cacheUpdater' );
 const database = require( './database' );
 const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
@@ -168,23 +169,22 @@ const getArtist = async ( artistId ) => {
 };
 
 /**
+ * Promise-based sleep utility
+ * @param {number} ms - Milliseconds to sleep
+ * @returns {Promise<void>} Resolves after delay
+ */
+const sleep = ( ms ) => new Promise( ( resolve ) => {
+  /* global setTimeout */
+  setTimeout( resolve, ms );
+} );
+
+/**
  * Processes the fetch queue continuously until empty
  * Uses 30-second delays between fetches to protect upstream APIs
  * @returns {Promise<void>} Resolves when queue is empty
  */
 const processFetchQueue = async () => {
-  const cacheUpdater = require( './cacheUpdater' );
   const THIRTY_SECONDS_MS = 30 * 1000;
-
-  /**
-   * Promise-based sleep utility
-   * @param {number} ms - Milliseconds to sleep
-   * @returns {Promise<void>} Resolves after delay
-   */
-  const sleep = ( ms ) => new Promise( ( resolve ) => {
-    /* global setTimeout */
-    setTimeout( resolve, ms );
-  } );
 
   // Process queue until empty
   while ( fetchQueue.size > 0 ) {

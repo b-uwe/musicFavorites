@@ -3,6 +3,10 @@
  * @module __tests__/services/artistService
  */
 
+jest.mock( '../../services/database' );
+jest.mock( '../../services/musicbrainz' );
+jest.mock( '../../services/ldJsonExtractor' );
+
 const artistService = require( '../../services/artistService' );
 const database = require( '../../services/database' );
 const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
@@ -13,10 +17,6 @@ const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
-
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
 
 const { determineStatus } = artistService;
 
