@@ -174,42 +174,6 @@ const ensureCacheHealthy = async () => {
 };
 
 /**
- * Gets artist data with transparent caching
- * Checks cache first, falls back to MusicBrainz API if not found
- * Caches API results asynchronously (fire-and-forget)
- * Protects upstream services by failing fast when cache is unhealthy
- * @param {string} artistId - The MusicBrainz artist ID
- * @returns {Promise<object>} Artist data (from cache or API)
- * @throws {Error} When cache is unhealthy or unavailable
- */
-const getArtist = async ( artistId ) => {
-  await ensureCacheHealthy();
-
-  // Try to get from cache first
-  const cachedArtist = await database.getArtistFromCache( artistId );
-
-  if ( cachedArtist ) {
-    return cachedArtist;
-  }
-
-  // Cache miss - fetch and enrich artist data
-  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
-
-  // Cache asynchronously (fire-and-forget) - don't wait for it
-  database.cacheArtist( dataWithEvents ).catch( () => {
-    cacheHealthy = false;
-  } );
-
-  // Map _id to musicbrainzId for API response
-  const { _id, ...artistData } = dataWithEvents;
-
-  return {
-    'musicbrainzId': _id,
-    ...artistData
-  };
-};
-
-/**
  * Gets multiple artists with smart caching strategy
  * - If all cached: return immediately
  * - If exactly 1 missing: fetch it immediately and return all
@@ -271,7 +235,6 @@ const getMultipleArtistsFromCache = async ( artistIds ) => {
 
 module.exports = {
   determineStatus,
-  getArtist,
   getBerlinTimestamp,
   fetchBandsintownEvents,
   fetchAndEnrichArtistData,
