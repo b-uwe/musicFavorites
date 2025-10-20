@@ -37,19 +37,11 @@ app.get( '/acts/:id', async ( req, res ) => {
   res.set( 'Expires', '0' );
 
   try {
-    // Check if multiple IDs requested (comma-separated)
+    // Split comma-separated IDs (single ID becomes array of one)
     const ids = id.split( ',' );
-    let actsData;
 
-    if ( ids.length > 1 ) {
-      // Multiple IDs: cache-only retrieval
-      actsData = await artistService.getMultipleArtistsFromCache( ids );
-    } else {
-      // Single ID: existing behavior with API fallback
-      const actData = await artistService.getArtist( id );
-
-      actsData = [ actData ];
-    }
+    // Fetch acts (handles both single and multiple IDs)
+    const actsData = await artistService.getMultipleArtistsFromCache( ids );
 
     return res.json( {
       'meta': {

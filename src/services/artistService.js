@@ -124,50 +124,6 @@ const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => 
   };
 };
 
-/**
- * Gets artist data with transparent caching
- * Checks cache first, falls back to MusicBrainz API if not found
- * Caches API results asynchronously (fire-and-forget)
- * Protects upstream services by failing fast when cache is unhealthy
- * @param {string} artistId - The MusicBrainz artist ID
- * @returns {Promise<object>} Artist data (from cache or API)
- * @throws {Error} When cache is unhealthy or unavailable
- */
-const getArtist = async ( artistId ) => {
-  // If cache was flagged unhealthy, test it before proceeding
-  if ( !cacheHealthy ) {
-    try {
-      await database.testCacheHealth();
-      cacheHealthy = true;
-    } catch ( error ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
-    }
-  }
-
-  // Try to get from cache first
-  const cachedArtist = await database.getArtistFromCache( artistId );
-
-  if ( cachedArtist ) {
-    return cachedArtist;
-  }
-
-  // Cache miss - fetch and enrich artist data
-  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
-
-  // Cache asynchronously (fire-and-forget) - don't wait for it
-  database.cacheArtist( dataWithEvents ).catch( () => {
-    cacheHealthy = false;
-  } );
-
-  // Map _id to musicbrainzId for API response
-  const { _id, ...artistData } = dataWithEvents;
-
-  return {
-    'musicbrainzId': _id,
-    ...artistData
-  };
-};
-
 
 /**
  * Triggers background sequential fetch for missing artist IDs
@@ -202,15 +158,70 @@ const triggerBackgroundSequentialFetch = ( artistIds ) => {
 };
 
 /**
+ * Tests cache health if flagged unhealthy, throws error if still down
+ * @returns {Promise<void>} Resolves if cache is healthy
+ * @throws {Error} When cache is unavailable
+ */
+const ensureCacheHealthy = async () => {
+  if ( !cacheHealthy ) {
+    try {
+      await database.testCacheHealth();
+      cacheHealthy = true;
+    } catch ( error ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    }
+  }
+};
+
+/**
+ * Gets artist data with transparent caching
+ * Checks cache first, falls back to MusicBrainz API if not found
+ * Caches API results asynchronously (fire-and-forget)
+ * Protects upstream services by failing fast when cache is unhealthy
+ * @param {string} artistId - The MusicBrainz artist ID
+ * @returns {Promise<object>} Artist data (from cache or API)
+ * @throws {Error} When cache is unhealthy or unavailable
+ */
+const getArtist = async ( artistId ) => {
+  await ensureCacheHealthy();
+
+  // Try to get from cache first
+  const cachedArtist = await database.getArtistFromCache( artistId );
+
+  if ( cachedArtist ) {
+    return cachedArtist;
+  }
+
+  // Cache miss - fetch and enrich artist data
+  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
+
+  // Cache asynchronously (fire-and-forget) - don't wait for it
+  database.cacheArtist( dataWithEvents ).catch( () => {
+    cacheHealthy = false;
+  } );
+
+  // Map _id to musicbrainzId for API response
+  const { _id, ...artistData } = dataWithEvents;
+
+  return {
+    'musicbrainzId': _id,
+    ...artistData
+  };
+};
+
+/**
  * Gets multiple artists with smart caching strategy
  * - If all cached: return immediately
  * - If exactly 1 missing: fetch it immediately and return all
  * - If 2+ missing: return error and trigger background sequential fetch
+ * Protects upstream services by failing fast when cache is unhealthy
  * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
  * @returns {Promise<Array<object>>} Array of artist data
- * @throws {Error} When 2 or more artist IDs are not found in cache
+ * @throws {Error} When 2 or more artist IDs are not found in cache or cache is unhealthy
  */
 const getMultipleArtistsFromCache = async ( artistIds ) => {
+  await ensureCacheHealthy();
+
   const results = [];
   const missingIds = [];
 
@@ -231,7 +242,7 @@ const getMultipleArtistsFromCache = async ( artistIds ) => {
 
     // Cache asynchronously (fire-and-forget)
     database.cacheArtist( freshData ).catch( () => {
-      // Silently fail - caching is best-effort for this case
+      cacheHealthy = false;
     } );
 
     // Map _id to musicbrainzId for API response

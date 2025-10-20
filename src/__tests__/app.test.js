@@ -26,7 +26,7 @@ describe( 'GET /acts/:id - Basic functionality', () => {
   test( 'returns acts array with valid MusicBrainz UUID', async () => {
     const actId = transformedJungleRot.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedJungleRot ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -45,7 +45,7 @@ describe( 'GET /acts/:id - Basic functionality', () => {
   test( 'returns acts data with different MusicBrainz UUID', async () => {
     const actId = transformedTheKinks.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedTheKinks );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedTheKinks ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -134,7 +134,7 @@ describe( 'GET /acts/:id - Error handling', () => {
   test( 'returns 500 error for invalid MusicBrainz ID', async () => {
     const invalidId = 'invalid-id-format';
 
-    artistService.getArtist.mockRejectedValue( new Error( 'Invalid artist ID format' ) );
+    artistService.getMultipleArtistsFromCache.mockRejectedValue( new Error( 'Invalid artist ID format' ) );
 
     const response = await request( app ).
       get( `/acts/${invalidId}` ).
@@ -153,7 +153,7 @@ describe( 'GET /acts/:id - Response metadata', () => {
   test( 'meta is the first property in JSON response', async () => {
     const actId = transformedMiseryIndex.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedMiseryIndex ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -173,7 +173,7 @@ describe( 'GET /acts/:id - Response metadata', () => {
   test( 'response includes attribution information', async () => {
     const actId = transformedMiseryIndex.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedMiseryIndex ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -193,7 +193,7 @@ describe( 'GET /acts/:id - Response license', () => {
   test( 'response includes metadata', async () => {
     const actId = transformedWatain.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedWatain );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedWatain ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -212,7 +212,7 @@ describe( 'GET /acts/:id - JSON formatting', () => {
   test( 'response is compact JSON by default', async () => {
     const actId = transformedMiseryIndex.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedMiseryIndex ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -234,7 +234,7 @@ describe( 'GET /acts/:id - JSON formatting', () => {
   test( 'response is beautified with ?pretty query parameter', async () => {
     const actId = transformedMiseryIndex.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedMiseryIndex ] );
 
     const response = await request( app ).
       get( `/acts/${actId}?pretty` ).
@@ -257,7 +257,7 @@ describe( 'GET /acts/:id - HTTP headers', () => {
   test( 'response includes robot blocking headers', async () => {
     const actId = transformedJungleRot.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedJungleRot ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
@@ -273,7 +273,7 @@ describe( 'GET /acts/:id - HTTP headers', () => {
   test( 'response includes no-cache headers', async () => {
     const actId = transformedJungleRot.musicbrainzId;
 
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
+    artistService.getMultipleArtistsFromCache.mockResolvedValue( [ transformedJungleRot ] );
 
     const response = await request( app ).
       get( `/acts/${actId}` ).
