@@ -37,7 +37,82 @@ npm start
 
 ## API Documentation
 
-Endpoints are documented with request and response examples.
+### GET /acts/:id
+
+Retrieve information about one or more music acts.
+
+#### Single Act Request
+
+```bash
+curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1"
+```
+
+**Response Format:**
+```json
+{
+  "meta": {
+    "attribution": {
+      "sources": ["MusicBrainz", "Bandsintown", "Songkick"],
+      "notice": "Data from third-party sources subject to their respective terms..."
+    },
+    "license": "AGPL-3.0",
+    "repository": "https://github.com/b-uwe/musicFavorites"
+  },
+  "type": "acts",
+  "acts": [
+    {
+      "musicbrainzId": "53689c08-f234-4c47-9256-58c8568f06d1",
+      "name": "Jungle Rot",
+      ...
+    }
+  ]
+}
+```
+
+#### Multiple Acts Request (Cache-Only)
+
+Request multiple acts by separating MusicBrainz IDs with commas:
+
+```bash
+curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1,f35e1992-230b-4d63-9e63-a829caccbcd5"
+```
+
+**Important:** Multiple ID requests are served **cache-only**. If any requested ID is not in cache:
+- An immediate error response is returned
+- Missing IDs are automatically fetched in the background (with 30-second delays between fetches)
+- Retry your request after a few moments to retrieve the cached data
+
+**Response Format (Success):**
+```json
+{
+  "meta": { ... },
+  "type": "acts",
+  "acts": [
+    { "musicbrainzId": "...", ... },
+    { "musicbrainzId": "...", ... }
+  ]
+}
+```
+
+**Response Format (Cache Miss):**
+```json
+{
+  "type": "error",
+  "error": {
+    "message": "Failed to fetch artist data",
+    "details": "Missing from cache: <id1>, <id2>"
+  }
+}
+```
+
+#### Query Parameters
+
+- `?pretty` - Enable pretty-printed JSON output
+
+**Example:**
+```bash
+curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1?pretty"
+```
 
 ## Third-Party Data
 
