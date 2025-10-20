@@ -163,6 +163,7 @@ describe( 'GET /acts/:id - Response metadata', () => {
 
     expect( firstKey ).toBe( 'meta' );
     expect( response.body.meta ).toBeDefined();
+    expect( response.body.meta.attribution.sources ).toContain( 'MusicBrainz' );
     expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
   } );
 
