@@ -153,7 +153,19 @@ describe( 'Cache Updater Service', () => {
         transformedVulvodynia._id
       ];
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
       database.cacheArtist.mockResolvedValue();
@@ -188,7 +200,15 @@ describe( 'Cache Updater Service', () => {
 
       const actIds = [ transformedTheKinks._id ];
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
@@ -220,8 +240,16 @@ describe( 'Cache Updater Service', () => {
     test( 'waits when cache is empty and retries', async () => {
       jest.useFakeTimers();
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       // Sequential bootstrap: empty cache
       // Cycle-based: first call empty, second call has acts
+      database.getAllActsWithMetadata.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [ transformedTheKinks._id ] );
@@ -258,8 +286,15 @@ describe( 'Cache Updater Service', () => {
     test( 'retries after getAllActIds error', async () => {
       jest.useFakeTimers();
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       // Sequential bootstrap fails, then cycle-based retries and succeeds
-      database.getAllActIds.mockRejectedValueOnce( new Error( 'Database error' ) );
+      database.getAllActsWithMetadata.mockRejectedValueOnce( new Error( 'Database error' ) );
       database.getAllActIds.mockRejectedValueOnce( new Error( 'Database error' ) );
       database.getAllActIds.mockResolvedValue( [ transformedTheKinks._id ] );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
@@ -299,7 +334,19 @@ describe( 'Cache Updater Service', () => {
         transformedVulvodynia._id
       ];
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
@@ -330,8 +377,16 @@ describe( 'Cache Updater Service', () => {
     test( 'uses default cycleIntervalMs when explicitly undefined', async () => {
       jest.useFakeTimers();
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       // Return 1 act so it doesn't use the long sleep for empty cache
       database.getAllActIds.mockResolvedValue( [ transformedTheKinks._id ] );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
@@ -358,17 +413,118 @@ describe( 'Cache Updater Service', () => {
 
   describe( 'runSequentialUpdate', () => {
     /**
-     * Test that runSequentialUpdate updates all acts sequentially with fixed 30s pauses
+     * Test that runSequentialUpdate updates only stale acts (older than 24h)
+     */
+    test( 'updates only acts with lastUpdated older than 24 hours', async () => {
+      jest.useFakeTimers();
+
+      const now = Date.now();
+      const freshTimestamp = new Date( now - 12 * 60 * 60 * 1000 ).toISOString();
+      const staleTimestamp = new Date( now - 48 * 60 * 60 * 1000 ).toISOString();
+
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': freshTimestamp
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': staleTimestamp
+        }
+      ];
+
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
+      database.cacheArtist.mockResolvedValue();
+
+      const promise = cacheUpdater.runSequentialUpdate();
+
+      // Advance time for 1 update (30s)
+      await jest.advanceTimersByTimeAsync( 30000 );
+
+      const result = await promise;
+
+      expect( result ).toBe( 1 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedVulvodynia._id );
+      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+
+      jest.useRealTimers();
+    }, 10000 );
+
+    /**
+     * Test that runSequentialUpdate includes acts with missing updatedAt
+     */
+    test( 'updates acts with missing updatedAt field', async () => {
+      jest.useFakeTimers();
+
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id
+        }
+      ];
+
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const promise = cacheUpdater.runSequentialUpdate();
+
+      await jest.advanceTimersByTimeAsync( 30000 );
+
+      const result = await promise;
+
+      expect( result ).toBe( 1 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedTheKinks._id );
+
+      jest.useRealTimers();
+    }, 10000 );
+
+    /**
+     * Test that runSequentialUpdate skips all acts when all are fresh
+     */
+    test( 'skips all acts when all are recently updated', async () => {
+      const now = Date.now();
+      const freshTimestamp = new Date( now - 1 * 60 * 60 * 1000 ).toISOString();
+
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': freshTimestamp
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': freshTimestamp
+        }
+      ];
+
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
+
+      const result = await cacheUpdater.runSequentialUpdate();
+
+      expect( result ).toBe( 0 );
+      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that runSequentialUpdate updates all acts sequentially with 30s pauses
      */
     test( 'updates all acts sequentially with 30-second pauses', async () => {
       jest.useFakeTimers();
 
-      const actIds = [
-        transformedTheKinks._id,
-        transformedVulvodynia._id
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
       ];
 
-      database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
       musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
@@ -392,7 +548,7 @@ describe( 'Cache Updater Service', () => {
      * Test that runSequentialUpdate handles empty cache
      */
     test( 'returns 0 when cache is empty', async () => {
-      database.getAllActIds.mockResolvedValue( [] );
+      database.getAllActsWithMetadata.mockResolvedValue( [] );
 
       const result = await cacheUpdater.runSequentialUpdate();
 
@@ -406,13 +562,22 @@ describe( 'Cache Updater Service', () => {
     test( 'continues processing on individual act errors', async () => {
       jest.useFakeTimers();
 
-      const actIds = [
-        transformedTheKinks._id,
-        'invalid-id',
-        transformedVulvodynia._id
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        },
+        {
+          '_id': 'invalid-id',
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        },
+        {
+          '_id': transformedVulvodynia._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
       ];
 
-      database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
       musicbrainzClient.fetchArtist.mockRejectedValueOnce( new Error( 'MusicBrainz error' ) );
       musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
@@ -434,10 +599,10 @@ describe( 'Cache Updater Service', () => {
     }, 10000 );
 
     /**
-     * Test that runSequentialUpdate handles getAllActIds error
+     * Test that runSequentialUpdate handles getAllActsWithMetadata error
      */
-    test( 'returns 0 on getAllActIds error', async () => {
-      database.getAllActIds.mockRejectedValue( new Error( 'Database error' ) );
+    test( 'returns 0 on getAllActsWithMetadata error', async () => {
+      database.getAllActsWithMetadata.mockRejectedValue( new Error( 'Database error' ) );
 
       const result = await cacheUpdater.runSequentialUpdate();
 
@@ -455,7 +620,15 @@ describe( 'Cache Updater Service', () => {
 
       const actIds = [ transformedTheKinks._id ];
 
+      const actsWithMetadata = [
+        {
+          '_id': transformedTheKinks._id,
+          'updatedAt': new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString()
+        }
+      ];
+
       database.getAllActIds.mockResolvedValue( actIds );
+      database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
       musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
       database.cacheArtist.mockResolvedValue();
 
@@ -468,7 +641,7 @@ describe( 'Cache Updater Service', () => {
       // Phase 1: Sequential update (1 act × 30s = 30s)
       await jest.advanceTimersByTimeAsync( 30000 );
 
-      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( database.getAllActsWithMetadata ).toHaveBeenCalled();
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
 
       const callsAfterSequential = database.cacheArtist.mock.calls.length;
