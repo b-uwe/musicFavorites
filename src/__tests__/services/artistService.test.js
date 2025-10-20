@@ -674,9 +674,9 @@ describe( 'Artist Service', () => {
     } );
 
     /**
-     * Test error when one artist is missing from cache
+     * Test immediate fetch when exactly one artist is missing from cache
      */
-    test( 'throws error when one artist is missing from cache', async () => {
+    test( 'fetches immediately when exactly one artist is missing from cache', async () => {
       const id1 = transformedJungleRot._id;
       const id2 = transformedTheKinks._id;
 
@@ -687,8 +687,15 @@ describe( 'Artist Service', () => {
         } ).
         mockResolvedValueOnce( null );
 
-      await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
-        rejects.toThrow( '1 act not found in cache! Updating in the background! Please retry in a few minutes' );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getMultipleArtistsFromCache( [ id1, id2 ] );
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].musicbrainzId ).toBe( id1 );
+      expect( result[ 1 ].musicbrainzId ).toBe( id2 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( id2 );
     } );
 
     /**
@@ -705,23 +712,21 @@ describe( 'Artist Service', () => {
     } );
 
     /**
-     * Test that background fetch is triggered but doesn't block response
+     * Test that background fetch is triggered for 2+ missing IDs
      */
-    test( 'triggers background fetch for missing IDs without blocking', async () => {
+    test( 'triggers background fetch for 2+ missing IDs', async () => {
       const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+      const id3 = transformedVulvodynia._id;
 
       database.getArtistFromCache.mockResolvedValue( null );
 
-      const promise = artistService.getMultipleArtistsFromCache( [ id1 ] );
+      const promise = artistService.getMultipleArtistsFromCache( [ id1, id2, id3 ] );
 
-      // Promise should reject immediately without waiting for background fetch
-      await expect( promise ).rejects.toThrow( '1 act not found in cache! Updating in the background! Please retry in a few minutes' );
-
-      // Give background process a moment to start
-      await new Promise( ( resolve ) => {
-        setTimeout( resolve, 10 );
-      } );
+      // Promise should reject immediately with error for 3 missing acts
+      await expect( promise ).rejects.toThrow( '3 acts not found in cache! Updating in the background! Please retry in a few minutes' );
     } );
   } );
+
 
 } );

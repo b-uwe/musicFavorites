@@ -227,20 +227,23 @@ const triggerBackgroundSequentialFetch = ( artistIds ) => {
 
   // Process queue in background (fire-and-forget)
   processFetchQueue().
-    catch( ( error ) => {
-      console.error( 'Background fetch error:', error.message );
-    } ).
-    finally( () => {
+    then( () => {
       isBackgroundFetchRunning = false;
+    } ).
+    catch( ( error ) => {
+      isBackgroundFetchRunning = false;
+      console.error( 'Background fetch error:', error.message );
     } );
 };
 
 /**
- * Gets multiple artists from cache only (no API fallback)
- * Triggers background sequential fetch for missing IDs
+ * Gets multiple artists with smart caching strategy
+ * - If all cached: return immediately
+ * - If exactly 1 missing: fetch it immediately and return all
+ * - If 2+ missing: return error and trigger background sequential fetch
  * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
- * @returns {Promise<Array<object>>} Array of cached artist data
- * @throws {Error} When any artist ID is not found in cache
+ * @returns {Promise<Array<object>>} Array of artist data
+ * @throws {Error} When 2 or more artist IDs are not found in cache
  */
 const getMultipleArtistsFromCache = async ( artistIds ) => {
   const results = [];
@@ -257,15 +260,34 @@ const getMultipleArtistsFromCache = async ( artistIds ) => {
     }
   }
 
-  // If any IDs are missing, trigger background fetch and throw error
-  if ( missingIds.length > 0 ) {
+  // If exactly ONE is missing, fetch it immediately
+  if ( missingIds.length === 1 ) {
+    const freshData = await fetchAndEnrichArtistData( missingIds[ 0 ], true );
+
+    // Cache asynchronously (fire-and-forget)
+    database.cacheArtist( freshData ).catch( () => {
+      // Silently fail - caching is best-effort for this case
+    } );
+
+    // Map _id to musicbrainzId for API response
+    const { _id, ...artistData } = freshData;
+
+    results.push( {
+      'musicbrainzId': _id,
+      ...artistData
+    } );
+
+    return results;
+  }
+
+  // If 2+ IDs are missing, trigger background fetch and throw error
+  if ( missingIds.length > 1 ) {
     // Trigger background fetch (fire-and-forget, adds to queue)
     triggerBackgroundSequentialFetch( missingIds );
 
     const count = missingIds.length;
-    const actsLabel = count === 1 ? 'act' : 'acts';
 
-    throw new Error( `${count} ${actsLabel} not found in cache! Updating in the background! Please retry in a few minutes` );
+    throw new Error( `${count} acts not found in cache! Updating in the background! Please retry in a few minutes` );
   }
 
   return results;

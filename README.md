@@ -69,7 +69,7 @@ curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1"
 }
 ```
 
-#### Multiple Acts Request (Cache-Only)
+#### Multiple Acts Request
 
 Request multiple acts by separating MusicBrainz IDs with commas:
 
@@ -77,10 +77,10 @@ Request multiple acts by separating MusicBrainz IDs with commas:
 curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1,f35e1992-230b-4d63-9e63-a829caccbcd5"
 ```
 
-**Important:** Multiple ID requests are served **cache-only**. If any requested ID is not in cache:
-- An immediate error response is returned
-- Missing IDs are automatically fetched in the background (with 30-second delays between fetches)
-- Retry your request after a few moments to retrieve the cached data
+**Smart Caching Behavior:**
+- **All cached**: Returns immediately with all acts
+- **Exactly 1 missing**: Fetches the missing act immediately and returns all acts
+- **2+ missing**: Returns error immediately and fetches all missing acts in background (with 30-second delays between fetches)
 
 **Response Format (Success):**
 ```json
@@ -94,13 +94,13 @@ curl "http://localhost:3000/acts/53689c08-f234-4c47-9256-58c8568f06d1,f35e1992-2
 }
 ```
 
-**Response Format (Cache Miss):**
+**Response Format (2+ Acts Missing from Cache):**
 ```json
 {
   "type": "error",
   "error": {
     "message": "Failed to fetch artist data",
-    "details": "Missing from cache: <id1>, <id2>"
+    "details": "2 acts not found in cache! Updating in the background! Please retry in a few minutes"
   }
 }
 ```
