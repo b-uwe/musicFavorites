@@ -127,6 +127,31 @@ const runSequentialUpdate = async () => {
 };
 
 /**
+ * Processes a queue of artist IDs sequentially with 30-second delays
+ * Used by artistService for background fetching of missing cache entries
+ * @param {Set<string>} queue - Set of MusicBrainz artist IDs to process
+ * @returns {Promise<void>} Resolves when queue is empty
+ */
+const processFetchQueue = async ( queue ) => {
+  // Process queue until empty
+  while ( queue.size > 0 ) {
+    // Get first item from Set
+    const [ artistId ] = queue;
+
+    // Remove from queue before processing
+    queue.delete( artistId );
+
+    // Fetch and cache the artist
+    await updateAct( artistId );
+
+    // Wait 30 seconds before next fetch (only if queue not empty)
+    if ( queue.size > 0 ) {
+      await sleep( THIRTY_SECONDS_MS );
+    }
+  }
+};
+
+/**
  * Starts dual update strategy: sequential bootstrap then cycle-based
  * @param {object} options - Configuration options
  * @param {number} options.cycleIntervalMs - Total cycle duration in ms (default: 24 hours)
@@ -152,6 +177,7 @@ const start = async ( options ) => {
 };
 
 module.exports = {
+  processFetchQueue,
   runSequentialUpdate,
   start,
   updateAct

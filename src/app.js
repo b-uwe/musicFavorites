@@ -10,12 +10,12 @@ const artistService = require( './services/artistService' );
 const app = express();
 
 /**
- * Get information about a music act
+ * Get information about one or more music acts
  * @param {object} req - Express request object
  * @param {object} res - Express response object
- * @returns {object} Act information with attribution and metadata
+ * @returns {object} Acts information with attribution and metadata
  */
-app.get( '/act/:id', async ( req, res ) => {
+app.get( '/acts/:id', async ( req, res ) => {
   const { id } = req.params;
 
   // Enable pretty-printing if ?pretty query parameter is present
@@ -37,7 +37,11 @@ app.get( '/act/:id', async ( req, res ) => {
   res.set( 'Expires', '0' );
 
   try {
-    const actData = await artistService.getArtist( id );
+    // Split comma-separated IDs (single ID becomes array of one)
+    const ids = id.split( ',' );
+
+    // Fetch acts (handles both single and multiple IDs)
+    const actsData = await artistService.getMultipleArtistsFromCache( ids );
 
     return res.json( {
       'meta': {
@@ -49,8 +53,8 @@ app.get( '/act/:id', async ( req, res ) => {
         'license': 'AGPL-3.0',
         'repository': 'https://github.com/b-uwe/musicFavorites'
       },
-      'type': 'act',
-      'act': actData
+      'type': 'acts',
+      'acts': actsData
     } );
   } catch ( error ) {
     return res.status( 500 ).json( {

@@ -3,7 +3,13 @@
  * @module __tests__/services/artistService
  */
 
+jest.mock( '../../services/database' );
+jest.mock( '../../services/musicbrainz' );
+jest.mock( '../../services/ldJsonExtractor' );
+jest.mock( '../../services/cacheUpdater' );
+
 const artistService = require( '../../services/artistService' );
+const cacheUpdater = require( '../../services/cacheUpdater' );
 const database = require( '../../services/database' );
 const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
@@ -13,10 +19,6 @@ const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownVulvodynia = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
-
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
 
 const { determineStatus } = artistService;
 
@@ -30,6 +32,9 @@ describe( 'Artist Service', () => {
     transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
     transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
     transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    // Default mock for processFetchQueue to return resolved promise
+    cacheUpdater.processFetchQueue.mockResolvedValue();
   } );
 
   describe( 'getArtist - cache hit', () => {
@@ -646,4 +651,188 @@ describe( 'Artist Service', () => {
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
     } );
   } );
+
+  describe( 'getMultipleArtistsFromCache', () => {
+    /**
+     * Test successful retrieval of multiple cached artists
+     */
+    test( 'returns array of artists when all are cached', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.
+        mockResolvedValueOnce( {
+          'musicbrainzId': id1,
+          'name': transformedJungleRot.name
+        } ).
+        mockResolvedValueOnce( {
+          'musicbrainzId': id2,
+          'name': transformedTheKinks.name
+        } );
+
+      const result = await artistService.getMultipleArtistsFromCache( [ id1, id2 ] );
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].musicbrainzId ).toBe( id1 );
+      expect( result[ 1 ].musicbrainzId ).toBe( id2 );
+      expect( database.getArtistFromCache ).toHaveBeenCalledTimes( 2 );
+    } );
+
+    /**
+     * Test immediate fetch when exactly one artist is missing from cache
+     */
+    test( 'fetches immediately when exactly one artist is missing from cache', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.
+        mockResolvedValueOnce( {
+          'musicbrainzId': id1,
+          'name': transformedJungleRot.name
+        } ).
+        mockResolvedValueOnce( null );
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockResolvedValue();
+
+      const result = await artistService.getMultipleArtistsFromCache( [ id1, id2 ] );
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].musicbrainzId ).toBe( id1 );
+      expect( result[ 1 ].musicbrainzId ).toBe( id2 );
+      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( id2 );
+    } );
+
+    /**
+     * Test silent cache failure when exactly one artist is missing
+     */
+    test( 'returns data even when cache write fails for ONE missing artist', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.
+        mockResolvedValueOnce( {
+          'musicbrainzId': id1,
+          'name': transformedJungleRot.name
+        } ).
+        mockResolvedValueOnce( null );
+
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+
+      const result = await artistService.getMultipleArtistsFromCache( [ id1, id2 ] );
+
+      // Should still return the data even though caching failed
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].musicbrainzId ).toBe( id1 );
+      expect( result[ 1 ].musicbrainzId ).toBe( id2 );
+
+      // Wait a bit for the promise to settle
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+    } );
+
+    /**
+     * Test error when all artists are missing from cache
+     */
+    test( 'throws error when all artists are missing from cache', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+
+      await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
+        rejects.toThrow( '2 acts not found in cache! Updating in the background! Please retry in a few minutes' );
+    } );
+
+    /**
+     * Test that background fetch is triggered for 2+ missing IDs
+     */
+    test( 'triggers background fetch for 2+ missing IDs', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+      const id3 = transformedVulvodynia._id;
+
+      database.getArtistFromCache.mockResolvedValue( null );
+
+      const promise = artistService.getMultipleArtistsFromCache( [ id1, id2, id3 ] );
+
+      // Promise should reject immediately with error for 3 missing acts
+      await expect( promise ).rejects.toThrow( '3 acts not found in cache! Updating in the background! Please retry in a few minutes' );
+    } );
+  } );
+
+  describe( 'triggerBackgroundSequentialFetch - promise handling', () => {
+    /**
+     * Test success case - processFetchQueue resolves
+     */
+    test( 'handles successful queue processing', async () => {
+      const id1 = transformedJungleRot._id;
+
+      // Mock processFetchQueue to resolve successfully
+      cacheUpdater.processFetchQueue.mockResolvedValue();
+
+      // Trigger background fetch
+      artistService.triggerBackgroundSequentialFetch( [ id1 ] );
+
+      // Wait for promise to resolve
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      // Verify processFetchQueue was called
+      expect( cacheUpdater.processFetchQueue ).toHaveBeenCalled();
+    } );
+
+    /**
+     * Test error case - processFetchQueue rejects
+     */
+    test( 'handles queue processing errors gracefully', async () => {
+      const id1 = transformedJungleRot._id;
+      const consoleSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      // Mock processFetchQueue to reject
+      cacheUpdater.processFetchQueue.mockRejectedValue( new Error( 'Queue failed' ) );
+
+      // Trigger background fetch
+      artistService.triggerBackgroundSequentialFetch( [ id1 ] );
+
+      // Wait for promise to reject and error to be logged
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      // Verify error was logged
+      expect( consoleSpy ).toHaveBeenCalledWith( 'Background fetch error:', 'Queue failed' );
+
+      consoleSpy.mockRestore();
+    } );
+
+    /**
+     * Test early return when processor is already running
+     */
+    test( 'returns immediately when processor is already running', async () => {
+      const id1 = transformedJungleRot._id;
+      const id2 = transformedTheKinks._id;
+
+      // Mock processFetchQueue to never resolve (simulates long-running process)
+      cacheUpdater.processFetchQueue.mockImplementation( () => new Promise( () => {} ) );
+
+      // First call starts the processor
+      artistService.triggerBackgroundSequentialFetch( [ id1 ] );
+
+      // Second call should return immediately without starting another processor
+      artistService.triggerBackgroundSequentialFetch( [ id2 ] );
+
+      // Wait a bit
+      await new Promise( ( resolve ) => {
+        setTimeout( resolve, 10 );
+      } );
+
+      // Verify processFetchQueue was only called once
+      expect( cacheUpdater.processFetchQueue ).toHaveBeenCalledTimes( 1 );
+    } );
+  } );
+
 } );
