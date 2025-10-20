@@ -4,15 +4,12 @@
  */
 
 const bandsintownTransformer = require( './bandsintownTransformer' );
-const cacheUpdater = require( './cacheUpdater' );
 const database = require( './database' );
 const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
 let cacheHealthy = true;
-let isBackgroundFetchRunning = false;
-const fetchQueue = new Set();
 
 /**
  * Formats current timestamp in Berlin timezone
@@ -124,55 +121,6 @@ const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => 
   };
 };
 
-
-/**
- * Triggers background sequential fetch for missing artist IDs
- * Adds IDs to queue and starts processor if not already running
- * Prevents reload hammering by using a Set (duplicates ignored)
- * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs to fetch
- * @returns {void} Returns immediately after queueing
- */
-const triggerBackgroundSequentialFetch = ( artistIds ) => {
-  // Add all missing IDs to the queue (Set prevents duplicates)
-  for ( const artistId of artistIds ) {
-    fetchQueue.add( artistId );
-  }
-
-  // If processor already running, just return (IDs are queued)
-  if ( isBackgroundFetchRunning ) {
-    return;
-  }
-
-  // Start the queue processor
-  isBackgroundFetchRunning = true;
-
-  // Process queue in background (fire-and-forget)
-  cacheUpdater.processFetchQueue( fetchQueue ).
-    then( () => {
-      isBackgroundFetchRunning = false;
-    } ).
-    catch( ( error ) => {
-      isBackgroundFetchRunning = false;
-      console.error( 'Background fetch error:', error.message );
-    } );
-};
-
-/**
- * Tests cache health if flagged unhealthy, throws error if still down
- * @returns {Promise<void>} Resolves if cache is healthy
- * @throws {Error} When cache is unavailable
- */
-const ensureCacheHealthy = async () => {
-  if ( !cacheHealthy ) {
-    try {
-      await database.testCacheHealth();
-      cacheHealthy = true;
-    } catch ( error ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
-    }
-  }
-};
-
 /**
  * Gets artist data with transparent caching
  * Checks cache first, falls back to MusicBrainz API if not found
@@ -183,7 +131,15 @@ const ensureCacheHealthy = async () => {
  * @throws {Error} When cache is unhealthy or unavailable
  */
 const getArtist = async ( artistId ) => {
-  await ensureCacheHealthy();
+  // If cache was flagged unhealthy, test it before proceeding
+  if ( !cacheHealthy ) {
+    try {
+      await database.testCacheHealth();
+      cacheHealthy = true;
+    } catch ( error ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    }
+  }
 
   // Try to get from cache first
   const cachedArtist = await database.getArtistFromCache( artistId );
@@ -209,72 +165,10 @@ const getArtist = async ( artistId ) => {
   };
 };
 
-/**
- * Gets multiple artists with smart caching strategy
- * - If all cached: return immediately
- * - If exactly 1 missing: fetch it immediately and return all
- * - If 2+ missing: return error and trigger background sequential fetch
- * Protects upstream services by failing fast when cache is unhealthy
- * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
- * @returns {Promise<Array<object>>} Array of artist data
- * @throws {Error} When 2 or more artist IDs are not found in cache or cache is unhealthy
- */
-const getMultipleArtistsFromCache = async ( artistIds ) => {
-  await ensureCacheHealthy();
-
-  const results = [];
-  const missingIds = [];
-
-  // Try to get all artists from cache
-  for ( const artistId of artistIds ) {
-    const cachedArtist = await database.getArtistFromCache( artistId );
-
-    if ( cachedArtist ) {
-      results.push( cachedArtist );
-    } else {
-      missingIds.push( artistId );
-    }
-  }
-
-  // If exactly ONE is missing, fetch it immediately
-  if ( missingIds.length === 1 ) {
-    const freshData = await fetchAndEnrichArtistData( missingIds[ 0 ], true );
-
-    // Cache asynchronously (fire-and-forget)
-    database.cacheArtist( freshData ).catch( () => {
-      cacheHealthy = false;
-    } );
-
-    // Map _id to musicbrainzId for API response
-    const { _id, ...artistData } = freshData;
-
-    results.push( {
-      'musicbrainzId': _id,
-      ...artistData
-    } );
-
-    return results;
-  }
-
-  // If 2+ IDs are missing, trigger background fetch and throw error
-  if ( missingIds.length > 1 ) {
-    // Trigger background fetch (fire-and-forget, adds to queue)
-    triggerBackgroundSequentialFetch( missingIds );
-
-    const count = missingIds.length;
-
-    throw new Error( `${count} acts not found in cache! Updating in the background! Please retry in a few minutes` );
-  }
-
-  return results;
-};
-
 module.exports = {
   determineStatus,
   getArtist,
   getBerlinTimestamp,
   fetchBandsintownEvents,
-  fetchAndEnrichArtistData,
-  getMultipleArtistsFromCache,
-  triggerBackgroundSequentialFetch
+  fetchAndEnrichArtistData
 };
