@@ -589,4 +589,163 @@ describe( 'Database Service', () => {
       );
     } );
   } );
+
+  describe( 'getAllActsWithMetadata', () => {
+    let mockCollection;
+    let transformedJungleRot;
+    let transformedTheKinks;
+
+    beforeEach( () => {
+      mockCollection = {
+        'find': jest.fn()
+      };
+      mockDb.collection = jest.fn( () => mockCollection );
+      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    } );
+
+    /**
+     * Test that getAllActsWithMetadata returns sorted array with _id and updatedAt
+     */
+    test( 'should return sorted array of acts with _id and updatedAt', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      // Return in reverse order (JungleRot before TheKinks) to test sort function
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': transformedJungleRot._id,
+            'updatedAt': '2025-01-02 12:00:00'
+          },
+          {
+            '_id': transformedTheKinks._id,
+            'updatedAt': '2025-01-01 12:00:00'
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActsWithMetadata();
+
+      expect( mockDb.collection ).toHaveBeenCalledWith( 'artists' );
+      expect( mockCollection.find ).toHaveBeenCalledWith(
+        {},
+        {
+          'projection': {
+            '_id': 1,
+            'updatedAt': 1
+          }
+        }
+      );
+
+      expect( Array.isArray( result ) ).toBe( true );
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ] ).toHaveProperty( '_id' );
+      expect( result[ 0 ] ).toHaveProperty( 'updatedAt' );
+
+      // Verify results are sorted by _id (TheKinks 53... < JungleRot ab...)
+      expect( result[ 0 ]._id ).toBe( transformedTheKinks._id );
+      expect( result[ 1 ]._id ).toBe( transformedJungleRot._id );
+    } );
+
+    /**
+     * Test that getAllActsWithMetadata correctly sorts acts with equal IDs
+     */
+    test( 'should handle sorting when IDs are equal', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      const sameId = 'same-id-for-testing';
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': sameId,
+            'updatedAt': '2025-01-01 12:00:00'
+          },
+          {
+            '_id': sameId,
+            'updatedAt': '2025-01-02 12:00:00'
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActsWithMetadata();
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ]._id ).toBe( sameId );
+      expect( result[ 1 ]._id ).toBe( sameId );
+    } );
+
+    /**
+     * Test that getAllActsWithMetadata handles missing updatedAt fields
+     */
+    test( 'should handle acts with missing updatedAt field', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': transformedTheKinks._id
+          },
+          {
+            '_id': transformedJungleRot._id,
+            'updatedAt': '2025-01-02 12:00:00'
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActsWithMetadata();
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ].updatedAt ).toBeUndefined();
+      expect( result[ 1 ].updatedAt ).toBe( '2025-01-02 12:00:00' );
+    } );
+
+    /**
+     * Test that getAllActsWithMetadata returns empty array when cache is empty
+     */
+    test( 'should return empty array when no acts in cache', async () => {
+      mockClient.connect.mockResolvedValue( mockClient );
+      mockDb.command.mockResolvedValue( {
+        'ok': 1
+      } );
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      await database.connect();
+      const result = await database.getAllActsWithMetadata();
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test that getAllActsWithMetadata throws error when not connected
+     */
+    test( 'should throw error when not connected', async () => {
+      await expect( database.getAllActsWithMetadata() ).rejects.toThrow(
+        'Service temporarily unavailable. Please try again later. (Error: DB_014)'
+      );
+    } );
+  } );
 } );

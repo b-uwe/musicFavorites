@@ -73,25 +73,52 @@ const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
 };
 
 /**
+ * Determines if an act is stale (needs updating)
+ * @param {object} act - Act object with _id and optional updatedAt
+ * @returns {boolean} True if act should be updated
+ */
+const isActStale = ( act ) => {
+  // No updatedAt field means never updated, so it's stale
+  if ( !act.updatedAt ) {
+    return true;
+  }
+
+  // Parse updatedAt timestamp (format: "YYYY-MM-DD HH:MM:SS")
+  const updatedAtDate = new Date( act.updatedAt );
+  const now = Date.now();
+  const ageMs = now - updatedAtDate.getTime();
+
+  // Stale if older than 24 hours
+  return ageMs > TWENTY_FOUR_HOURS_MS;
+};
+
+/**
  * Runs a single sequential update of all acts with fixed 30s pauses
  * @returns {Promise<number>} Number of acts processed
  */
 const runSequentialUpdate = async () => {
   try {
-    // Fetch all act IDs from cache
-    const actIds = await database.getAllActIds();
+    // Fetch all acts with metadata from cache
+    const acts = await database.getAllActsWithMetadata();
 
-    if ( actIds.length === 0 ) {
+    if ( acts.length === 0 ) {
       return 0;
     }
 
-    // Update each act with fixed 30s pause
-    for ( const actId of actIds ) {
-      await updateAct( actId );
+    // Filter to only stale acts (lastUpdated > 24h ago or missing)
+    const staleActs = acts.filter( isActStale );
+
+    if ( staleActs.length === 0 ) {
+      return 0;
+    }
+
+    // Update each stale act with fixed 30s pause
+    for ( const act of staleActs ) {
+      await updateAct( act._id );
       await sleep( THIRTY_SECONDS_MS );
     }
 
-    return actIds.length;
+    return staleActs.length;
   } catch ( error ) {
     console.error( 'Sequential update error:', error.message );
 

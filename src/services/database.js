@@ -224,6 +224,39 @@ const getAllActIds = async () => {
   return ids.sort();
 };
 
+/**
+ * Gets all acts with metadata from cache
+ * @returns {Promise<Array<object>>} Sorted array of acts with _id and updatedAt
+ * @throws {Error} When not connected to database
+ */
+const getAllActsWithMetadata = async () => {
+  if ( !client ) {
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
+  }
+
+  const db = client.db( 'musicfavorites' );
+  const collection = db.collection( 'artists' );
+
+  const results = await collection.find( {}, {
+    'projection': {
+      '_id': 1,
+      'updatedAt': 1
+    }
+  } ).toArray();
+
+  return results.sort( ( a, b ) => {
+    if ( a._id < b._id ) {
+      return -1;
+    }
+
+    if ( a._id > b._id ) {
+      return 1;
+    }
+
+    return 0;
+  } );
+};
+
 module.exports = {
   connect,
   disconnect,
@@ -231,5 +264,6 @@ module.exports = {
   getArtistFromCache,
   cacheArtist,
   testCacheHealth,
-  getAllActIds
+  getAllActIds,
+  getAllActsWithMetadata
 };
