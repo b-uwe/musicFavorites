@@ -10,6 +10,8 @@ const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
 let cacheHealthy = true;
+let isBackgroundFetchRunning = false;
+const fetchQueue = new Set();
 
 /**
  * Formats current timestamp in Berlin timezone
@@ -166,12 +168,11 @@ const getArtist = async ( artistId ) => {
 };
 
 /**
- * Triggers background sequential fetch for missing artist IDs
+ * Processes the fetch queue continuously until empty
  * Uses 30-second delays between fetches to protect upstream APIs
- * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs to fetch
- * @returns {Promise<void>} Resolves when all fetches complete
+ * @returns {Promise<void>} Resolves when queue is empty
  */
-const triggerBackgroundSequentialFetch = async ( artistIds ) => {
+const processFetchQueue = async () => {
   const cacheUpdater = require( './cacheUpdater' );
   const THIRTY_SECONDS_MS = 30 * 1000;
 
@@ -185,11 +186,53 @@ const triggerBackgroundSequentialFetch = async ( artistIds ) => {
     setTimeout( resolve, ms );
   } );
 
-  // Process each artist ID with 30-second delays
-  for ( const artistId of artistIds ) {
+  // Process queue until empty
+  while ( fetchQueue.size > 0 ) {
+    // Get first item from Set
+    const [ artistId ] = fetchQueue;
+
+    // Remove from queue before processing
+    fetchQueue.delete( artistId );
+
+    // Fetch and cache the artist
     await cacheUpdater.updateAct( artistId );
-    await sleep( THIRTY_SECONDS_MS );
+
+    // Wait 30 seconds before next fetch (only if queue not empty)
+    if ( fetchQueue.size > 0 ) {
+      await sleep( THIRTY_SECONDS_MS );
+    }
   }
+};
+
+/**
+ * Triggers background sequential fetch for missing artist IDs
+ * Adds IDs to queue and starts processor if not already running
+ * Prevents reload hammering by using a Set (duplicates ignored)
+ * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs to fetch
+ * @returns {void} Returns immediately after queueing
+ */
+const triggerBackgroundSequentialFetch = ( artistIds ) => {
+  // Add all missing IDs to the queue (Set prevents duplicates)
+  for ( const artistId of artistIds ) {
+    fetchQueue.add( artistId );
+  }
+
+  // If processor already running, just return (IDs are queued)
+  if ( isBackgroundFetchRunning ) {
+    return;
+  }
+
+  // Start the queue processor
+  isBackgroundFetchRunning = true;
+
+  // Process queue in background (fire-and-forget)
+  processFetchQueue().
+    catch( ( error ) => {
+      console.error( 'Background fetch error:', error.message );
+    } ).
+    finally( () => {
+      isBackgroundFetchRunning = false;
+    } );
 };
 
 /**
@@ -216,12 +259,13 @@ const getMultipleArtistsFromCache = async ( artistIds ) => {
 
   // If any IDs are missing, trigger background fetch and throw error
   if ( missingIds.length > 0 ) {
-    // Trigger background fetch (fire-and-forget)
-    triggerBackgroundSequentialFetch( missingIds ).catch( () => {
-      // Silent failure - background fetch errors are logged but don't affect response
-    } );
+    // Trigger background fetch (fire-and-forget, adds to queue)
+    triggerBackgroundSequentialFetch( missingIds );
 
-    throw new Error( `Missing from cache: ${missingIds.join( ', ' )}` );
+    const count = missingIds.length;
+    const actsLabel = count === 1 ? 'act' : 'acts';
+
+    throw new Error( `${count} ${actsLabel} not found in cache! Updating in the background! Please retry in a few minutes` );
   }
 
   return results;

@@ -688,7 +688,7 @@ describe( 'Artist Service', () => {
         mockResolvedValueOnce( null );
 
       await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
-        rejects.toThrow( `Missing from cache: ${id2}` );
+        rejects.toThrow( '1 act not found in cache! Updating in the background! Please retry in a few minutes' );
     } );
 
     /**
@@ -701,7 +701,7 @@ describe( 'Artist Service', () => {
       database.getArtistFromCache.mockResolvedValue( null );
 
       await expect( artistService.getMultipleArtistsFromCache( [ id1, id2 ] ) ).
-        rejects.toThrow( `Missing from cache: ${id1}, ${id2}` );
+        rejects.toThrow( '2 acts not found in cache! Updating in the background! Please retry in a few minutes' );
     } );
 
     /**
@@ -715,7 +715,7 @@ describe( 'Artist Service', () => {
       const promise = artistService.getMultipleArtistsFromCache( [ id1 ] );
 
       // Promise should reject immediately without waiting for background fetch
-      await expect( promise ).rejects.toThrow( `Missing from cache: ${id1}` );
+      await expect( promise ).rejects.toThrow( '1 act not found in cache! Updating in the background! Please retry in a few minutes' );
 
       // Give background process a moment to start
       await new Promise( ( resolve ) => {

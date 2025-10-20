@@ -317,7 +317,7 @@ describe( 'GET /acts/:id - Multiple IDs errors', () => {
   test( 'returns error when one ID is not cached', async () => {
     const id1 = transformedJungleRot.musicbrainzId;
     const id2 = transformedTheKinks.musicbrainzId;
-    const errorMsg = `Missing from cache: ${id2}`;
+    const errorMsg = '1 act not found in cache! Updating in the background! Please retry in a few minutes';
 
     artistService.getMultipleArtistsFromCache.mockRejectedValue( new Error( errorMsg ) );
 
@@ -327,7 +327,7 @@ describe( 'GET /acts/:id - Multiple IDs errors', () => {
 
     expect( response.body.type ).toBe( 'error' );
     expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
-    expect( response.body.error.details ).toContain( 'Missing from cache' );
+    expect( response.body.error.details ).toContain( 'not found in cache' );
   } );
 
   /**
@@ -336,7 +336,7 @@ describe( 'GET /acts/:id - Multiple IDs errors', () => {
   test( 'returns error when all IDs are not cached', async () => {
     const id1 = transformedJungleRot.musicbrainzId;
     const id2 = transformedTheKinks.musicbrainzId;
-    const errorMsg = `Missing from cache: ${id1}, ${id2}`;
+    const errorMsg = '2 acts not found in cache! Updating in the background! Please retry in a few minutes';
 
     artistService.getMultipleArtistsFromCache.mockRejectedValue( new Error( errorMsg ) );
 
@@ -345,6 +345,6 @@ describe( 'GET /acts/:id - Multiple IDs errors', () => {
       expect( 500 );
 
     expect( response.body.type ).toBe( 'error' );
-    expect( response.body.error.details ).toContain( 'Missing from cache' );
+    expect( response.body.error.details ).toContain( 'not found in cache' );
   } );
 } );
