@@ -655,6 +655,8 @@ describe( 'Database Service', () => {
 
     /**
      * Test that getAllActsWithMetadata correctly sorts acts with equal IDs
+     * NOTE: This tests the return 0 branch in the sort comparator (line 256 of database.js).
+     * In production, MongoDB _id fields are unique per document, so equal IDs should never occur.
      */
     test( 'should handle sorting when IDs are equal', async () => {
       mockClient.connect.mockResolvedValue( mockClient );
