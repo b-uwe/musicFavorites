@@ -13,10 +13,6 @@ let client = null;
  * @throws {Error} When MONGODB_URI is not set or connection fails
  */
 const connect = async () => {
-  if ( client ) {
-    return;
-  }
-
   const uri = process.env.MONGODB_URI;
 
   if ( !uri ) {
@@ -24,15 +20,17 @@ const connect = async () => {
   }
 
   try {
-    client = new MongoClient( uri, {
-      'serverApi': {
-        'version': ServerApiVersion.v1,
-        'strict': true,
-        'deprecationErrors': true
-      }
-    } );
+    if ( !client ) {
+      client = new MongoClient( uri, {
+        'serverApi': {
+          'version': ServerApiVersion.v1,
+          'strict': true,
+          'deprecationErrors': true
+        }
+      } );
 
-    await client.connect();
+      await client.connect();
+    }
 
     // Ping to confirm successful connection
     const pingResult = await client.db( 'admin' ).command( {
@@ -157,6 +155,7 @@ const cacheArtist = async ( artistData ) => {
 
 /**
  * Tests cache health with a dummy write-then-delete operation
+ * Attempts reconnection if client exists but operations fail
  * @returns {Promise<void>} Resolves if cache is healthy
  * @throws {Error} When cache is unavailable or operations not acknowledged
  */
@@ -165,38 +164,44 @@ const testCacheHealth = async () => {
     throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_008)' );
   }
 
-  const db = client.db( 'musicfavorites' );
-  const collection = db.collection( 'artists' );
-  const testId = '__health_check__';
+  try {
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'artists' );
+    const testId = '__health_check__';
 
-  // Write dummy document
-  const writeResult = await collection.updateOne(
-    {
-      '_id': testId
-    },
-    {
-      '$set': {
-        '_id': testId,
-        'name': 'Health Check',
-        'testEntry': true
+    // Write dummy document
+    const writeResult = await collection.updateOne(
+      {
+        '_id': testId
+      },
+      {
+        '$set': {
+          '_id': testId,
+          'name': 'Health Check',
+          'testEntry': true
+        }
+      },
+      {
+        'upsert': true
       }
-    },
-    {
-      'upsert': true
+    );
+
+    if ( !writeResult.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_009)' );
     }
-  );
 
-  if ( !writeResult.acknowledged ) {
-    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_009)' );
-  }
+    // Immediately delete it
+    const deleteResult = await collection.deleteOne( {
+      '_id': testId
+    } );
 
-  // Immediately delete it
-  const deleteResult = await collection.deleteOne( {
-    '_id': testId
-  } );
-
-  if ( !deleteResult.acknowledged ) {
-    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
+    if ( !deleteResult.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
+    }
+  } catch ( error ) {
+    // If health check fails, reset client to allow reconnection on next attempt
+    client = null;
+    throw error;
   }
 };
 

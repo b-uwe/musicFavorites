@@ -6,8 +6,6 @@
 
 const database = require( './database' );
 
-const { fetchAndEnrichArtistData } = require( './artistService' );
-
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 const THIRTY_SECONDS_MS = 30 * 1000;
@@ -19,17 +17,23 @@ const ONE_MINUTE_MS = 60 * 1000;
  * @returns {Promise<void>} Resolves after delay
  */
 const sleep = ( ms ) => new Promise( ( resolve ) => {
-  /* global setTimeout */
   setTimeout( resolve, ms );
 } );
 
 /**
  * Updates a single act by fetching fresh data and replacing cache
  * Skips update on error without throwing
+ * Uses lazy require to avoid circular dependency with artistService
  * @param {string} actId - The MusicBrainz artist ID to update
  * @returns {Promise<void>} Resolves when update completes or fails
  */
 const updateAct = async ( actId ) => {
+  /*
+   * CRITICAL: Lazy require to break circular dependency
+   * This function is called after all modules are loaded, so it's safe
+   */
+  const { fetchAndEnrichArtistData } = require( './artistService' );
+
   try {
     // Fetch and enrich artist data (with silent event failures)
     const dataToCache = await fetchAndEnrichArtistData( actId, true );

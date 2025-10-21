@@ -19,6 +19,7 @@ module.exports = [
         '__filename': 'readonly',
         'Buffer': 'readonly',
         'global': 'readonly',
+        'setTimeout': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
         'expect': 'readonly',

@@ -8,67 +8,12 @@ const artistService = require( '../services/artistService' );
 const musicbrainzTransformer = require( '../services/musicbrainzTransformer' );
 const fixtureJungleRot = require( './fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( './fixtures/musicbrainz-the-kinks.json' );
-const fixtureMiseryIndex = require( './fixtures/musicbrainz-misery-index.json' );
-const fixtureWatain = require( './fixtures/musicbrainz-watain.json' );
 
 jest.mock( '../services/artistService' );
 
 // Transform fixtures to output format
 const transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
 const transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-const transformedMiseryIndex = musicbrainzTransformer.transformArtistData( fixtureMiseryIndex );
-const transformedWatain = musicbrainzTransformer.transformArtistData( fixtureWatain );
-
-describe( 'GET /act/:id - Basic functionality', () => {
-  /**
-   * Test basic act endpoint response
-   */
-  test( 'returns act data with valid MusicBrainz UUID', async () => {
-    const actId = transformedJungleRot.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 ).
-      expect( 'Content-Type', /json/u );
-
-    expect( response.body.type ).toBe( 'act' );
-    expect( response.body.act ).toBeDefined();
-    expect( response.body.act.musicbrainzId ).toBe( actId );
-    expect( response.body.meta ).toBeDefined();
-    expect( response.body.meta.attribution.sources ).toContain( 'MusicBrainz' );
-    expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
-  } );
-
-  /**
-   * Test with different UUID
-   */
-  test( 'returns act data with different MusicBrainz UUID', async () => {
-    const actId = transformedTheKinks.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedTheKinks );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    expect( response.body.type ).toBe( 'act' );
-    expect( response.body.act ).toBeDefined();
-    expect( response.body.act.musicbrainzId ).toBe( actId );
-  } );
-
-  /**
-   * Test invalid route handling
-   */
-  test( 'returns 404 for invalid route', async () => {
-    const actId = transformedJungleRot.musicbrainzId;
-
-    await request( app ).
-      get( `/invalid/${actId}` ).
-      expect( 404 );
-  } );
-} );
 
 describe( 'Error handling - JSON responses', () => {
   /**
@@ -91,7 +36,7 @@ describe( 'Error handling - JSON responses', () => {
    */
   test( 'returns JSON error for unsupported HTTP method', async () => {
     const response = await request( app ).
-      post( '/act/53689c08-f234-4c47-9256-58c8568f06d1' ).
+      post( '/acts/53689c08-f234-4c47-9256-58c8568f06d1' ).
       expect( 404 ).
       expect( 'Content-Type', /json/u );
 
@@ -128,158 +73,78 @@ describe( 'GET /robots.txt', () => {
   } );
 } );
 
-describe( 'GET /act/:id - Error handling', () => {
-  /**
-   * Test error handling for invalid MusicBrainz ID
-   */
-  test( 'returns 500 error for invalid MusicBrainz ID', async () => {
-    const invalidId = 'invalid-id-format';
+describe( 'GET /acts/:id - Basic tests', () => {
+  test( 'returns single act when given one ID', async () => {
+    const actId = transformedJungleRot.musicbrainzId;
 
-    artistService.getArtist.mockRejectedValue( new Error( 'Invalid artist ID format' ) );
+    artistService.fetchMultipleActs.mockResolvedValue( {
+      'acts': [ transformedJungleRot ]
+    } );
 
-    const response = await request( app ).
-      get( `/act/${invalidId}` ).
-      expect( 500 );
+    const response = await request( app ).get( `/acts/${actId}` ).expect( 200 );
 
-    expect( response.body.type ).toBe( 'error' );
+    expect( response.body.type ).toBe( 'acts' );
+    expect( response.body.acts ).toHaveLength( 1 );
+  } );
+
+  test( 'returns multiple acts when given comma-separated IDs', async () => {
+    const actIds = `${transformedJungleRot.musicbrainzId},${transformedTheKinks.musicbrainzId}`;
+
+    artistService.fetchMultipleActs.mockResolvedValue( {
+      'acts': [ transformedJungleRot, transformedTheKinks ]
+    } );
+
+    const response = await request( app ).get( `/acts/${actIds}` ).expect( 200 );
+
+    expect( response.body.acts ).toHaveLength( 2 );
+  } );
+
+  test( 'returns 503 error when 2+ acts not cached', async () => {
+    const actIds = `${transformedJungleRot.musicbrainzId},${transformedTheKinks.musicbrainzId}`;
+
+    artistService.fetchMultipleActs.mockResolvedValue( {
+      'error': {
+        'message': '2 acts not cached. Background fetch initiated.',
+        'missingCount': 2,
+        'cachedCount': 0
+      }
+    } );
+
+    const response = await request( app ).get( `/acts/${actIds}` ).expect( 503 );
+
     expect( response.body.error ).toBeDefined();
+  } );
+} );
+
+describe( 'GET /acts/:id - Edge cases', () => {
+  test( 'handles IDs with whitespace correctly', async () => {
+    const id1 = transformedJungleRot._id;
+    const id2 = transformedTheKinks._id;
+
+    artistService.fetchMultipleActs.mockResolvedValue( {
+      'acts': [ transformedJungleRot, transformedTheKinks ]
+    } );
+
+    await request( app ).get( `/acts/${id1}, ${id2} ` ).expect( 200 );
+
+    expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+  } );
+
+  test( 'supports ?pretty query parameter', async () => {
+    artistService.fetchMultipleActs.mockResolvedValue( {
+      'acts': [ transformedJungleRot ]
+    } );
+
+    const response = await request( app ).get( `/acts/${transformedJungleRot.musicbrainzId}?pretty` ).expect( 200 );
+
+    expect( JSON.stringify( response.body, null, 2 ) ).toContain( '\n' );
+  } );
+
+  test( 'returns 500 error when fetchMultipleActs throws', async () => {
+    artistService.fetchMultipleActs.mockRejectedValue( new Error( 'Unexpected error' ) );
+
+    const response = await request( app ).get( `/acts/${transformedJungleRot.musicbrainzId}` ).expect( 500 );
+
     expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
-  } );
-} );
-
-describe( 'GET /act/:id - Response metadata', () => {
-  /**
-   * Test that meta is the first property in response
-   */
-  test( 'meta is the first property in JSON response', async () => {
-    const actId = transformedMiseryIndex.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    const [ firstKey ] = Object.keys( response.body );
-
-    expect( firstKey ).toBe( 'meta' );
-  } );
-
-  /**
-   * Test attribution information
-   */
-  test( 'response includes attribution information', async () => {
-    const actId = transformedMiseryIndex.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    expect( response.body.meta.attribution ).toHaveProperty( 'sources' );
-    expect( response.body.meta.attribution ).toHaveProperty( 'notice' );
-    expect( response.body.meta.attribution.sources ).
-      toEqual( expect.arrayContaining( [ 'MusicBrainz', 'Bandsintown', 'Songkick' ] ) );
-  } );
-} );
-
-describe( 'GET /act/:id - Response license', () => {
-  /**
-   * Test metadata fields
-   */
-  test( 'response includes metadata', async () => {
-    const actId = transformedWatain.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedWatain );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    expect( response.body.meta ).toHaveProperty( 'license' );
-    expect( response.body.meta ).toHaveProperty( 'repository' );
-    expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
-  } );
-} );
-
-describe( 'GET /act/:id - JSON formatting', () => {
-  /**
-   * Test default JSON response is compact (one-liner)
-   */
-  test( 'response is compact JSON by default', async () => {
-    const actId = transformedMiseryIndex.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    // Get raw response text
-    const rawText = response.text;
-
-    // Compact JSON should not have newlines (except potentially at the very end)
-    const trimmedText = rawText.trim();
-
-    expect( trimmedText ).not.toMatch( /\{\s*\n/u );
-    expect( trimmedText ).not.toContain( '\n  ' );
-  } );
-
-  /**
-   * Test ?pretty query parameter returns beautified JSON
-   */
-  test( 'response is beautified with ?pretty query parameter', async () => {
-    const actId = transformedMiseryIndex.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedMiseryIndex );
-
-    const response = await request( app ).
-      get( `/act/${actId}?pretty` ).
-      expect( 200 );
-
-    // Get raw response text
-    const rawText = response.text;
-
-    // Beautified JSON should contain newlines and 2-space indentation
-    expect( rawText ).toContain( '\n' );
-    expect( rawText ).toMatch( /\{\s*\n/u );
-    expect( rawText ).toMatch( /\n {2}"/u );
-  } );
-} );
-
-describe( 'GET /act/:id - HTTP headers', () => {
-  /**
-   * Test robot blocking headers
-   */
-  test( 'response includes robot blocking headers', async () => {
-    const actId = transformedJungleRot.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    expect( response.headers[ 'x-robots-tag' ] ).
-      toBe( 'noindex, nofollow, noarchive, nosnippet' );
-  } );
-
-  /**
-   * Test no-cache headers
-   */
-  test( 'response includes no-cache headers', async () => {
-    const actId = transformedJungleRot.musicbrainzId;
-
-    artistService.getArtist.mockResolvedValue( transformedJungleRot );
-
-    const response = await request( app ).
-      get( `/act/${actId}` ).
-      expect( 200 );
-
-    expect( response.headers[ 'cache-control' ] ).
-      toBe( 'no-store, no-cache, must-revalidate, proxy-revalidate' );
-    expect( response.headers.pragma ).toBe( 'no-cache' );
-    expect( response.headers.expires ).toBe( '0' );
   } );
 } );

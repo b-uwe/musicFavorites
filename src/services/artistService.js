@@ -11,6 +11,43 @@ const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
 let cacheHealthy = true;
 
+const DB_TIMEOUT_MS = 500;
+
+/**
+ * Wraps a promise with a timeout to prevent hanging
+ * @param {Promise} promise - The promise to wrap
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @returns {Promise} Promise that rejects if timeout is reached
+ */
+const withTimeout = ( promise, timeoutMs ) => Promise.race( [
+  promise,
+  new Promise( ( _, reject ) => {
+    setTimeout( () => reject( new Error( 'Database operation timeout' ) ), timeoutMs );
+  } )
+] );
+
+/**
+ * Ensures cache is healthy before proceeding with operations
+ * Tests cache health if previously flagged as unhealthy
+ * Attempts reconnection if health check fails
+ * Includes 500ms timeout to prevent hanging on database issues
+ * @returns {Promise<void>} Resolves if cache is healthy
+ * @throws {Error} When cache is unavailable or timeout (SVC_001)
+ */
+const ensureCacheHealthy = async () => {
+  if ( !cacheHealthy ) {
+    try {
+      // Try to reconnect if needed (client may have been reset)
+      await withTimeout( database.connect(), DB_TIMEOUT_MS );
+      // Test cache health
+      await withTimeout( database.testCacheHealth(), DB_TIMEOUT_MS );
+      cacheHealthy = true;
+    } catch ( error ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    }
+  }
+};
+
 /**
  * Formats current timestamp in Berlin timezone
  * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
@@ -121,54 +158,131 @@ const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => 
   };
 };
 
+
 /**
- * Gets artist data with transparent caching
- * Checks cache first, falls back to MusicBrainz API if not found
- * Caches API results asynchronously (fire-and-forget)
- * Protects upstream services by failing fast when cache is unhealthy
- * @param {string} artistId - The MusicBrainz artist ID
- * @returns {Promise<object>} Artist data (from cache or API)
- * @throws {Error} When cache is unhealthy or unavailable
+ * Categorizes acts as cached or missing
+ * @param {Array<string>} artistIds - Array of artist IDs
+ * @param {Array<object|null>} cacheResults - Corresponding cache results
+ * @returns {object} Object with cachedActs and missingIds arrays
  */
-const getArtist = async ( artistId ) => {
-  // If cache was flagged unhealthy, test it before proceeding
-  if ( !cacheHealthy ) {
-    try {
-      await database.testCacheHealth();
-      cacheHealthy = true;
-    } catch ( error ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+const categorizeActs = ( artistIds, cacheResults ) => {
+  const cachedActs = [];
+  const missingIds = [];
+
+  for ( let i = 0; i < artistIds.length; i += 1 ) {
+    if ( cacheResults[ i ] ) {
+      cachedActs.push( cacheResults[ i ] );
+    } else {
+      missingIds.push( artistIds[ i ] );
     }
   }
 
-  // Try to get from cache first
-  const cachedArtist = await database.getArtistFromCache( artistId );
+  return {
+    cachedActs,
+    missingIds
+  };
+};
 
-  if ( cachedArtist ) {
-    return cachedArtist;
-  }
+/**
+ * Handles case where exactly 1 act is missing
+ * @param {string} missingId - The missing artist ID
+ * @param {Array<object>} cachedActs - Already cached acts
+ * @returns {Promise<object>} Result with all acts
+ */
+const handleSingleMissingAct = async ( missingId, cachedActs ) => {
+  const freshData = await fetchAndEnrichArtistData( missingId );
 
-  // Cache miss - fetch and enrich artist data
-  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
-
-  // Cache asynchronously (fire-and-forget) - don't wait for it
-  database.cacheArtist( dataWithEvents ).catch( () => {
+  // Cache asynchronously (fire-and-forget)
+  database.cacheArtist( freshData ).catch( () => {
     cacheHealthy = false;
   } );
 
-  // Map _id to musicbrainzId for API response
-  const { _id, ...artistData } = dataWithEvents;
+  // Map _id to musicbrainzId for the freshly fetched act
+  const { _id, ...freshActData } = freshData;
+  const formattedFreshAct = {
+    'musicbrainzId': _id,
+    ...freshActData
+  };
 
   return {
-    'musicbrainzId': _id,
-    ...artistData
+    'acts': [ ...cachedActs, formattedFreshAct ]
   };
+};
+
+/**
+ * Handles case where 2+ acts are missing
+ * @param {Array<string>} missingIds - Array of missing artist IDs
+ * @param {number} cachedCount - Number of cached acts
+ * @returns {object} Error response with background fetch notification
+ */
+const handleMultipleMissingActs = ( missingIds, cachedCount ) => {
+  const fetchQueue = require( './fetchQueue' );
+
+  // Trigger background sequential fetch (adds to queue, prevents duplicates)
+  fetchQueue.triggerBackgroundFetch( missingIds );
+
+  return {
+    'error': {
+      'message': `${missingIds.length} acts not cached. ` +
+        'Background fetch initiated. Please try again in a few minutes.',
+      'missingCount': missingIds.length,
+      cachedCount
+    }
+  };
+};
+
+/**
+ * Fetches multiple acts with smart caching strategy
+ * Protects upstream services by failing fast when cache is unhealthy
+ * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
+ * @returns {Promise<object>} Result object with acts array or error
+ * @throws {Error} When cache is unhealthy or unavailable
+ */
+const fetchMultipleActs = async ( artistIds ) => {
+  if ( !Array.isArray( artistIds ) || artistIds.length === 0 ) {
+    return {
+      'error': {
+        'message': 'Invalid input: artistIds must be a non-empty array'
+      }
+    };
+  }
+
+  // Ensure cache is healthy before proceeding
+  await ensureCacheHealthy();
+
+  // Wrap cache reads with timeout to prevent hanging on database issues
+  let cacheResults;
+
+  try {
+    cacheResults = await Promise.all( artistIds.map( ( id ) => withTimeout(
+      database.getArtistFromCache( id ),
+      DB_TIMEOUT_MS
+    ) ) );
+  } catch ( error ) {
+    // On error, flag cache as unhealthy and fail immediately
+    cacheHealthy = false;
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
+  }
+
+  const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
+
+  if ( missingIds.length === 0 ) {
+    return {
+      'acts': cachedActs
+    };
+  }
+
+  if ( missingIds.length === 1 ) {
+    return handleSingleMissingAct( missingIds[ 0 ], cachedActs );
+  }
+
+  return handleMultipleMissingActs( missingIds, cachedActs.length );
 };
 
 module.exports = {
   determineStatus,
-  getArtist,
-  getBerlinTimestamp,
+  fetchAndEnrichArtistData,
   fetchBandsintownEvents,
-  fetchAndEnrichArtistData
+  fetchMultipleActs,
+  getBerlinTimestamp
 };
