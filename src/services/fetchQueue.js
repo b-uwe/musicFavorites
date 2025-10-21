@@ -16,7 +16,6 @@ let isBackgroundFetchRunning = false;
  * @returns {Promise<void>} Resolves after delay
  */
 const sleep = ( ms ) => new Promise( ( resolve ) => {
-  /* global setTimeout */
   setTimeout( resolve, ms );
 } );
 

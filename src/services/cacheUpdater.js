@@ -17,7 +17,6 @@ const ONE_MINUTE_MS = 60 * 1000;
  * @returns {Promise<void>} Resolves after delay
  */
 const sleep = ( ms ) => new Promise( ( resolve ) => {
-  /* global setTimeout */
   setTimeout( resolve, ms );
 } );
 

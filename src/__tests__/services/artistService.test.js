@@ -33,6 +33,11 @@ describe( 'Artist Service', () => {
   } );
 
   describe( 'fetchMultipleActs - cache health circuit breaker', () => {
+    beforeEach( () => {
+      // Reset cache health flag to healthy state before each test
+      artistService.resetCacheHealthForTesting();
+    } );
+
     /**
      * Test that cache health check prevents API calls when cache is down
      */
@@ -65,6 +70,38 @@ describe( 'Artist Service', () => {
       expect( database.getArtistFromCache ).not.toHaveBeenCalled();
       expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
     } );
+
+    /**
+     * Test that health check times out after 500ms when database hangs
+     */
+    test( 'throws SVC_001 error when testCacheHealth times out after 500ms', async () => {
+      const actIds = [ transformedTheKinks._id ];
+
+      // Simulate cache write failure (flags unhealthy)
+      database.getArtistFromCache.mockResolvedValue( null );
+      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+      database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+
+      // First call - cache write fails, flags unhealthy
+      await artistService.fetchMultipleActs( actIds );
+
+      // Wait for async cache write to fail
+      await new Promise( ( resolve ) => {
+        setImmediate( resolve );
+      } );
+
+      jest.clearAllMocks();
+
+      // Database hangs - testCacheHealth never resolves (simulates DB hanging)
+      database.testCacheHealth.mockImplementation( () => new Promise( () => {
+        // Never resolves
+      } ) );
+
+      // Should timeout after 500ms and throw SVC_001
+      await expect( artistService.fetchMultipleActs( actIds ) ).
+        rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    }, 2000 );
 
     /**
      * Test that cache recovers automatically when health check passes

@@ -14,13 +14,22 @@ let cacheHealthy = true;
 /**
  * Ensures cache is healthy before proceeding with operations
  * Tests cache health if previously flagged as unhealthy
+ * Includes 500ms timeout to prevent hanging on database issues
  * @returns {Promise<void>} Resolves if cache is healthy
- * @throws {Error} When cache is unavailable (SVC_001)
+ * @throws {Error} When cache is unavailable or timeout (SVC_001)
  */
 const ensureCacheHealthy = async () => {
   if ( !cacheHealthy ) {
     try {
-      await database.testCacheHealth();
+      // Wrap health check with 500ms timeout to prevent hanging
+      const HEALTH_CHECK_TIMEOUT_MS = 500;
+
+      await Promise.race( [
+        database.testCacheHealth(),
+        new Promise( ( _, reject ) => {
+          setTimeout( () => reject( new Error( 'Health check timeout' ) ), HEALTH_CHECK_TIMEOUT_MS );
+        } )
+      ] );
       cacheHealthy = true;
     } catch ( error ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
@@ -246,10 +255,19 @@ const fetchMultipleActs = async ( artistIds ) => {
   return handleMultipleMissingActs( missingIds, cachedActs.length );
 };
 
+/**
+ * Resets cache healthy flag to true - FOR TESTING ONLY
+ * @returns {void}
+ */
+const resetCacheHealthForTesting = () => {
+  cacheHealthy = true;
+};
+
 module.exports = {
   determineStatus,
   fetchAndEnrichArtistData,
   fetchBandsintownEvents,
   fetchMultipleActs,
-  getBerlinTimestamp
+  getBerlinTimestamp,
+  resetCacheHealthForTesting
 };
