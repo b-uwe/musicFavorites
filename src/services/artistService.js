@@ -9,8 +9,6 @@ const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
-let cacheHealthy = true;
-
 /**
  * Formats current timestamp in Berlin timezone
  * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
@@ -121,49 +119,6 @@ const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => 
   };
 };
 
-/**
- * Gets artist data with transparent caching
- * Checks cache first, falls back to MusicBrainz API if not found
- * Caches API results asynchronously (fire-and-forget)
- * Protects upstream services by failing fast when cache is unhealthy
- * @param {string} artistId - The MusicBrainz artist ID
- * @returns {Promise<object>} Artist data (from cache or API)
- * @throws {Error} When cache is unhealthy or unavailable
- */
-const getArtist = async ( artistId ) => {
-  // If cache was flagged unhealthy, test it before proceeding
-  if ( !cacheHealthy ) {
-    try {
-      await database.testCacheHealth();
-      cacheHealthy = true;
-    } catch ( error ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
-    }
-  }
-
-  // Try to get from cache first
-  const cachedArtist = await database.getArtistFromCache( artistId );
-
-  if ( cachedArtist ) {
-    return cachedArtist;
-  }
-
-  // Cache miss - fetch and enrich artist data
-  const dataWithEvents = await fetchAndEnrichArtistData( artistId );
-
-  // Cache asynchronously (fire-and-forget) - don't wait for it
-  database.cacheArtist( dataWithEvents ).catch( () => {
-    cacheHealthy = false;
-  } );
-
-  // Map _id to musicbrainzId for API response
-  const { _id, ...artistData } = dataWithEvents;
-
-  return {
-    'musicbrainzId': _id,
-    ...artistData
-  };
-};
 
 /**
  * Categorizes acts as cached or missing
@@ -200,7 +155,7 @@ const handleSingleMissingAct = async ( missingId, cachedActs ) => {
 
   // Cache asynchronously (fire-and-forget)
   database.cacheArtist( freshData ).catch( () => {
-    cacheHealthy = false;
+    // Silently ignore cache write failures for background operations
   } );
 
   // Map _id to musicbrainzId for the freshly fetched act
@@ -272,6 +227,5 @@ module.exports = {
   fetchAndEnrichArtistData,
   fetchBandsintownEvents,
   fetchMultipleActs,
-  getArtist,
   getBerlinTimestamp
 };
