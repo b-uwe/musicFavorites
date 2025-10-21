@@ -29,6 +29,7 @@ const withTimeout = ( promise, timeoutMs ) => Promise.race( [
 /**
  * Ensures cache is healthy before proceeding with operations
  * Tests cache health if previously flagged as unhealthy
+ * Attempts reconnection if health check fails
  * Includes 500ms timeout to prevent hanging on database issues
  * @returns {Promise<void>} Resolves if cache is healthy
  * @throws {Error} When cache is unavailable or timeout (SVC_001)
@@ -36,6 +37,9 @@ const withTimeout = ( promise, timeoutMs ) => Promise.race( [
 const ensureCacheHealthy = async () => {
   if ( !cacheHealthy ) {
     try {
+      // Try to reconnect if needed (client may have been reset)
+      await withTimeout( database.connect(), DB_TIMEOUT_MS );
+      // Test cache health
       await withTimeout( database.testCacheHealth(), DB_TIMEOUT_MS );
       cacheHealthy = true;
     } catch ( error ) {
@@ -255,9 +259,9 @@ const fetchMultipleActs = async ( artistIds ) => {
       DB_TIMEOUT_MS
     ) ) );
   } catch ( error ) {
-    // On timeout, flag cache as unhealthy and fail immediately
+    // On error, flag cache as unhealthy and fail immediately
     cacheHealthy = false;
-    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
   }
 
   const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
@@ -275,19 +279,10 @@ const fetchMultipleActs = async ( artistIds ) => {
   return handleMultipleMissingActs( missingIds, cachedActs.length );
 };
 
-/**
- * Resets cache healthy flag to true - FOR TESTING ONLY
- * @returns {void}
- */
-const resetCacheHealthForTesting = () => {
-  cacheHealthy = true;
-};
-
 module.exports = {
   determineStatus,
   fetchAndEnrichArtistData,
   fetchBandsintownEvents,
   fetchMultipleActs,
-  getBerlinTimestamp,
-  resetCacheHealthForTesting
+  getBerlinTimestamp
 };
