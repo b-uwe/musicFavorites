@@ -3,7 +3,7 @@
  * @module __tests__/testHelpers/fixtureModifier
  */
 
-const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
+const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
 
 describe( 'Fixture Modifier', () => {
   describe( 'modifyFixture', () => {

@@ -4,7 +4,7 @@
 
 const fs = require( 'fs' );
 const path = require( 'path' );
-const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
+const ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
 
 /**
  * Loads a fixture file
@@ -12,7 +12,7 @@ const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
  * @returns {string} File contents
  */
 const loadFixture = ( filename ) => {
-  const fixturePath = path.join( __dirname, '../fixtures/ldjson', filename );
+  const fixturePath = path.join( __dirname, '../../fixtures/ldjson', filename );
 
   return fs.readFileSync( fixturePath, 'utf8' );
 };
