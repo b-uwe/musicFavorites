@@ -11,6 +11,21 @@ const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
 let cacheHealthy = true;
 
+const DB_TIMEOUT_MS = 500;
+
+/**
+ * Wraps a promise with a timeout to prevent hanging
+ * @param {Promise} promise - The promise to wrap
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @returns {Promise} Promise that rejects if timeout is reached
+ */
+const withTimeout = ( promise, timeoutMs ) => Promise.race( [
+  promise,
+  new Promise( ( _, reject ) => {
+    setTimeout( () => reject( new Error( 'Database operation timeout' ) ), timeoutMs );
+  } )
+] );
+
 /**
  * Ensures cache is healthy before proceeding with operations
  * Tests cache health if previously flagged as unhealthy
@@ -21,15 +36,7 @@ let cacheHealthy = true;
 const ensureCacheHealthy = async () => {
   if ( !cacheHealthy ) {
     try {
-      // Wrap health check with 500ms timeout to prevent hanging
-      const HEALTH_CHECK_TIMEOUT_MS = 500;
-
-      await Promise.race( [
-        database.testCacheHealth(),
-        new Promise( ( _, reject ) => {
-          setTimeout( () => reject( new Error( 'Health check timeout' ) ), HEALTH_CHECK_TIMEOUT_MS );
-        } )
-      ] );
+      await withTimeout( database.testCacheHealth(), DB_TIMEOUT_MS );
       cacheHealthy = true;
     } catch ( error ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
@@ -239,7 +246,20 @@ const fetchMultipleActs = async ( artistIds ) => {
   // Ensure cache is healthy before proceeding
   await ensureCacheHealthy();
 
-  const cacheResults = await Promise.all( artistIds.map( ( id ) => database.getArtistFromCache( id ) ) );
+  // Wrap cache reads with timeout to prevent hanging on database issues
+  let cacheResults;
+
+  try {
+    cacheResults = await Promise.all( artistIds.map( ( id ) => withTimeout(
+      database.getArtistFromCache( id ),
+      DB_TIMEOUT_MS
+    ) ) );
+  } catch ( error ) {
+    // On timeout, flag cache as unhealthy and fail immediately
+    cacheHealthy = false;
+    throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+  }
+
   const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
 
   if ( missingIds.length === 0 ) {
