@@ -9,6 +9,25 @@ const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
+let cacheHealthy = true;
+
+/**
+ * Ensures cache is healthy before proceeding with operations
+ * Tests cache health if previously flagged as unhealthy
+ * @returns {Promise<void>} Resolves if cache is healthy
+ * @throws {Error} When cache is unavailable (SVC_001)
+ */
+const ensureCacheHealthy = async () => {
+  if ( !cacheHealthy ) {
+    try {
+      await database.testCacheHealth();
+      cacheHealthy = true;
+    } catch ( error ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
+    }
+  }
+};
+
 /**
  * Formats current timestamp in Berlin timezone
  * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
@@ -155,7 +174,7 @@ const handleSingleMissingAct = async ( missingId, cachedActs ) => {
 
   // Cache asynchronously (fire-and-forget)
   database.cacheArtist( freshData ).catch( () => {
-    // Silently ignore cache write failures for background operations
+    cacheHealthy = false;
   } );
 
   // Map _id to musicbrainzId for the freshly fetched act
@@ -194,8 +213,10 @@ const handleMultipleMissingActs = ( missingIds, cachedCount ) => {
 
 /**
  * Fetches multiple acts with smart caching strategy
+ * Protects upstream services by failing fast when cache is unhealthy
  * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
  * @returns {Promise<object>} Result object with acts array or error
+ * @throws {Error} When cache is unhealthy or unavailable
  */
 const fetchMultipleActs = async ( artistIds ) => {
   if ( !Array.isArray( artistIds ) || artistIds.length === 0 ) {
@@ -205,6 +226,9 @@ const fetchMultipleActs = async ( artistIds ) => {
       }
     };
   }
+
+  // Ensure cache is healthy before proceeding
+  await ensureCacheHealthy();
 
   const cacheResults = await Promise.all( artistIds.map( ( id ) => database.getArtistFromCache( id ) ) );
   const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
