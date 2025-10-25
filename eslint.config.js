@@ -1,5 +1,6 @@
 const js = require( '@eslint/js' );
 const jsdoc = require( 'eslint-plugin-jsdoc' );
+const localRules = require( './eslint-local-rules' );
 
 module.exports = [
   js.configs.recommended,
@@ -9,7 +10,8 @@ module.exports = [
   },
   {
     'plugins': {
-      jsdoc
+      jsdoc,
+      'local-rules': localRules
     },
     'languageOptions': {
       'ecmaVersion': 2024,
@@ -222,7 +224,8 @@ module.exports = [
         'object': 'mf',
         'property': 'testing',
         'message': 'mf.testing.* can only be used in test files (src/__tests__/**/*.js)'
-      } ]
+      } ],
+      'local-rules/iife-wrapper': 'error'
     }
   },
   {
