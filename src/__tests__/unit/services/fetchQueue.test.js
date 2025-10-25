@@ -4,29 +4,26 @@
  * @module __tests__/unit/services/fetchQueue
  */
 
-// Mock dependencies BEFORE requiring fetchQueue
-jest.mock( '../../../services/artistService' );
-jest.mock( '../../../services/database' );
-
 describe( 'fetchQueue - Unit Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Require database module (sets up mf.database with real implementations)
+    // Load modules
     require( '../../../services/database' );
-
-    // Mock only the database functions used by fetchQueue
-    mf.database.cacheArtist = jest.fn();
-
     require( '../../../services/artistService' );
-    mf.artistService.fetchAndEnrichArtistData = jest.fn();
-
     require( '../../../services/fetchQueue' );
+
+    // Spy on database functions used by fetchQueue
+    jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
+
+    // Spy on artistService function
+    jest.spyOn( mf.artistService, 'fetchAndEnrichArtistData' ).mockResolvedValue( {} );
   } );
 
   afterEach( () => {
     jest.useRealTimers();
+    jest.restoreAllMocks();
   } );
 
   describe( 'processFetchQueue', () => {
@@ -277,7 +274,7 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       // Re-require database and setup mocks
       require( '../../../services/database' );
-      mf.database.cacheArtist = jest.fn();
+      jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
 
       // Require fetchQueue (this will have the broken artistService require)
       require( '../../../services/fetchQueue' );
@@ -299,10 +296,10 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       // Re-require everything for subsequent tests
       require( '../../../services/database' );
-      mf.database.cacheArtist = jest.fn();
       require( '../../../services/artistService' );
-      mf.artistService.fetchAndEnrichArtistData = jest.fn();
       require( '../../../services/fetchQueue' );
+      jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
+      jest.spyOn( mf.artistService, 'fetchAndEnrichArtistData' ).mockResolvedValue( {} );
 
       jest.useRealTimers();
     }, 15000 );
