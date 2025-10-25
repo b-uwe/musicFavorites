@@ -208,5 +208,11 @@ module.exports = [
       'jsdoc/check-types': 'error',
       'jsdoc/no-undefined-types': 'error'
     }
+  },
+  {
+    'files': [ 'src/__tests__/**/*.js' ],
+    'rules': {
+      'no-undefined': 'off'
+    }
   }
 ];
