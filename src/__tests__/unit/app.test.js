@@ -257,7 +257,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
     test( 'returns robots.txt as text/plain', async () => {
       const response = await request( app ).get( '/robots.txt' ).expect( 200 );
 
-      expect( response.headers[ 'content-type' ] ).toMatch( /text\/plain/ );
+      expect( response.headers[ 'content-type' ] ).toMatch( /text\/plain/u );
       expect( response.text ).toBeDefined();
       expect( response.text ).toContain( 'User-agent' );
     } );

@@ -24,7 +24,7 @@ describe( 'artistService', () => {
       test( 'returns timestamp in YYYY-MM-DD HH:MM:SS format', () => {
         const timestamp = artistService.getBerlinTimestamp();
 
-        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
       } );
 
       test( 'returns a string', () => {
@@ -37,8 +37,8 @@ describe( 'artistService', () => {
         const timestamp1 = artistService.getBerlinTimestamp();
         const timestamp2 = artistService.getBerlinTimestamp();
 
-        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
-        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
+        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
         expect( timestamp2 >= timestamp1 ).toBe( true );
       } );
     } );
