@@ -314,7 +314,6 @@ describe( 'artistService', () => {
   } );
 
   describe( 'Functions with Mocked Dependencies', () => {
-    let musicbrainz;
     let ldJsonExtractor;
     let bandsintownTransformer;
     let musicbrainzTransformer;
@@ -334,7 +333,8 @@ describe( 'artistService', () => {
       mf.database.getArtistFromCache = jest.fn();
       mf.database.cacheArtist = jest.fn();
 
-      musicbrainz = require( '../../../services/musicbrainz' );
+      require( '../../../services/musicbrainz' );
+      mf.musicbrainz.fetchArtist = jest.fn();
       ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
       bandsintownTransformer = require( '../../../services/bandsintownTransformer' );
       musicbrainzTransformer = require( '../../../services/musicbrainzTransformer' );
@@ -453,14 +453,14 @@ describe( 'artistService', () => {
           }
         ];
 
-        musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
+        mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( mockEvents );
 
         const result = await mf.artistService.fetchAndEnrichArtistData( 'test-id' );
 
-        expect( musicbrainz.fetchArtist ).toHaveBeenCalledWith( 'test-id' );
+        expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( 'test-id' );
         expect( musicbrainzTransformer.transformArtistData ).toHaveBeenCalledWith( mockMbData );
         expect( result ).toMatchObject( {
           '_id': 'test-id',
@@ -481,7 +481,7 @@ describe( 'artistService', () => {
           }
         };
 
-        musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
+        mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Fetch failed' ) );
 
@@ -571,7 +571,7 @@ describe( 'artistService', () => {
         mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached ).
           mockResolvedValueOnce( null );
-        musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
+        mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( [] );
@@ -662,7 +662,7 @@ describe( 'artistService', () => {
         mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached ).
           mockResolvedValueOnce( null );
-        musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
+        mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( [] );

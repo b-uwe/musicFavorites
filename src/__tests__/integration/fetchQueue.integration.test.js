@@ -6,7 +6,7 @@
  */
 
 require( '../../services/database' );
-const musicbrainzClient = require( '../../services/musicbrainz' );
+require( '../../services/musicbrainz' );
 const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
@@ -29,6 +29,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Mock only the database functions used in these tests
     mf.database.getArtistFromCache = jest.fn();
     mf.database.cacheArtist = jest.fn();
+
+    // Mock musicbrainz functions
+    mf.musicbrainz.fetchArtist = jest.fn();
   } );
 
   /**
@@ -42,8 +45,8 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
     mf.database.cacheArtist.mockResolvedValue();
 
@@ -54,9 +57,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Verify fetchAndEnrichArtistData was called (indirectly through processFetchQueue)
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
@@ -76,7 +79,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.database.getArtistFromCache.mockResolvedValue( null );
 
     // Mock the background fetch behavior
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
     mf.database.cacheArtist.mockResolvedValue();
 

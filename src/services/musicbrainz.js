@@ -1,36 +1,42 @@
-/**
- * MusicBrainz API client module
- * @module services/musicbrainz
- */
+( () => {
+  'use strict';
 
-const axios = require( 'axios' );
-const { USER_AGENT, HTTP_TIMEOUT } = require( '../constants' );
+  /**
+   * MusicBrainz API client module
+   * @module services/musicbrainz
+   */
 
-const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
+  const axios = require( 'axios' );
+  const { USER_AGENT, HTTP_TIMEOUT } = require( '../constants' );
 
-/**
- * Fetches artist data from MusicBrainz API
- * @param {string} artistId - The MusicBrainz artist ID
- * @returns {Promise<object>} Artist data from MusicBrainz
- * @throws {Error} When the API request fails (with MusicBrainz prefix)
- */
-const fetchArtist = async ( artistId ) => {
-  const url = `${MUSICBRAINZ_BASE_URL}/artist/${artistId}?inc=aliases+url-rels&fmt=json`;
+  const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
 
-  try {
-    const response = await axios.get( url, {
-      'headers': {
-        'User-Agent': USER_AGENT
-      },
-      'timeout': HTTP_TIMEOUT
-    } );
+  /**
+   * Fetches artist data from MusicBrainz API
+   * @param {string} artistId - The MusicBrainz artist ID
+   * @returns {Promise<object>} Artist data from MusicBrainz
+   * @throws {Error} When the API request fails (with MusicBrainz prefix)
+   */
+  const fetchArtist = async ( artistId ) => {
+    const url = `${MUSICBRAINZ_BASE_URL}/artist/${artistId}?inc=aliases+url-rels&fmt=json`;
 
-    return response.data;
-  } catch ( error ) {
-    throw new Error( `MusicBrainz: ${error.message}` );
-  }
-};
+    try {
+      const response = await axios.get( url, {
+        'headers': {
+          'User-Agent': USER_AGENT
+        },
+        'timeout': HTTP_TIMEOUT
+      } );
 
-module.exports = {
-  fetchArtist
-};
+      return response.data;
+    } catch ( error ) {
+      throw new Error( `MusicBrainz: ${error.message}` );
+    }
+  };
+
+  // Initialize global namespace
+  globalThis.mf = globalThis.mf || {};
+  globalThis.mf.musicbrainz = {
+    fetchArtist
+  };
+} )();

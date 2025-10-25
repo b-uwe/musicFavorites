@@ -9,7 +9,7 @@
   const bandsintownTransformer = require( './bandsintownTransformer' );
   require( './database' );
   const ldJsonExtractor = require( './ldJsonExtractor' );
-  const musicbrainzClient = require( './musicbrainz' );
+  require( './musicbrainz' );
   const musicbrainzTransformer = require( './musicbrainzTransformer' );
 
   let cacheHealthy = true;
@@ -144,7 +144,7 @@
    */
   const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => {
     // Fetch fresh data from MusicBrainz
-    const mbData = await musicbrainzClient.fetchArtist( artistId );
+    const mbData = await mf.musicbrainz.fetchArtist( artistId );
     const transformedData = musicbrainzTransformer.transformArtistData( mbData );
 
     // Fetch Bandsintown events if available
