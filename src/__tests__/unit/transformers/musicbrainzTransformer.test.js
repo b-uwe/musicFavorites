@@ -236,8 +236,10 @@ describe( 'MusicBrainz Data Transformer', () => {
       const dataWithNullRelation = fixtureModifier.modifyFixture( fixtureJungleRot, {
         'relations': [
           null,
-          { 'type': 'bandcamp', 'url': null },
-          { 'type': 'bandcamp', 'url': { 'resource': null } }
+          { 'type': 'bandcamp',
+            'url': null },
+          { 'type': 'bandcamp',
+            'url': { 'resource': null } }
         ]
       } );
 

@@ -68,11 +68,13 @@ describe( 'artistService', () => {
         futureDate.setUTCDate( futureDate.getUTCDate() + 60 );
         const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -85,11 +87,13 @@ describe( 'artistService', () => {
         futureDate.setUTCDate( futureDate.getUTCDate() + 180 );
         const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -102,11 +106,13 @@ describe( 'artistService', () => {
         futureDate.setUTCDate( futureDate.getUTCDate() + 300 );
         const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -215,11 +221,13 @@ describe( 'artistService', () => {
         futureDate.setUTCHours( 0, 0, 0, 0 );
         futureDate.setUTCDate( futureDate.getUTCDate() + 90 );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': futureDate.toISOString().split( 'T' )[ 0 ],
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': futureDate.toISOString().split( 'T' )[ 0 ],
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -232,11 +240,13 @@ describe( 'artistService', () => {
         futureDate.setUTCHours( 0, 0, 0, 0 );
         futureDate.setUTCDate( futureDate.getUTCDate() + 270 );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': futureDate.toISOString().split( 'T' )[ 0 ],
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': futureDate.toISOString().split( 'T' )[ 0 ],
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -492,7 +502,8 @@ describe( 'artistService', () => {
 
         database.connect.mockResolvedValue();
         database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockResolvedValue( { '_id': 'id1', 'name': 'Test' } );
+        database.getArtistFromCache.mockResolvedValue( { '_id': 'id1',
+          'name': 'Test' } );
 
         const result = await artistService.fetchMultipleActs( [ 'id1' ] );
 

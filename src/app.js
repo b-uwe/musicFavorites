@@ -20,7 +20,7 @@ app.get( '/acts/:id', async ( req, res ) => {
   const { id } = req.params;
 
   // Enable pretty-printing if ?pretty query parameter is present
-  if ( req.query.pretty !== undefined ) {
+  if ( 'pretty' in req.query ) {
     app.set( 'json spaces', 2 );
   } else {
     app.set( 'json spaces', 0 );

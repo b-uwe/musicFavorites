@@ -19,12 +19,15 @@ module.exports = [
         '__filename': 'readonly',
         'Buffer': 'readonly',
         'global': 'readonly',
+        'globalThis': 'readonly',
         'setTimeout': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
         'expect': 'readonly',
         'jest': 'readonly',
-        'beforeEach': 'readonly'
+        'beforeEach': 'readonly',
+        'afterEach': 'readonly',
+        'beforeAll': 'readonly'
       }
     },
     'rules': {

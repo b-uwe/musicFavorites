@@ -93,18 +93,14 @@ describe( 'Database Service', () => {
     test( 'should throw error when MONGODB_URI is not set', async () => {
       delete process.env.MONGODB_URI;
 
-      await expect( database.connect() ).rejects.toThrow(
-        'Service misconfigured. Please try again later. (Error: DB_001)'
-      );
+      await expect( database.connect() ).rejects.toThrow( 'Service misconfigured. Please try again later. (Error: DB_001)' );
     } );
 
     test( 'should throw error when connection fails', async () => {
       const error = new Error( 'Connection failed' );
       mockClient.connect.mockRejectedValue( error );
 
-      await expect( database.connect() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_011)'
-      );
+      await expect( database.connect() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_011)' );
     } );
 
     test( 'should not reconnect if already connected', async () => {
@@ -125,9 +121,7 @@ describe( 'Database Service', () => {
         'ok': 0
       } );
 
-      await expect( database.connect() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_002)'
-      );
+      await expect( database.connect() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
     } );
 
     test( 'should reset client on ping failure to allow retry', async () => {
@@ -137,9 +131,7 @@ describe( 'Database Service', () => {
       } );
 
       // First attempt fails
-      await expect( database.connect() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_002)'
-      );
+      await expect( database.connect() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
 
       // Set up successful connection for retry
       mockDb.command.mockResolvedValueOnce( {
@@ -156,9 +148,7 @@ describe( 'Database Service', () => {
       mockClient.connect.mockRejectedValueOnce( error );
 
       // First attempt fails
-      await expect( database.connect() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_011)'
-      );
+      await expect( database.connect() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_011)' );
 
       // Set up successful connection for retry
       mockClient.connect.mockResolvedValueOnce( mockClient );
@@ -200,9 +190,7 @@ describe( 'Database Service', () => {
 
       await database.connect();
 
-      await expect( database.disconnect() ).rejects.toThrow(
-        'Service temporarily unavailable during disconnection. (Error: DB_012)'
-      );
+      await expect( database.disconnect() ).rejects.toThrow( 'Service temporarily unavailable during disconnection. (Error: DB_012)' );
     } );
 
     test( 'should keep client reference when close fails to allow retry', async () => {
@@ -216,9 +204,7 @@ describe( 'Database Service', () => {
       await database.connect();
 
       // First disconnect attempt fails
-      await expect( database.disconnect() ).rejects.toThrow(
-        'Service temporarily unavailable during disconnection. (Error: DB_012)'
-      );
+      await expect( database.disconnect() ).rejects.toThrow( 'Service temporarily unavailable during disconnection. (Error: DB_012)' );
 
       // Set up successful close for retry
       mockClient.close.mockResolvedValueOnce();
@@ -244,9 +230,7 @@ describe( 'Database Service', () => {
     } );
 
     test( 'should throw error when not connected', () => {
-      expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_003)'
-      );
+      expect( () => database.getDatabase( 'musicfavorites' ) ).toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_003)' );
     } );
   } );
 
@@ -304,9 +288,7 @@ describe( 'Database Service', () => {
     } );
 
     test( 'should throw error when not connected', async () => {
-      await expect( database.getArtistFromCache( 'some-id' ) ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_004)'
-      );
+      await expect( database.getArtistFromCache( 'some-id' ) ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
     } );
   } );
 
@@ -355,9 +337,7 @@ describe( 'Database Service', () => {
         'name': 'Test Artist'
       };
 
-      await expect( database.cacheArtist( artistData ) ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_005)'
-      );
+      await expect( database.cacheArtist( artistData ) ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
     } );
 
     test( 'should throw error when artistData is missing _id', async () => {
@@ -372,9 +352,7 @@ describe( 'Database Service', () => {
         'name': 'Test Artist'
       };
 
-      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow(
-        'Invalid request. Please try again later. (Error: DB_006)'
-      );
+      await expect( database.cacheArtist( invalidArtistData ) ).rejects.toThrow( 'Invalid request. Please try again later. (Error: DB_006)' );
     } );
 
     test( 'should throw error when write not acknowledged', async () => {
@@ -389,9 +367,7 @@ describe( 'Database Service', () => {
 
       await database.connect();
 
-      await expect( database.cacheArtist( transformedTheKinks ) ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_007)'
-      );
+      await expect( database.cacheArtist( transformedTheKinks ) ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
     } );
   } );
 
@@ -444,9 +420,7 @@ describe( 'Database Service', () => {
     } );
 
     test( 'should throw error when not connected', async () => {
-      await expect( database.testCacheHealth() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_008)'
-      );
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_008)' );
     } );
 
     test( 'should throw error when write fails', async () => {
@@ -475,9 +449,7 @@ describe( 'Database Service', () => {
 
       await database.connect();
 
-      await expect( database.testCacheHealth() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_009)'
-      );
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_009)' );
       expect( mockCollection.deleteOne ).not.toHaveBeenCalled();
     } );
 
@@ -496,9 +468,7 @@ describe( 'Database Service', () => {
 
       await database.connect();
 
-      await expect( database.testCacheHealth() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_010)'
-      );
+      await expect( database.testCacheHealth() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
     } );
   } );
 
@@ -584,9 +554,7 @@ describe( 'Database Service', () => {
      * Test that getAllActIds throws error when not connected
      */
     test( 'should throw error when not connected', async () => {
-      await expect( database.getAllActIds() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_013)'
-      );
+      await expect( database.getAllActIds() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
     } );
   } );
 
@@ -745,9 +713,7 @@ describe( 'Database Service', () => {
      * Test that getAllActsWithMetadata throws error when not connected
      */
     test( 'should throw error when not connected', async () => {
-      await expect( database.getAllActsWithMetadata() ).rejects.toThrow(
-        'Service temporarily unavailable. Please try again later. (Error: DB_014)'
-      );
+      await expect( database.getAllActsWithMetadata() ).rejects.toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
     } );
   } );
 } );

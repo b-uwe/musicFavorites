@@ -443,7 +443,8 @@ describe( 'database - Unit Tests', () => {
 
       const result = await database.getAllActsWithMetadata();
 
-      expect( mockCollection.find ).toHaveBeenCalledWith( {}, { 'projection': { '_id': 1, 'updatedAt': 1 } } );
+      expect( mockCollection.find ).toHaveBeenCalledWith( {}, { 'projection': { '_id': 1,
+        'updatedAt': 1 } } );
       expect( result ).toEqual( [
         {
           '_id': 'id1',

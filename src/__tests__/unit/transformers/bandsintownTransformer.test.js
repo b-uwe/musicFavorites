@@ -243,9 +243,7 @@ describe( 'Bandsintown Transformer', () => {
       const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
       const secondEvent = result[ 1 ];
 
-      expect( secondEvent.location.address ).toBe(
-        'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom'
-      );
+      expect( secondEvent.location.address ).toBe( 'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom' );
     } );
 
     /**

@@ -41,13 +41,11 @@ describe( 'Cache Updater Service', () => {
       await cacheUpdater.updateAct( actId );
 
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith(
-        expect.objectContaining( {
-          '_id': actId,
-          'name': transformedTheKinks.name,
-          'events': []
-        } )
-      );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+        '_id': actId,
+        'name': transformedTheKinks.name,
+        'events': []
+      } ) );
     } );
 
     /**
@@ -65,13 +63,11 @@ describe( 'Cache Updater Service', () => {
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actId );
       expect( ldJsonExtractor.fetchAndExtractLdJson ).
         toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
-      expect( database.cacheArtist ).toHaveBeenCalledWith(
-        expect.objectContaining( {
-          '_id': actId,
-          'name': transformedVulvodynia.name,
-          'events': expect.any( Array )
-        } )
-      );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+        '_id': actId,
+        'name': transformedVulvodynia.name,
+        'events': expect.any( Array )
+      } ) );
     } );
 
     /**
@@ -132,12 +128,10 @@ describe( 'Cache Updater Service', () => {
       await cacheUpdater.updateAct( actId );
 
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalledWith(
-        expect.objectContaining( {
-          '_id': actId,
-          'events': []
-        } )
-      );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+        '_id': actId,
+        'events': []
+      } ) );
     } );
   } );
 
@@ -247,8 +241,10 @@ describe( 'Cache Updater Service', () => {
         }
       ];
 
-      // Sequential bootstrap: empty cache
-      // Cycle-based: first call empty, second call has acts
+      /*
+       * Sequential bootstrap: empty cache
+       * Cycle-based: first call empty, second call has acts
+       */
       database.getAllActsWithMetadata.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [] );
@@ -267,9 +263,11 @@ describe( 'Cache Updater Service', () => {
       // Phase 2: 12-hour wait
       await jest.advanceTimersByTimeAsync( 12 * 60 * 60 * 1000 );
 
-      // Phase 3: Advance time for 2 complete cycles (2 × 50ms = 100ms)
-      //  - First cycle: empty cache, sleeps 50ms
-      //  - Second cycle: processes 1 act, sleeps 50ms
+      /*
+       * Phase 3: Advance time for 2 complete cycles (2 × 50ms = 100ms)
+       *  - First cycle: empty cache, sleeps 50ms
+       *  - Second cycle: processes 1 act, sleeps 50ms
+       */
       await jest.advanceTimersByTimeAsync( 99 );
 
       // Verify: first cycle found empty cache, second cycle processed act
@@ -408,7 +406,6 @@ describe( 'Cache Updater Service', () => {
 
       jest.useRealTimers();
     }, 20000 );
-
   } );
 
   describe( 'runSequentialUpdate', () => {

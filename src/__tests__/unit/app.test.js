@@ -199,8 +199,8 @@ describe( 'Express App - Route Handler Unit Tests', () => {
 
       expect( response.headers[ 'cache-control' ] ).toContain( 'no-store' );
       expect( response.headers[ 'cache-control' ] ).toContain( 'no-cache' );
-      expect( response.headers[ 'pragma' ] ).toBe( 'no-cache' );
-      expect( response.headers[ 'expires' ] ).toBe( '0' );
+      expect( response.headers.pragma ).toBe( 'no-cache' );
+      expect( response.headers.expires ).toBe( '0' );
     } );
 
     /**
@@ -243,8 +243,10 @@ describe( 'Express App - Route Handler Unit Tests', () => {
 
       await request( app ).get( '/acts/test-id' ).expect( 200 );
 
-      // Without ?pretty, app setting should be 0 spaces
-      // (This is harder to test directly, but we verify the parameter works)
+      /*
+       * Without ?pretty, app setting should be 0 spaces
+       * (This is harder to test directly, but we verify the parameter works)
+       */
     } );
   } );
 

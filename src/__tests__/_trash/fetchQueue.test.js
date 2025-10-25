@@ -44,12 +44,10 @@ describe( 'Fetch Queue Service', () => {
       await jest.runAllTimersAsync();
 
       expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedTheKinks._id );
-      expect( database.cacheArtist ).toHaveBeenCalledWith(
-        expect.objectContaining( {
-          '_id': transformedTheKinks._id,
-          'name': transformedTheKinks.name
-        } )
-      );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+        '_id': transformedTheKinks._id,
+        'name': transformedTheKinks.name
+      } ) );
 
       jest.useRealTimers();
     }, 10000 );
@@ -112,9 +110,7 @@ describe( 'Fetch Queue Service', () => {
         'Background fetch failed for act invalid-id:',
         'Not found'
       );
-      expect( consoleLogSpy ).toHaveBeenCalledWith(
-        `Background fetch completed for act: ${transformedTheKinks._id}`
-      );
+      expect( consoleLogSpy ).toHaveBeenCalledWith( `Background fetch completed for act: ${transformedTheKinks._id}` );
 
       consoleErrorSpy.mockRestore();
       consoleLogSpy.mockRestore();
@@ -190,12 +186,10 @@ describe( 'Fetch Queue Service', () => {
 
       await jest.runAllTimersAsync();
 
-      expect( database.cacheArtist ).toHaveBeenCalledWith(
-        expect.objectContaining( {
-          '_id': transformedVulvodynia._id,
-          'events': []
-        } )
-      );
+      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+        '_id': transformedVulvodynia._id,
+        'events': []
+      } ) );
 
       jest.useRealTimers();
     }, 10000 );
