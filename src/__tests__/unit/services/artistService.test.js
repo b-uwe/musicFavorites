@@ -3,18 +3,15 @@
  * @module __tests__/unit/services/artistService
  */
 
-// Mock dependencies for tests that need them
-jest.mock( '../../../services/musicbrainz' );
-jest.mock( '../../../services/database' );
-jest.mock( '../../../services/ldJsonExtractor' );
-jest.mock( '../../../services/bandsintownTransformer' );
-jest.mock( '../../../services/musicbrainzTransformer' );
-
 describe( 'artistService', () => {
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
     require( '../../../services/artistService' );
+  } );
+
+  afterEach( () => {
+    jest.restoreAllMocks();
   } );
 
   describe( 'Pure Functions (No Mocks)', () => {
@@ -319,30 +316,32 @@ describe( 'artistService', () => {
       jest.resetModules();
       jest.useFakeTimers();
 
-      // Require database module (sets up mf.database with real implementations)
+      // Load modules
       require( '../../../services/database' );
-
-      // Mock only the database functions used by artistService
-      mf.database.connect = jest.fn();
-      mf.database.testCacheHealth = jest.fn();
-      mf.database.getArtistFromCache = jest.fn();
-      mf.database.cacheArtist = jest.fn();
-
       require( '../../../services/musicbrainz' );
-      mf.musicbrainz.fetchArtist = jest.fn();
       require( '../../../services/ldJsonExtractor' );
-      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
       require( '../../../services/bandsintownTransformer' );
       require( '../../../services/musicbrainzTransformer' );
-
       require( '../../../services/fetchQueue' );
-      mf.fetchQueue.triggerBackgroundFetch = jest.fn();
-
       require( '../../../services/artistService' );
+
+      // Spy on database functions used by artistService
+      jest.spyOn( mf.database, 'connect' ).mockResolvedValue();
+      jest.spyOn( mf.database, 'testCacheHealth' ).mockResolvedValue();
+      jest.spyOn( mf.database, 'getArtistFromCache' ).mockResolvedValue( null );
+      jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
+
+      // Spy on other service functions
+      jest.spyOn( mf.musicbrainz, 'fetchArtist' ).mockResolvedValue( {} );
+      jest.spyOn( mf.ldJsonExtractor, 'fetchAndExtractLdJson' ).mockResolvedValue( {} );
+      jest.spyOn( mf.fetchQueue, 'triggerBackgroundFetch' ).mockImplementation( () => {
+        // No-op - background fetch is mocked for tests
+      } );
     } );
 
     afterEach( () => {
       jest.useRealTimers();
+      jest.restoreAllMocks();
     } );
 
     describe( 'fetchBandsintownEvents', () => {
