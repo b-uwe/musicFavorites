@@ -10,6 +10,38 @@ const artistService = require( './services/artistService' );
 const app = express();
 
 /**
+ * Standard meta object for all API responses
+ * @type {object}
+ */
+const META = {
+  'attribution': {
+    'sources': [ 'MusicBrainz', 'Bandsintown', 'Songkick' ],
+    'notice': 'Data from third-party sources subject to their respective terms.\n' +
+      'See https://github.com/b-uwe/musicFavorites/blob/main/DATA_NOTICE.md for details.'
+  },
+  'license': 'AGPL-3.0',
+  'repository': 'https://github.com/b-uwe/musicFavorites'
+};
+
+/**
+ * Sets response headers for cache control and robots
+ * @param {object} res - Express response object
+ * @returns {void}
+ */
+const setResponseHeaders = ( res ) => {
+  // TODO: Remove robots blocking once caching layer is in place to protect upstream providers
+  res.set( 'X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet' );
+
+  /*
+   * TODO: Implement proper caching strategy with ETags and Cache-Control max-age
+   * For now, disable all caching
+   */
+  res.set( 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate' );
+  res.set( 'Pragma', 'no-cache' );
+  res.set( 'Expires', '0' );
+};
+
+/**
  * Get information about one or more music acts
  * Supports comma-separated MusicBrainz IDs for multiple acts
  * @param {object} req - Express request object
@@ -26,52 +58,22 @@ app.get( '/acts/:id', async ( req, res ) => {
     app.set( 'json spaces', 0 );
   }
 
-  // TODO: Remove robots blocking once caching layer is in place to protect upstream providers
-  res.set( 'X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet' );
-
-  /*
-   * TODO: Implement proper caching strategy with ETags and Cache-Control max-age
-   * For now, disable all caching
-   */
-  res.set( 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate' );
-  res.set( 'Pragma', 'no-cache' );
-  res.set( 'Expires', '0' );
+  setResponseHeaders( res );
 
   try {
-    // Split comma-separated IDs
     const artistIds = id.split( ',' ).map( ( artistId ) => artistId.trim() );
-
-    // Use fetchMultipleActs for smart caching
     const result = await artistService.fetchMultipleActs( artistIds );
 
-    // Check if result contains an error
     if ( result.error ) {
       return res.status( 503 ).json( {
-        'meta': {
-          'attribution': {
-            'sources': [ 'MusicBrainz', 'Bandsintown', 'Songkick' ],
-            'notice': 'Data from third-party sources subject to their respective terms.\n' +
-              'See https://github.com/b-uwe/musicFavorites/blob/main/DATA_NOTICE.md for details.'
-          },
-          'license': 'AGPL-3.0',
-          'repository': 'https://github.com/b-uwe/musicFavorites'
-        },
+        'meta': META,
         'type': 'error',
         'error': result.error
       } );
     }
 
-    // Success - return acts
     return res.json( {
-      'meta': {
-        'attribution': {
-          'sources': [ 'MusicBrainz', 'Bandsintown', 'Songkick' ],
-          'notice': 'Data from third-party sources subject to their respective terms.\n' +
-            'See https://github.com/b-uwe/musicFavorites/blob/main/DATA_NOTICE.md for details.'
-        },
-        'license': 'AGPL-3.0',
-        'repository': 'https://github.com/b-uwe/musicFavorites'
-      },
+      'meta': META,
       'type': 'acts',
       'acts': result.acts
     } );
