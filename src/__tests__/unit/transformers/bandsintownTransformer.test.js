@@ -89,7 +89,7 @@ describe( 'Bandsintown Transformer', () => {
       expect( result.length ).toBeGreaterThan( 0 );
 
       // Check first event structure
-      const firstEvent = result[ 0 ];
+      const [ firstEvent ] = result;
 
       expect( firstEvent ).toHaveProperty( 'name' );
       expect( firstEvent ).toHaveProperty( 'date' );
@@ -105,7 +105,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'transforms location with address and geo coordinates', () => {
       const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
-      const firstEvent = result[ 0 ];
+      const [ firstEvent ] = result;
 
       expect( firstEvent.location ).toHaveProperty( 'address' );
       expect( firstEvent.location ).toHaveProperty( 'geo' );
@@ -206,7 +206,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'correctly extracts date and localTime from startDate', () => {
       const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
-      const secondEvent = result[ 1 ];
+      const [ , secondEvent ] = result;
 
       // Second event: Leeds University Stylus with time 17:30:00
       expect( secondEvent.name ).toBe( 'Vulvodynia @ Leeds University Stylus' );
@@ -241,11 +241,9 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'concatenates address fields correctly', () => {
       const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
-      const secondEvent = result[ 1 ];
+      const [ , secondEvent ] = result;
 
-      expect( secondEvent.location.address ).toBe(
-        'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom'
-      );
+      expect( secondEvent.location.address ).toBe( 'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom' );
     } );
 
     /**
@@ -318,7 +316,7 @@ describe( 'Bandsintown Transformer', () => {
       const futureDate = new Date();
 
       futureDate.setUTCDate( futureDate.getUTCDate() + 30 );
-      const futureDateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+      const [ futureDateStr ] = futureDate.toISOString().split( 'T' );
 
       const eventWithDateOnly = [
         fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {

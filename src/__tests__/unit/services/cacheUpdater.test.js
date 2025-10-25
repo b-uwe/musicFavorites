@@ -147,7 +147,8 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runSequentialUpdate returns 0 when all acts are fresh
      */
     test( 'returns 0 when all acts are fresh (< 24h old)', async () => {
-      const freshTimestamp = new Date( Date.now() - 1000 * 60 * 60 ).toISOString(); // 1 hour ago
+      // 1 hour ago
+      const freshTimestamp = new Date( Date.now() - ( 1000 * 60 * 60 ) ).toISOString();
 
       database.getAllActsWithMetadata.mockResolvedValue( [
         {
@@ -196,7 +197,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'processes acts older than 24 hours', async () => {
       jest.useFakeTimers();
 
-      const staleTimestamp = new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString();
+      const staleTimestamp = new Date( Date.now() - ( 48 * 60 * 60 * 1000 ) ).toISOString();
 
       database.getAllActsWithMetadata.mockResolvedValue( [
         {
@@ -290,7 +291,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       database.getAllActIds.mockResolvedValue( [] );
 
       // Pass undefined for cycleIntervalMs to test the ?? operator
-      const startPromise = cacheUpdater.start( { 'cycleIntervalMs': undefined } );
+      cacheUpdater.start( { 'cycleIntervalMs': undefined } );
 
       // Should call runSequentialUpdate once
       await jest.advanceTimersByTimeAsync( 1000 );
@@ -308,7 +309,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       database.getAllActsWithMetadata.mockResolvedValue( [] );
       database.getAllActIds.mockResolvedValue( [] );
 
-      const startPromise = cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
+      cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
 
       // Let runSequentialUpdate complete
       await jest.advanceTimersByTimeAsync( 1000 );

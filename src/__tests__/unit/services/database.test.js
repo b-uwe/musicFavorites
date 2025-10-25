@@ -118,7 +118,8 @@ describe( 'database - Unit Tests', () => {
       // Second call - reuses client (won't create new one)
       await database.connect();
       expect( MongoClient.mock.calls.length ).toBe( firstCallCount );
-      expect( mockDb.command ).toHaveBeenCalledTimes( 2 ); // But ping called twice
+      // But ping called twice
+      expect( mockDb.command ).toHaveBeenCalledTimes( 2 );
     } );
   } );
 
@@ -443,7 +444,8 @@ describe( 'database - Unit Tests', () => {
 
       const result = await database.getAllActsWithMetadata();
 
-      expect( mockCollection.find ).toHaveBeenCalledWith( {}, { 'projection': { '_id': 1, 'updatedAt': 1 } } );
+      expect( mockCollection.find ).toHaveBeenCalledWith( {}, { 'projection': { '_id': 1,
+        'updatedAt': 1 } } );
       expect( result ).toEqual( [
         {
           '_id': 'id1',

@@ -24,7 +24,7 @@ describe( 'artistService', () => {
       test( 'returns timestamp in YYYY-MM-DD HH:MM:SS format', () => {
         const timestamp = artistService.getBerlinTimestamp();
 
-        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
       } );
 
       test( 'returns a string', () => {
@@ -37,8 +37,8 @@ describe( 'artistService', () => {
         const timestamp1 = artistService.getBerlinTimestamp();
         const timestamp2 = artistService.getBerlinTimestamp();
 
-        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
-        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/ );
+        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
         expect( timestamp2 >= timestamp1 ).toBe( true );
       } );
     } );
@@ -66,13 +66,15 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 60 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -83,13 +85,15 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 180 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -100,13 +104,15 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 300 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': dateStr,
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': dateStr,
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -215,11 +221,13 @@ describe( 'artistService', () => {
         futureDate.setUTCHours( 0, 0, 0, 0 );
         futureDate.setUTCDate( futureDate.getUTCDate() + 90 );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': futureDate.toISOString().split( 'T' )[ 0 ],
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': futureDate.toISOString().split( 'T' )[ 0 ],
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -232,11 +240,13 @@ describe( 'artistService', () => {
         futureDate.setUTCHours( 0, 0, 0, 0 );
         futureDate.setUTCDate( futureDate.getUTCDate() + 270 );
 
-        const events = [ {
-          'name': 'Concert',
-          'date': futureDate.toISOString().split( 'T' )[ 0 ],
-          'location': {}
-        } ];
+        const events = [
+          {
+            'name': 'Concert',
+            'date': futureDate.toISOString().split( 'T' )[ 0 ],
+            'location': {}
+          }
+        ];
 
         const result = artistService.determineStatus( events, 'active' );
 
@@ -492,7 +502,8 @@ describe( 'artistService', () => {
 
         database.connect.mockResolvedValue();
         database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockResolvedValue( { '_id': 'id1', 'name': 'Test' } );
+        database.getArtistFromCache.mockResolvedValue( { '_id': 'id1',
+          'name': 'Test' } );
 
         const result = await artistService.fetchMultipleActs( [ 'id1' ] );
 

@@ -67,7 +67,7 @@ describe( 'musicbrainz', () => {
 
       await musicbrainz.fetchArtist( 'test-id' );
 
-      const call = axios.get.mock.calls[ 0 ];
+      const [ call ] = axios.get.mock.calls;
 
       expect( call[ 1 ].headers[ 'User-Agent' ] ).toBeDefined();
       expect( call[ 1 ].headers[ 'User-Agent' ] ).toContain( 'musicFavorites' );
@@ -81,7 +81,7 @@ describe( 'musicbrainz', () => {
 
       await musicbrainz.fetchArtist( 'test-id' );
 
-      const call = axios.get.mock.calls[ 0 ];
+      const [ call ] = axios.get.mock.calls;
 
       expect( call[ 1 ].timeout ).toBeDefined();
       expect( typeof call[ 1 ].timeout ).toBe( 'number' );

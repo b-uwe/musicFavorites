@@ -5,6 +5,9 @@ module.exports = [
   js.configs.recommended,
   jsdoc.configs[ 'flat/recommended' ],
   {
+    'ignores': [ 'src/__tests__/_trash/**' ]
+  },
+  {
     'plugins': {
       jsdoc
     },
@@ -19,12 +22,15 @@ module.exports = [
         '__filename': 'readonly',
         'Buffer': 'readonly',
         'global': 'readonly',
+        'globalThis': 'readonly',
         'setTimeout': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
         'expect': 'readonly',
         'jest': 'readonly',
-        'beforeEach': 'readonly'
+        'beforeEach': 'readonly',
+        'afterEach': 'readonly',
+        'beforeAll': 'readonly'
       }
     },
     'rules': {
@@ -201,6 +207,14 @@ module.exports = [
       'jsdoc/check-tag-names': 'error',
       'jsdoc/check-types': 'error',
       'jsdoc/no-undefined-types': 'error'
+    }
+  },
+  {
+    'files': [ 'src/__tests__/**/*.js' ],
+    'rules': {
+      'no-undefined': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': [ 'error', 750 ],
     }
   }
 ];

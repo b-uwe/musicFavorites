@@ -387,7 +387,7 @@ describe( 'Fixture Modifier', () => {
 
       const result = fixtureModifier.normalizeDates( fixture );
 
-      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
     } );
 
     /**
@@ -403,7 +403,7 @@ describe( 'Fixture Modifier', () => {
 
       const result = fixtureModifier.normalizeDates( fixture, 30 );
 
-      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+      expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
     } );
 
     /**
@@ -470,8 +470,8 @@ describe( 'Fixture Modifier', () => {
 
       const result = fixtureModifier.normalizeDates( fixture, 7 );
 
-      expect( result[ 0 ].startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
-      expect( result[ 1 ].startDate ).toMatch( new RegExp( `^${expectedDate}T17:30:00$` ) );
+      expect( result[ 0 ].startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
+      expect( result[ 1 ].startDate ).toMatch( new RegExp( `^${expectedDate}T17:30:00$`, 'u' ) );
     } );
 
     /**
@@ -494,7 +494,7 @@ describe( 'Fixture Modifier', () => {
 
       const result = fixtureModifier.normalizeDates( fixture, 7 );
 
-      expect( result.events[ 0 ].info.dates.start ).toMatch( new RegExp( `^${expectedDate}T18:00:00$` ) );
+      expect( result.events[ 0 ].info.dates.start ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
       expect( result.events[ 0 ].info.dates.end ).toBe( expectedDate );
     } );
 

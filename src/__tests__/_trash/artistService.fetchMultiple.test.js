@@ -126,12 +126,10 @@ describe( 'fetchMultipleActs', () => {
 
     await artistService.fetchMultipleActs( actIds );
 
-    expect( database.cacheArtist ).toHaveBeenCalledWith(
-      expect.objectContaining( {
-        '_id': transformedTheKinks._id,
-        'name': transformedTheKinks.name
-      } )
-    );
+    expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      '_id': transformedTheKinks._id,
+      'name': transformedTheKinks.name
+    } ) );
   } );
 
   /**
