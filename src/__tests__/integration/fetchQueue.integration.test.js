@@ -7,7 +7,7 @@
 
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
-const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
+require( '../../services/ldJsonExtractor' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 
@@ -47,7 +47,7 @@ describe( 'Fetch Queue Integration Tests', () => {
 
     mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
     mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
-    ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
     mf.database.cacheArtist.mockResolvedValue();
 
     // Trigger background fetch
@@ -80,7 +80,7 @@ describe( 'Fetch Queue Integration Tests', () => {
 
     // Mock the background fetch behavior
     mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
+    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
     mf.database.cacheArtist.mockResolvedValue();
 
     // Call fetchMultipleActs with 3 missing acts

@@ -4,7 +4,7 @@
 
 const fs = require( 'fs' );
 const path = require( 'path' );
-const ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
+require( '../../../services/ldJsonExtractor' );
 
 /**
  * Loads a fixture file
@@ -22,7 +22,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'extracts single LD+JSON block from HTML', () => {
       const html = loadFixture( 'single-block.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( [
         {
@@ -36,7 +36,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'extracts multiple LD+JSON blocks from HTML', () => {
       const html = loadFixture( 'multiple-blocks.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toHaveLength( 2 );
       expect( result[ 0 ] ).toEqual( {
@@ -52,7 +52,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'returns empty array when no LD+JSON found', () => {
       const html = loadFixture( 'google-no-ldjson.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( [] );
     } );
@@ -60,7 +60,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'skips malformed JSON and continues with valid blocks', () => {
       const html = loadFixture( 'malformed-json.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toHaveLength( 2 );
       expect( result[ 0 ] ).toEqual( {
@@ -76,7 +76,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'handles HTML with no script tags', () => {
       const html = loadFixture( 'no-script-tags.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( [] );
     } );
@@ -84,7 +84,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'handles empty HTML string', () => {
       const html = loadFixture( 'empty.html' );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( [] );
     } );
@@ -92,7 +92,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'handles script tags with empty content', () => {
       const html = '<html><head><script type="application/ld+json"></script></head></html>';
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( [] );
     } );
@@ -101,7 +101,7 @@ describe( 'LD+JSON Extractor', () => {
       const html = loadFixture( 'bandsintown-vulvodynia.html' );
       const expected = JSON.parse( loadFixture( 'bandsintown-vulvodynia.json' ) );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( expected );
       expect( result ).toHaveLength( 25 );
@@ -111,7 +111,7 @@ describe( 'LD+JSON Extractor', () => {
       const html = loadFixture( 'festivalsunited-alcatraz.html' );
       const expected = JSON.parse( loadFixture( 'festivalsunited-alcatraz.json' ) );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( expected );
       expect( result ).toHaveLength( 1 );
@@ -122,7 +122,7 @@ describe( 'LD+JSON Extractor', () => {
       const html = loadFixture( 'songkick-anaal-nathrakh.html' );
       const expected = JSON.parse( loadFixture( 'songkick-anaal-nathrakh.json' ) );
 
-      const result = ldJsonExtractor.extractLdJson( html );
+      const result = mf.ldJsonExtractor.extractLdJson( html );
 
       expect( result ).toEqual( expected );
       expect( result ).toHaveLength( 6 );
@@ -133,7 +133,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'returns empty array for unreachable URL', async () => {
       const url = 'https://invalid-domain-that-does-not-exist-12345.com';
 
-      const result = await ldJsonExtractor.fetchAndExtractLdJson( url );
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
     } );
@@ -141,7 +141,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'returns empty array for invalid URL', async () => {
       const url = 'not-a-valid-url';
 
-      const result = await ldJsonExtractor.fetchAndExtractLdJson( url );
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
     } );
@@ -149,7 +149,7 @@ describe( 'LD+JSON Extractor', () => {
     test( 'returns empty array for 404 response', async () => {
       const url = 'https://www.bandsintown.com/nonexistent-page-12345';
 
-      const result = await ldJsonExtractor.fetchAndExtractLdJson( url );
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
     } );

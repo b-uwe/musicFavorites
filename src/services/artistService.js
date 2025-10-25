@@ -8,7 +8,7 @@
 
   require( './bandsintownTransformer' );
   require( './database' );
-  const ldJsonExtractor = require( './ldJsonExtractor' );
+  require( './ldJsonExtractor' );
   require( './musicbrainz' );
   require( './musicbrainzTransformer' );
 
@@ -125,7 +125,7 @@
     const bandsintownUrl = artistData.relations.bandsintown;
 
     try {
-      const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
+      const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
 
       return mf.bandsintownTransformer.transformEvents( ldJsonData );
     } catch ( error ) {
