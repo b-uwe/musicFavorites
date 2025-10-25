@@ -147,7 +147,8 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runSequentialUpdate returns 0 when all acts are fresh
      */
     test( 'returns 0 when all acts are fresh (< 24h old)', async () => {
-      const freshTimestamp = new Date( Date.now() - ( 1000 * 60 * 60 ) ).toISOString(); // 1 hour ago
+      // 1 hour ago
+      const freshTimestamp = new Date( Date.now() - ( 1000 * 60 * 60 ) ).toISOString();
 
       database.getAllActsWithMetadata.mockResolvedValue( [
         {

@@ -118,7 +118,8 @@ describe( 'database - Unit Tests', () => {
       // Second call - reuses client (won't create new one)
       await database.connect();
       expect( MongoClient.mock.calls.length ).toBe( firstCallCount );
-      expect( mockDb.command ).toHaveBeenCalledTimes( 2 ); // But ping called twice
+      // But ping called twice
+      expect( mockDb.command ).toHaveBeenCalledTimes( 2 );
     } );
   } );
 
