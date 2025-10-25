@@ -5,7 +5,7 @@
  * @module __tests__/integration/fetchQueue.integration
  */
 
-const database = require( '../../services/database' );
+require( '../../services/database' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
@@ -25,6 +25,10 @@ const fetchQueue = require( '../../services/fetchQueue' );
 describe( 'Fetch Queue Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
+
+    // Mock only the database functions used in these tests
+    globalThis.mf.database.getArtistFromCache = jest.fn();
+    globalThis.mf.database.cacheArtist = jest.fn();
   } );
 
   /**
@@ -41,7 +45,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
     musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    mf.database.cacheArtist.mockResolvedValue();
 
     // Trigger background fetch
     fetchQueue.triggerBackgroundFetch( actIds );
@@ -53,7 +57,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
     expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
     expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
-    expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -69,12 +73,12 @@ describe( 'Fetch Queue Integration Tests', () => {
     ];
 
     // All acts are missing from cache
-    database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getArtistFromCache.mockResolvedValue( null );
 
     // Mock the background fetch behavior
     musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    mf.database.cacheArtist.mockResolvedValue();
 
     // Call fetchMultipleActs with 3 missing acts
     const result = await artistService.fetchMultipleActs( actIds );

@@ -10,16 +10,19 @@ jest.mock( '../../../services/database' );
 
 describe( 'fetchQueue - Unit Tests', () => {
   let artistService;
-  let database;
   let fetchQueue;
 
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Re-require mocked modules
+    // Require database module (sets up mf.database with real implementations)
+    require( '../../../services/database' );
+
+    // Mock only the database functions used by fetchQueue
+    globalThis.mf.database.cacheArtist = jest.fn();
+
     artistService = require( '../../../services/artistService' );
-    database = require( '../../../services/database' );
     fetchQueue = require( '../../../services/fetchQueue' );
   } );
 
@@ -40,7 +43,7 @@ describe( 'fetchQueue - Unit Tests', () => {
         '_id': 'test',
         'name': 'Test'
       } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = fetchQueue.processFetchQueue( queue );
 
@@ -63,7 +66,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       const queue = new Set( [ 'test-id' ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = fetchQueue.processFetchQueue( queue );
 
@@ -90,14 +93,14 @@ describe( 'fetchQueue - Unit Tests', () => {
       };
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
-      expect( database.cacheArtist ).toHaveBeenCalledWith( mockData );
+      expect( mf.database.cacheArtist ).toHaveBeenCalledWith( mockData );
 
       jest.useRealTimers();
     }, 15000 );
@@ -113,7 +116,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       artistService.fetchAndEnrichArtistData.
         mockRejectedValueOnce( new Error( 'Fetch failed' ) ).
         mockResolvedValueOnce( { '_id': 'id2' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = fetchQueue.processFetchQueue( queue );
 
@@ -135,7 +138,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       const queue = new Set( [ 'id1', 'id2' ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.
+      mf.database.cacheArtist.
         mockRejectedValueOnce( new Error( 'Cache failed' ) ).
         mockResolvedValueOnce();
 
@@ -145,7 +148,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       await promise;
 
       // Should continue to second ID despite cache error
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 15000 );
@@ -159,7 +162,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       const queue = new Set( [ 'id1' ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = fetchQueue.processFetchQueue( queue );
 
@@ -188,7 +191,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       jest.useFakeTimers();
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       // Should not throw
       expect( () => fetchQueue.triggerBackgroundFetch( [ 'id1', 'id2' ] ) ).not.toThrow();
@@ -206,7 +209,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       jest.useFakeTimers();
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       // First call - starts processor
       fetchQueue.triggerBackgroundFetch( [ 'id1' ] );
@@ -230,7 +233,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       jest.useFakeTimers();
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       // First call
       fetchQueue.triggerBackgroundFetch( [ 'id1' ] );

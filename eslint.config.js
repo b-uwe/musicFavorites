@@ -23,6 +23,7 @@ module.exports = [
         'Buffer': 'readonly',
         'global': 'readonly',
         'globalThis': 'readonly',
+        'mf': 'readonly',
         'setTimeout': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
@@ -207,6 +208,17 @@ module.exports = [
       'jsdoc/check-tag-names': 'error',
       'jsdoc/check-types': 'error',
       'jsdoc/no-undefined-types': 'error'
+    }
+  },
+  {
+    'files': [ 'src/**/*.js' ],
+    'ignores': [ 'src/__tests__/**/*.js' ],
+    'rules': {
+      'no-restricted-properties': [ 'error', {
+        'object': 'mf',
+        'property': 'testing',
+        'message': 'mf.testing.* can only be used in test files (src/__tests__/**/*.js)'
+      } ]
     }
   },
   {

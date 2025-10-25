@@ -4,7 +4,7 @@
  */
 
 const bandsintownTransformer = require( './bandsintownTransformer' );
-const database = require( './database' );
+require( './database' );
 const ldJsonExtractor = require( './ldJsonExtractor' );
 const musicbrainzClient = require( './musicbrainz' );
 const musicbrainzTransformer = require( './musicbrainzTransformer' );
@@ -38,9 +38,9 @@ const ensureCacheHealthy = async () => {
   if ( !cacheHealthy ) {
     try {
       // Try to reconnect if needed (client may have been reset)
-      await withTimeout( database.connect(), DB_TIMEOUT_MS );
+      await withTimeout( mf.database.connect(), DB_TIMEOUT_MS );
       // Test cache health
-      await withTimeout( database.testCacheHealth(), DB_TIMEOUT_MS );
+      await withTimeout( mf.database.testCacheHealth(), DB_TIMEOUT_MS );
       cacheHealthy = true;
     } catch ( error ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
@@ -193,7 +193,7 @@ const handleSingleMissingAct = async ( missingId, cachedActs ) => {
   const freshData = await fetchAndEnrichArtistData( missingId );
 
   // Cache asynchronously (fire-and-forget)
-  database.cacheArtist( freshData ).catch( () => {
+  mf.database.cacheArtist( freshData ).catch( () => {
     cacheHealthy = false;
   } );
 
@@ -255,7 +255,7 @@ const fetchMultipleActs = async ( artistIds ) => {
 
   try {
     cacheResults = await Promise.all( artistIds.map( ( id ) => withTimeout(
-      database.getArtistFromCache( id ),
+      mf.database.getArtistFromCache( id ),
       DB_TIMEOUT_MS
     ) ) );
   } catch ( error ) {

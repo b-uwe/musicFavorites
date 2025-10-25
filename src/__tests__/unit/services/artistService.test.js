@@ -316,7 +316,6 @@ describe( 'artistService', () => {
   } );
 
   describe( 'Functions with Mocked Dependencies', () => {
-    let database;
     let musicbrainz;
     let ldJsonExtractor;
     let bandsintownTransformer;
@@ -328,7 +327,15 @@ describe( 'artistService', () => {
       jest.resetModules();
       jest.useFakeTimers();
 
-      database = require( '../../../services/database' );
+      // Require database module (sets up mf.database with real implementations)
+      require( '../../../services/database' );
+
+      // Mock only the database functions used by artistService
+      globalThis.mf.database.connect = jest.fn();
+      globalThis.mf.database.testCacheHealth = jest.fn();
+      globalThis.mf.database.getArtistFromCache = jest.fn();
+      globalThis.mf.database.cacheArtist = jest.fn();
+
       musicbrainz = require( '../../../services/musicbrainz' );
       ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
       bandsintownTransformer = require( '../../../services/bandsintownTransformer' );
@@ -490,9 +497,9 @@ describe( 'artistService', () => {
       test( 'reconnects and tests cache health when cache is unhealthy', async () => {
         jest.useRealTimers();
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
         try {
           await artistService.fetchMultipleActs( [ 'id1' ] );
@@ -500,24 +507,24 @@ describe( 'artistService', () => {
           // Expected SVC_002 error
         }
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockResolvedValue( { '_id': 'id1',
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.mockResolvedValue( { '_id': 'id1',
           'name': 'Test' } );
 
         const result = await artistService.fetchMultipleActs( [ 'id1' ] );
 
-        expect( database.connect ).toHaveBeenCalled();
-        expect( database.testCacheHealth ).toHaveBeenCalled();
+        expect( mf.database.connect ).toHaveBeenCalled();
+        expect( mf.database.testCacheHealth ).toHaveBeenCalled();
         expect( result.acts ).toBeDefined();
       } );
 
       test( 'throws SVC_001 error when cache health check fails', async () => {
         jest.useRealTimers();
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
         try {
           await artistService.fetchMultipleActs( [ 'id1' ] );
@@ -525,8 +532,8 @@ describe( 'artistService', () => {
           // Cache is now unhealthy
         }
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockRejectedValue( new Error( 'Health check failed' ) );
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockRejectedValue( new Error( 'Health check failed' ) );
 
         await expect( artistService.fetchMultipleActs( [ 'id1' ] ) ).
           rejects.
@@ -534,9 +541,9 @@ describe( 'artistService', () => {
       } );
 
       test( 'throws SVC_002 and flags cache unhealthy when cache read fails', async () => {
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
         await expect( artistService.fetchMultipleActs( [ 'id1' ] ) ).
           rejects.
@@ -561,29 +568,29 @@ describe( 'artistService', () => {
           'status': 'active'
         };
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached ).
           mockResolvedValueOnce( null );
         musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( [] );
-        database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+        mf.database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
         const result = await artistService.fetchMultipleActs( artistIds );
 
         expect( result.acts ).toHaveLength( 2 );
 
-        database.connect.mockClear();
-        database.testCacheHealth.mockClear();
-        database.getArtistFromCache.mockResolvedValue( mockCached );
+        mf.database.connect.mockClear();
+        mf.database.testCacheHealth.mockClear();
+        mf.database.getArtistFromCache.mockResolvedValue( mockCached );
 
         await artistService.fetchMultipleActs( [ 'id1' ] );
 
-        expect( database.connect ).toHaveBeenCalled();
-        expect( database.testCacheHealth ).toHaveBeenCalled();
+        expect( mf.database.connect ).toHaveBeenCalled();
+        expect( mf.database.testCacheHealth ).toHaveBeenCalled();
       } );
     } );
 
@@ -621,9 +628,9 @@ describe( 'artistService', () => {
           }
         ];
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached[ 0 ] ).
           mockResolvedValueOnce( mockCached[ 1 ] );
 
@@ -652,16 +659,16 @@ describe( 'artistService', () => {
           'status': 'active'
         };
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached ).
           mockResolvedValueOnce( null );
         musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( [] );
-        database.cacheArtist.mockResolvedValue();
+        mf.database.cacheArtist.mockResolvedValue();
 
         const result = await artistService.fetchMultipleActs( artistIds );
 
@@ -677,9 +684,9 @@ describe( 'artistService', () => {
           'name': 'Artist 1'
         };
 
-        database.connect.mockResolvedValue();
-        database.testCacheHealth.mockResolvedValue();
-        database.getArtistFromCache.
+        mf.database.connect.mockResolvedValue();
+        mf.database.testCacheHealth.mockResolvedValue();
+        mf.database.getArtistFromCache.
           mockResolvedValueOnce( mockCached ).
           mockResolvedValueOnce( null ).
           mockResolvedValueOnce( null );

@@ -31,7 +31,6 @@ const processFetchQueue = async ( queue ) => {
    * This function is called after all modules are loaded, so it's safe
    */
   const artistService = require( './artistService' );
-  const database = require( './database' );
 
   // Process queue until empty
   while ( queue.size > 0 ) {
@@ -46,7 +45,7 @@ const processFetchQueue = async ( queue ) => {
       const dataToCache = await artistService.fetchAndEnrichArtistData( actId, true );
 
       // Cache the result
-      await database.cacheArtist( dataToCache );
+      await mf.database.cacheArtist( dataToCache );
     } catch ( error ) {
       // Silent fail
     }

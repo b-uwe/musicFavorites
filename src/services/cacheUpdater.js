@@ -4,7 +4,7 @@
  * @module services/cacheUpdater
  */
 
-const database = require( './database' );
+require( './database' );
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
@@ -39,7 +39,7 @@ const updateAct = async ( actId ) => {
     const dataToCache = await fetchAndEnrichArtistData( actId, true );
 
     // Replace cache entry
-    await database.cacheArtist( dataToCache );
+    await mf.database.cacheArtist( dataToCache );
   } catch ( error ) {
     console.error( `Failed to update act ${actId}:`, error.message );
   }
@@ -54,7 +54,7 @@ const updateAct = async ( actId ) => {
 const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
   try {
     // Fetch all act IDs from cache
-    const actIds = await database.getAllActIds();
+    const actIds = await mf.database.getAllActIds();
 
     if ( actIds.length === 0 ) {
       await sleep( cycleIntervalMs );
@@ -103,7 +103,7 @@ const isActStale = ( act ) => {
 const runSequentialUpdate = async () => {
   try {
     // Fetch all acts with metadata from cache
-    const acts = await database.getAllActsWithMetadata();
+    const acts = await mf.database.getAllActsWithMetadata();
 
     if ( acts.length === 0 ) {
       return 0;

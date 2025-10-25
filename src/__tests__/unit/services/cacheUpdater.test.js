@@ -8,7 +8,6 @@
 jest.mock( '../../../services/database' );
 
 describe( 'cacheUpdater - Unit Tests', () => {
-  let database;
   let artistService;
   let cacheUpdater;
 
@@ -16,8 +15,13 @@ describe( 'cacheUpdater - Unit Tests', () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Re-require mocked modules
-    database = require( '../../../services/database' );
+    // Require database module (sets up mf.database with real implementations)
+    require( '../../../services/database' );
+
+    // Mock only the database functions used by cacheUpdater
+    globalThis.mf.database.cacheArtist = jest.fn();
+    globalThis.mf.database.getAllActsWithMetadata = jest.fn();
+    globalThis.mf.database.getAllActIds = jest.fn();
 
     // Mock artistService (lazy required by cacheUpdater)
     jest.doMock( '../../../services/artistService', () => ( {
@@ -41,7 +45,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
         '_id': 'test-id',
         'name': 'Test Artist'
       } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       await cacheUpdater.updateAct( 'test-id' );
 
@@ -53,7 +57,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      */
     test( 'passes silentEventFail=true to fetchAndEnrichArtistData', async () => {
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       await cacheUpdater.updateAct( 'test-id' );
 
@@ -72,11 +76,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       };
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       await cacheUpdater.updateAct( 'test-id' );
 
-      expect( database.cacheArtist ).toHaveBeenCalledWith( mockData );
+      expect( mf.database.cacheArtist ).toHaveBeenCalledWith( mockData );
     } );
 
     /**
@@ -101,11 +105,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
     /**
      * Test that updateAct handles cache errors without throwing
      */
-    test( 'handles database.cacheArtist errors without throwing', async () => {
+    test( 'handles mf.database.cacheArtist errors without throwing', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockRejectedValue( new Error( 'Cache failed' ) );
+      mf.database.cacheArtist.mockRejectedValue( new Error( 'Cache failed' ) );
 
       // Should not throw
       await expect( cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
@@ -120,14 +124,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
     /**
      * Test that runSequentialUpdate calls getAllActsWithMetadata
      */
-    test( 'calls database.getAllActsWithMetadata', async () => {
+    test( 'calls mf.database.getAllActsWithMetadata', async () => {
       jest.useFakeTimers();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
 
       await cacheUpdater.runSequentialUpdate();
 
-      expect( database.getAllActsWithMetadata ).toHaveBeenCalled();
+      expect( mf.database.getAllActsWithMetadata ).toHaveBeenCalled();
 
       jest.useRealTimers();
     } );
@@ -136,7 +140,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runSequentialUpdate returns 0 when no acts
      */
     test( 'returns 0 when cache is empty', async () => {
-      database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
 
       const result = await cacheUpdater.runSequentialUpdate();
 
@@ -150,7 +154,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       // 1 hour ago
       const freshTimestamp = new Date( Date.now() - ( 1000 * 60 * 60 ) ).toISOString();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [
         {
           '_id': 'test-id',
           'updatedAt': freshTimestamp
@@ -169,7 +173,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'processes acts with missing updatedAt field', async () => {
       jest.useFakeTimers();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [
         {
           '_id': 'test-id'
           // No updatedAt
@@ -177,7 +181,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -199,7 +203,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       const staleTimestamp = new Date( Date.now() - ( 48 * 60 * 60 * 1000 ) ).toISOString();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [
         {
           '_id': 'stale-id',
           'updatedAt': staleTimestamp
@@ -207,7 +211,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -227,7 +231,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'waits 30 seconds between updating acts', async () => {
       jest.useFakeTimers();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [
         {
           '_id': 'id1'
         },
@@ -237,7 +241,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       ] );
 
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -259,7 +263,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'continues and returns 0 on getAllActsWithMetadata error', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      database.getAllActsWithMetadata.mockRejectedValue( new Error( 'DB error' ) );
+      mf.database.getAllActsWithMetadata.mockRejectedValue( new Error( 'DB error' ) );
 
       const result = await cacheUpdater.runSequentialUpdate();
 
@@ -287,15 +291,15 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'uses default cycleIntervalMs when explicitly undefined', async () => {
       jest.useFakeTimers();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [] );
-      database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getAllActIds.mockResolvedValue( [] );
 
       // Pass undefined for cycleIntervalMs to test the ?? operator
       cacheUpdater.start( { 'cycleIntervalMs': undefined } );
 
       // Should call runSequentialUpdate once
       await jest.advanceTimersByTimeAsync( 1000 );
-      expect( database.getAllActsWithMetadata ).toHaveBeenCalledTimes( 1 );
+      expect( mf.database.getAllActsWithMetadata ).toHaveBeenCalledTimes( 1 );
 
       jest.useRealTimers();
     } );
@@ -306,8 +310,8 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'runs runCycle multiple times in infinite loop', async () => {
       jest.useFakeTimers();
 
-      database.getAllActsWithMetadata.mockResolvedValue( [] );
-      database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getAllActIds.mockResolvedValue( [] );
 
       cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
 
@@ -321,13 +325,13 @@ describe( 'cacheUpdater - Unit Tests', () => {
       await jest.advanceTimersByTimeAsync( 5000 );
 
       // Should have called getAllActIds multiple times (once per cycle)
-      expect( database.getAllActIds ).toHaveBeenCalled();
-      const initialCalls = database.getAllActIds.mock.calls.length;
+      expect( mf.database.getAllActIds ).toHaveBeenCalled();
+      const initialCalls = mf.database.getAllActIds.mock.calls.length;
 
       // Advance more and verify it keeps cycling
       await jest.advanceTimersByTimeAsync( 5000 );
 
-      expect( database.getAllActIds.mock.calls.length ).toBeGreaterThan( initialCalls );
+      expect( mf.database.getAllActIds.mock.calls.length ).toBeGreaterThan( initialCalls );
 
       jest.useRealTimers();
     }, 20000 );
@@ -375,14 +379,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'sleeps for cycleIntervalMs when no acts in cache', async () => {
       jest.useFakeTimers();
 
-      database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActIds.mockResolvedValue( [] );
 
       const promise = cacheUpdater.runCycle( 10000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
 
-      expect( database.getAllActIds ).toHaveBeenCalled();
+      expect( mf.database.getAllActIds ).toHaveBeenCalled();
 
       jest.useRealTimers();
     } );
@@ -393,9 +397,9 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'updates all acts in sequence', async () => {
       jest.useFakeTimers();
 
-      database.getAllActIds.mockResolvedValue( [ 'id1', 'id2', 'id3' ] );
+      mf.database.getAllActIds.mockResolvedValue( [ 'id1', 'id2', 'id3' ] );
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runCycle( 30000, 5000 );
 
@@ -416,9 +420,9 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'calculates time slice as cycleIntervalMs divided by number of acts', async () => {
       jest.useFakeTimers();
 
-      database.getAllActIds.mockResolvedValue( [ 'id1', 'id2' ] );
+      mf.database.getAllActIds.mockResolvedValue( [ 'id1', 'id2' ] );
       artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runCycle( 10000, 5000 );
 
@@ -439,7 +443,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      database.getAllActIds.mockRejectedValue( new Error( 'DB error' ) );
+      mf.database.getAllActIds.mockRejectedValue( new Error( 'DB error' ) );
 
       const promise = cacheUpdater.runCycle( 10000, 5000 );
 
@@ -463,12 +467,12 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      database.getAllActIds.mockResolvedValue( [ 'id1', 'id2', 'id3' ] );
+      mf.database.getAllActIds.mockResolvedValue( [ 'id1', 'id2', 'id3' ] );
       artistService.fetchAndEnrichArtistData.
         mockResolvedValueOnce( {} ).
         mockRejectedValueOnce( new Error( 'Fetch failed' ) ).
         mockResolvedValueOnce( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
       const promise = cacheUpdater.runCycle( 30000, 5000 );
 
