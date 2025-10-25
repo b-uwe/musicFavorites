@@ -143,9 +143,15 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.bandsintownTransformer = {
-    transformEvents,
-    // Exported for testing defensive guard clauses
-    extractDate,
-    extractLocalTime
+    transformEvents
   };
+
+  // Expose private functions for unit testing when running under Jest
+  if ( process.env.JEST_WORKER_ID ) {
+    globalThis.mf.testing = globalThis.mf.testing || {};
+    globalThis.mf.testing.bandsintownTransformer = {
+      extractDate,
+      extractLocalTime
+    };
+  }
 } )();
