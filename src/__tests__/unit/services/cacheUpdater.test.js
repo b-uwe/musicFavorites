@@ -4,31 +4,28 @@
  * @module __tests__/unit/services/cacheUpdater.unit
  */
 
-// Mock dependencies BEFORE requiring cacheUpdater
-jest.mock( '../../../services/database' );
-
 describe( 'cacheUpdater - Unit Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Require database module (sets up mf.database with real implementations)
+    // Load modules
     require( '../../../services/database' );
-
-    // Mock only the database functions used by cacheUpdater
-    mf.database.cacheArtist = jest.fn();
-    mf.database.getAllActsWithMetadata = jest.fn();
-    mf.database.getAllActIds = jest.fn();
-
-    // Mock artistService (lazy required by cacheUpdater)
     require( '../../../services/artistService' );
-    mf.artistService.fetchAndEnrichArtistData = jest.fn();
-
     require( '../../../services/cacheUpdater' );
+
+    // Spy on database functions used by cacheUpdater
+    jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
+    jest.spyOn( mf.database, 'getAllActsWithMetadata' ).mockResolvedValue( [] );
+    jest.spyOn( mf.database, 'getAllActIds' ).mockResolvedValue( [] );
+
+    // Spy on artistService function
+    jest.spyOn( mf.artistService, 'fetchAndEnrichArtistData' ).mockResolvedValue( {} );
   } );
 
   afterEach( () => {
     jest.useRealTimers();
+    jest.restoreAllMocks();
   } );
 
   describe( 'updateAct', () => {
