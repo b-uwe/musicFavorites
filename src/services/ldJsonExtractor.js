@@ -9,7 +9,7 @@
 
   const axios = require( 'axios' );
   const cheerio = require( 'cheerio' );
-  const { USER_AGENT, HTTP_TIMEOUT } = require( '../constants' );
+  require( '../constants' );
 
   /**
    * Extracts all LD+JSON blocks from HTML string
@@ -54,9 +54,9 @@
   const fetchAndExtractLdJson = async ( url ) => {
     try {
       const response = await axios.get( url, {
-        'timeout': HTTP_TIMEOUT,
+        'timeout': mf.constants.HTTP_TIMEOUT,
         'headers': {
-          'User-Agent': USER_AGENT
+          'User-Agent': mf.constants.USER_AGENT
         }
       } );
 

@@ -1,24 +1,30 @@
-/**
- * Application-wide constants
- * @module constants
- */
+( () => {
+  'use strict';
 
-const { version } = require( '../package.json' );
+  /**
+   * Application-wide constants
+   * @module constants
+   */
 
-/**
- * User-Agent string for HTTP requests
- * Identifies the application to external services
- * @constant {string}
- */
-const USER_AGENT = `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites)`;
+  const { version } = require( '../package.json' );
 
-/**
- * Default timeout for HTTP requests in milliseconds
- * @constant {number}
- */
-const HTTP_TIMEOUT = 5000;
+  /**
+   * User-Agent string for HTTP requests
+   * Identifies the application to external services
+   * @constant {string}
+   */
+  const USER_AGENT = `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites)`;
 
-module.exports = {
-  USER_AGENT,
-  HTTP_TIMEOUT
-};
+  /**
+   * Default timeout for HTTP requests in milliseconds
+   * @constant {number}
+   */
+  const HTTP_TIMEOUT = 5000;
+
+  // Initialize global namespace
+  globalThis.mf = globalThis.mf || {};
+  globalThis.mf.constants = {
+    USER_AGENT,
+    HTTP_TIMEOUT
+  };
+} )();

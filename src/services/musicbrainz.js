@@ -7,7 +7,7 @@
    */
 
   const axios = require( 'axios' );
-  const { USER_AGENT, HTTP_TIMEOUT } = require( '../constants' );
+  require( '../constants' );
 
   const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
 
@@ -23,9 +23,9 @@
     try {
       const response = await axios.get( url, {
         'headers': {
-          'User-Agent': USER_AGENT
+          'User-Agent': mf.constants.USER_AGENT
         },
-        'timeout': HTTP_TIMEOUT
+        'timeout': mf.constants.HTTP_TIMEOUT
       } );
 
       return response.data;
