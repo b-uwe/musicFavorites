@@ -66,7 +66,7 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 60 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
         const events = [
           {
@@ -85,7 +85,7 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 180 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
         const events = [
           {
@@ -104,7 +104,7 @@ describe( 'artistService', () => {
         const futureDate = new Date();
 
         futureDate.setUTCDate( futureDate.getUTCDate() + 300 );
-        const dateStr = futureDate.toISOString().split( 'T' )[ 0 ];
+        const [ dateStr ] = futureDate.toISOString().split( 'T' );
 
         const events = [
           {
