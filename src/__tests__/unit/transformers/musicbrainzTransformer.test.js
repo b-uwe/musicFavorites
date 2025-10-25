@@ -2,10 +2,10 @@
  * Tests for MusicBrainz data transformer
  */
 
-const transformer = require( '../../services/musicbrainzTransformer' );
-const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
-const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
-const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
+const transformer = require( '../../../services/musicbrainzTransformer' );
+const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
+const fixtureJungleRot = require( '../../fixtures/musicbrainz-jungle-rot.json' );
+const fixtureTheKinks = require( '../../fixtures/musicbrainz-the-kinks.json' );
 
 describe( 'MusicBrainz Data Transformer', () => {
   describe( 'transformArtistData', () => {

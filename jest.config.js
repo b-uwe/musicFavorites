@@ -26,7 +26,8 @@ module.exports = {
 
   // Ignore patterns
   'testPathIgnorePatterns': [
-    '/node_modules/'
+    '/node_modules/',
+    '/_trash/'
   ],
 
   // Clear mocks between tests

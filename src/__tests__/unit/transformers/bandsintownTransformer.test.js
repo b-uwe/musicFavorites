@@ -3,9 +3,9 @@
  * @module __tests__/services/bandsintownTransformer
  */
 
-const bandsintownTransformer = require( '../../services/bandsintownTransformer' );
-const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
-const fixtureVulvodyniaRaw = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
+const bandsintownTransformer = require( '../../../services/bandsintownTransformer' );
+const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
+const fixtureVulvodyniaRaw = require( '../../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 // Normalize fixture dates to be 30 days in the future to prevent test expiration
 const fixtureVulvodynia = fixtureModifier.normalizeDates( fixtureVulvodyniaRaw, 30 );

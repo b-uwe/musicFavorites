@@ -279,10 +279,17 @@ const fetchMultipleActs = async ( artistIds ) => {
   return handleMultipleMissingActs( missingIds, cachedActs.length );
 };
 
-module.exports = {
+const moduleExports = {
   determineStatus,
   fetchAndEnrichArtistData,
   fetchBandsintownEvents,
   fetchMultipleActs,
   getBerlinTimestamp
 };
+
+// Expose private functions for unit testing when running under Jest
+if ( process.env.JEST_WORKER_ID ) {
+  moduleExports.withTimeout = withTimeout;
+}
+
+module.exports = moduleExports;
