@@ -16,7 +16,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with null input
      */
     test( 'returns empty string for null input', () => {
-      const result = mf.bandsintownTransformer.extractDate( null );
+      const result = mf.testing.bandsintownTransformer.extractDate( null );
 
       expect( result ).toBe( '' );
     } );
@@ -25,7 +25,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with non-string input (truthy value)
      */
     test( 'returns empty string for non-string truthy input', () => {
-      const result = mf.bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
+      const result = mf.testing.bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
 
       expect( result ).toBe( '' );
     } );
@@ -34,7 +34,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with valid ISO date string
      */
     test( 'extracts date from valid ISO datetime string', () => {
-      const result = mf.bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
+      const result = mf.testing.bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
 
       expect( result ).toBe( '2025-11-25' );
     } );
@@ -43,7 +43,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with string that doesn't match date pattern
      */
     test( 'returns empty string for invalid date format', () => {
-      const result = mf.bandsintownTransformer.extractDate( 'not-a-date' );
+      const result = mf.testing.bandsintownTransformer.extractDate( 'not-a-date' );
 
       expect( result ).toBe( '' );
     } );
@@ -54,7 +54,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with null input
      */
     test( 'returns empty string for null input', () => {
-      const result = mf.bandsintownTransformer.extractLocalTime( null );
+      const result = mf.testing.bandsintownTransformer.extractLocalTime( null );
 
       expect( result ).toBe( '' );
     } );
@@ -63,7 +63,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with non-string input (truthy value)
      */
     test( 'returns empty string for non-string truthy input', () => {
-      const result = mf.bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
+      const result = mf.testing.bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
 
       expect( result ).toBe( '' );
     } );
@@ -72,7 +72,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with valid ISO datetime string
      */
     test( 'extracts time from valid ISO datetime string', () => {
-      const result = mf.bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
+      const result = mf.testing.bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
 
       expect( result ).toBe( '18:00:00' );
     } );
