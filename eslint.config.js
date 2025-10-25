@@ -1,5 +1,6 @@
 const js = require( '@eslint/js' );
 const jsdoc = require( 'eslint-plugin-jsdoc' );
+const localRules = require( './eslint-local-rules' );
 
 module.exports = [
   js.configs.recommended,
@@ -9,7 +10,8 @@ module.exports = [
   },
   {
     'plugins': {
-      jsdoc
+      jsdoc,
+      'local-rules': localRules
     },
     'languageOptions': {
       'ecmaVersion': 2024,
@@ -22,7 +24,7 @@ module.exports = [
         '__filename': 'readonly',
         'Buffer': 'readonly',
         'global': 'readonly',
-        'globalThis': 'readonly',
+        'mf': 'readonly',
         'setTimeout': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
@@ -207,6 +209,23 @@ module.exports = [
       'jsdoc/check-tag-names': 'error',
       'jsdoc/check-types': 'error',
       'jsdoc/no-undefined-types': 'error'
+    }
+  },
+  {
+    'files': [ 'src/**/*.js' ],
+    'ignores': [ 'src/__tests__/**/*.js' ],
+    'languageOptions': {
+      globals: {
+        'globalThis': 'readonly'
+      }
+    },
+    'rules': {
+      'no-restricted-properties': [ 'error', {
+        'object': 'mf',
+        'property': 'testing',
+        'message': 'mf.testing.* can only be used in test files (src/__tests__/**/*.js)'
+      } ],
+      'local-rules/iife-wrapper': 'error'
     }
   },
   {

@@ -9,18 +9,20 @@ jest.mock( '../../../services/artistService' );
 jest.mock( '../../../services/database' );
 
 describe( 'fetchQueue - Unit Tests', () => {
-  let artistService;
-  let database;
-  let fetchQueue;
-
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Re-require mocked modules
-    artistService = require( '../../../services/artistService' );
-    database = require( '../../../services/database' );
-    fetchQueue = require( '../../../services/fetchQueue' );
+    // Require database module (sets up mf.database with real implementations)
+    require( '../../../services/database' );
+
+    // Mock only the database functions used by fetchQueue
+    mf.database.cacheArtist = jest.fn();
+
+    require( '../../../services/artistService' );
+    mf.artistService.fetchAndEnrichArtistData = jest.fn();
+
+    require( '../../../services/fetchQueue' );
   } );
 
   afterEach( () => {
@@ -36,20 +38,20 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       const queue = new Set( [ 'id1', 'id2' ] );
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( {
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {
         '_id': 'test',
         'name': 'Test'
       } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledTimes( 2 );
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id1', true );
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledTimes( 2 );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id1', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
 
       jest.useRealTimers();
     }, 15000 );
@@ -62,16 +64,16 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       const queue = new Set( [ 'test-id' ] );
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
+      mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
       // Second parameter should be true (silent event failures)
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'test-id', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'test-id', true );
 
       jest.useRealTimers();
     }, 15000 );
@@ -89,15 +91,15 @@ describe( 'fetchQueue - Unit Tests', () => {
         'status': 'active'
       };
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
+      mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
-      expect( database.cacheArtist ).toHaveBeenCalledWith( mockData );
+      expect( mf.database.cacheArtist ).toHaveBeenCalledWith( mockData );
 
       jest.useRealTimers();
     }, 15000 );
@@ -110,18 +112,18 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       const queue = new Set( [ 'id1', 'id2' ] );
 
-      artistService.fetchAndEnrichArtistData.
+      mf.artistService.fetchAndEnrichArtistData.
         mockRejectedValueOnce( new Error( 'Fetch failed' ) ).
         mockResolvedValueOnce( { '_id': 'id2' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
       // Should continue to second ID despite first error
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledTimes( 2 );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 15000 );
@@ -134,18 +136,18 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       const queue = new Set( [ 'id1', 'id2' ] );
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
+      mf.database.cacheArtist.
         mockRejectedValueOnce( new Error( 'Cache failed' ) ).
         mockResolvedValueOnce();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
 
       // Should continue to second ID despite cache error
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 15000 );
@@ -158,10 +160,10 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       const queue = new Set( [ 'id1' ] );
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
+      mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = fetchQueue.processFetchQueue( queue );
+      const promise = mf.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -178,7 +180,7 @@ describe( 'fetchQueue - Unit Tests', () => {
      * Test that triggerBackgroundFetch is a function
      */
     test( 'is exported as a function', () => {
-      expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+      expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
     } );
 
     /**
@@ -187,11 +189,11 @@ describe( 'fetchQueue - Unit Tests', () => {
     test( 'accepts an array of artist IDs', async () => {
       jest.useFakeTimers();
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
+      mf.database.cacheArtist.mockResolvedValue();
 
       // Should not throw
-      expect( () => fetchQueue.triggerBackgroundFetch( [ 'id1', 'id2' ] ) ).not.toThrow();
+      expect( () => mf.fetchQueue.triggerBackgroundFetch( [ 'id1', 'id2' ] ) ).not.toThrow();
 
       // Clean up background promises
       await jest.runAllTimersAsync();
@@ -205,20 +207,20 @@ describe( 'fetchQueue - Unit Tests', () => {
     test( 'returns early if background fetch already running', async () => {
       jest.useFakeTimers();
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
+      mf.database.cacheArtist.mockResolvedValue();
 
       // First call - starts processor
-      fetchQueue.triggerBackgroundFetch( [ 'id1' ] );
+      mf.fetchQueue.triggerBackgroundFetch( [ 'id1' ] );
 
       // Second call - should return early while first is running
-      fetchQueue.triggerBackgroundFetch( [ 'id2' ] );
+      mf.fetchQueue.triggerBackgroundFetch( [ 'id2' ] );
 
       await jest.runAllTimersAsync();
 
       // Both IDs should still be processed (id2 was added to queue)
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id1', true );
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id1', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
 
       jest.useRealTimers();
     }, 15000 );
@@ -229,21 +231,21 @@ describe( 'fetchQueue - Unit Tests', () => {
     test( 'resets isBackgroundFetchRunning flag on successful completion', async () => {
       jest.useFakeTimers();
 
-      artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
-      database.cacheArtist.mockResolvedValue();
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
+      mf.database.cacheArtist.mockResolvedValue();
 
       // First call
-      fetchQueue.triggerBackgroundFetch( [ 'id1' ] );
+      mf.fetchQueue.triggerBackgroundFetch( [ 'id1' ] );
 
       await jest.runAllTimersAsync();
 
       // Second call - should work because flag was reset after completion
-      artistService.fetchAndEnrichArtistData.mockClear();
-      fetchQueue.triggerBackgroundFetch( [ 'id2' ] );
+      mf.artistService.fetchAndEnrichArtistData.mockClear();
+      mf.fetchQueue.triggerBackgroundFetch( [ 'id2' ] );
 
       await jest.runAllTimersAsync();
 
-      expect( artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'id2', true );
 
       jest.useRealTimers();
     }, 15000 );

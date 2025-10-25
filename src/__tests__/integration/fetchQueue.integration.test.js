@@ -5,9 +5,9 @@
  * @module __tests__/integration/fetchQueue.integration
  */
 
-const database = require( '../../services/database' );
-const musicbrainzClient = require( '../../services/musicbrainz' );
-const ldJsonExtractor = require( '../../services/ldJsonExtractor' );
+require( '../../services/database' );
+require( '../../services/musicbrainz' );
+require( '../../services/ldJsonExtractor' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 
@@ -19,12 +19,19 @@ jest.mock( '../../services/ldJsonExtractor' );
  * CRITICAL: Import artistService and fetchQueue AFTER mocks are set up
  * This allows us to test real module interactions while mocking external I/O
  */
-const artistService = require( '../../services/artistService' );
-const fetchQueue = require( '../../services/fetchQueue' );
+require( '../../services/artistService' );
+require( '../../services/fetchQueue' );
 
 describe( 'Fetch Queue Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
+
+    // Mock only the database functions used in these tests
+    mf.database.getArtistFromCache = jest.fn();
+    mf.database.cacheArtist = jest.fn();
+
+    // Mock musicbrainz functions
+    mf.musicbrainz.fetchArtist = jest.fn();
   } );
 
   /**
@@ -38,22 +45,22 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
-    ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    mf.database.cacheArtist.mockResolvedValue();
 
     // Trigger background fetch
-    fetchQueue.triggerBackgroundFetch( actIds );
+    mf.fetchQueue.triggerBackgroundFetch( actIds );
 
     // Advance through both fetches (2 acts × 30s = 60s)
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Verify fetchAndEnrichArtistData was called (indirectly through processFetchQueue)
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
-    expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
+    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -69,22 +76,22 @@ describe( 'Fetch Queue Integration Tests', () => {
     ];
 
     // All acts are missing from cache
-    database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getArtistFromCache.mockResolvedValue( null );
 
     // Mock the background fetch behavior
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    mf.database.cacheArtist.mockResolvedValue();
 
     // Call fetchMultipleActs with 3 missing acts
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await mf.artistService.fetchMultipleActs( actIds );
 
     // Should return error because 2+ acts are missing
     expect( result.error ).toBeDefined();
     expect( result.error.message ).toContain( '3 acts not cached' );
 
     // Verify triggerBackgroundFetch function exists
-    expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+    expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );
 
   /**
@@ -92,11 +99,11 @@ describe( 'Fetch Queue Integration Tests', () => {
    */
   test( 'modules load without circular dependency errors', () => {
     // If we got this far, the modules loaded successfully
-    expect( artistService ).toBeDefined();
-    expect( fetchQueue ).toBeDefined();
-    expect( artistService.fetchAndEnrichArtistData ).toBeDefined();
-    expect( typeof artistService.fetchAndEnrichArtistData ).toBe( 'function' );
-    expect( fetchQueue.triggerBackgroundFetch ).toBeDefined();
-    expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+    expect( mf.artistService ).toBeDefined();
+    expect( mf.fetchQueue ).toBeDefined();
+    expect( mf.artistService.fetchAndEnrichArtistData ).toBeDefined();
+    expect( typeof mf.artistService.fetchAndEnrichArtistData ).toBe( 'function' );
+    expect( mf.fetchQueue.triggerBackgroundFetch ).toBeDefined();
+    expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );
 } );

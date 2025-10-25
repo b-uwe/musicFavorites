@@ -2,8 +2,8 @@
  * Tests for MusicBrainz data transformer
  */
 
-const transformer = require( '../../../services/musicbrainzTransformer' );
-const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
+require( '../../../services/musicbrainzTransformer' );
+require( '../../../testHelpers/fixtureModifier' );
 const fixtureJungleRot = require( '../../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../../fixtures/musicbrainz-the-kinks.json' );
 
@@ -13,8 +13,8 @@ describe( 'MusicBrainz Data Transformer', () => {
     let resultTheKinks;
 
     beforeAll( () => {
-      resultJungleRot = transformer.transformArtistData( fixtureJungleRot );
-      resultTheKinks = transformer.transformArtistData( fixtureTheKinks );
+      resultJungleRot = mf.musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      resultTheKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
     } );
 
     describe( 'basic metadata', () => {
@@ -240,7 +240,7 @@ describe( 'MusicBrainz Data Transformer', () => {
        * Test null-safety for missing relation.url
        */
       test( 'handles null relation gracefully', () => {
-        const dataWithNullRelation = fixtureModifier.modifyFixture( fixtureJungleRot, {
+        const dataWithNullRelation = mf.testing.fixtureModifier.modifyFixture( fixtureJungleRot, {
           'relations': [
             null,
             { 'type': 'bandcamp',
@@ -250,7 +250,7 @@ describe( 'MusicBrainz Data Transformer', () => {
           ]
         } );
 
-        const result = transformer.transformArtistData( dataWithNullRelation );
+        const result = mf.musicbrainzTransformer.transformArtistData( dataWithNullRelation );
 
         expect( result.relations ).toEqual( {} );
       } );
@@ -259,7 +259,7 @@ describe( 'MusicBrainz Data Transformer', () => {
        * Test null-safety for missing artist metadata
        */
       test( 'handles missing artist metadata gracefully', () => {
-        const dataWithMissingFields = fixtureModifier.modifyFixture( fixtureJungleRot, {
+        const dataWithMissingFields = mf.testing.fixtureModifier.modifyFixture( fixtureJungleRot, {
           'relations': undefined,
           'area': null,
           'begin-area': null,
@@ -267,7 +267,7 @@ describe( 'MusicBrainz Data Transformer', () => {
           'life-span': null
         } );
 
-        const result = transformer.transformArtistData( dataWithMissingFields );
+        const result = mf.musicbrainzTransformer.transformArtistData( dataWithMissingFields );
 
         expect( result.country ).toBeNull();
         expect( result.region ).toBeNull();

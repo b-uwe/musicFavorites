@@ -12,7 +12,7 @@
  */
 
 const axios = require( 'axios' );
-const musicbrainzClient = require( '../../services/musicbrainz' );
+require( '../../services/musicbrainz' );
 const fixtureData = require( '../fixtures/musicbrainz-jungle-rot.json' );
 
 jest.mock( 'axios' );
@@ -35,7 +35,7 @@ describe( 'MusicBrainz API Client', () => {
         'data': fixtureData
       } );
 
-      const result = await musicbrainzClient.fetchArtist( artistId );
+      const result = await mf.musicbrainz.fetchArtist( artistId );
 
       expect( result ).toEqual( fixtureData );
     } );
@@ -51,7 +51,7 @@ describe( 'MusicBrainz API Client', () => {
 
       axios.get.mockRejectedValue( new Error( errorMessage ) );
 
-      await expect( musicbrainzClient.fetchArtist( artistId ) ).
+      await expect( mf.musicbrainz.fetchArtist( artistId ) ).
         rejects.
         toThrow( 'MusicBrainz: Request failed with status code 404' );
     } );
@@ -67,7 +67,7 @@ describe( 'MusicBrainz API Client', () => {
 
       axios.get.mockRejectedValue( new Error( 'timeout of 10000ms exceeded' ) );
 
-      await expect( musicbrainzClient.fetchArtist( artistId ) ).
+      await expect( mf.musicbrainz.fetchArtist( artistId ) ).
         rejects.
         toThrow( 'MusicBrainz: timeout of 10000ms exceeded' );
     } );
