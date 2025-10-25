@@ -6,7 +6,7 @@
    * @module services/artistService
    */
 
-  const bandsintownTransformer = require( './bandsintownTransformer' );
+  require( './bandsintownTransformer' );
   require( './database' );
   const ldJsonExtractor = require( './ldJsonExtractor' );
   require( './musicbrainz' );
@@ -127,7 +127,7 @@
     try {
       const ldJsonData = await ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
 
-      return bandsintownTransformer.transformEvents( ldJsonData );
+      return mf.bandsintownTransformer.transformEvents( ldJsonData );
     } catch ( error ) {
       if ( silentFail ) {
         return [];

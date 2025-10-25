@@ -3,7 +3,7 @@
  * @module __tests__/services/bandsintownTransformer
  */
 
-const bandsintownTransformer = require( '../../../services/bandsintownTransformer' );
+require( '../../../services/bandsintownTransformer' );
 const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
 const fixtureVulvodyniaRaw = require( '../../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
@@ -16,7 +16,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with null input
      */
     test( 'returns empty string for null input', () => {
-      const result = bandsintownTransformer.extractDate( null );
+      const result = mf.bandsintownTransformer.extractDate( null );
 
       expect( result ).toBe( '' );
     } );
@@ -25,7 +25,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with non-string input (truthy value)
      */
     test( 'returns empty string for non-string truthy input', () => {
-      const result = bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
+      const result = mf.bandsintownTransformer.extractDate( { 'date': '2025-01-01' } );
 
       expect( result ).toBe( '' );
     } );
@@ -34,7 +34,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with valid ISO date string
      */
     test( 'extracts date from valid ISO datetime string', () => {
-      const result = bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
+      const result = mf.bandsintownTransformer.extractDate( '2025-11-25T18:00:00' );
 
       expect( result ).toBe( '2025-11-25' );
     } );
@@ -43,7 +43,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractDate with string that doesn't match date pattern
      */
     test( 'returns empty string for invalid date format', () => {
-      const result = bandsintownTransformer.extractDate( 'not-a-date' );
+      const result = mf.bandsintownTransformer.extractDate( 'not-a-date' );
 
       expect( result ).toBe( '' );
     } );
@@ -54,7 +54,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with null input
      */
     test( 'returns empty string for null input', () => {
-      const result = bandsintownTransformer.extractLocalTime( null );
+      const result = mf.bandsintownTransformer.extractLocalTime( null );
 
       expect( result ).toBe( '' );
     } );
@@ -63,7 +63,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with non-string input (truthy value)
      */
     test( 'returns empty string for non-string truthy input', () => {
-      const result = bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
+      const result = mf.bandsintownTransformer.extractLocalTime( { 'time': '18:00:00' } );
 
       expect( result ).toBe( '' );
     } );
@@ -72,7 +72,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test extractLocalTime with valid ISO datetime string
      */
     test( 'extracts time from valid ISO datetime string', () => {
-      const result = bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
+      const result = mf.bandsintownTransformer.extractLocalTime( '2025-11-25T18:00:00' );
 
       expect( result ).toBe( '18:00:00' );
     } );
@@ -83,7 +83,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test transformation of valid MusicEvent objects to our event schema
      */
     test( 'transforms Bandsintown LD+JSON MusicEvent to event schema', () => {
-      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const result = mf.bandsintownTransformer.transformEvents( fixtureVulvodynia );
 
       expect( result ).toBeInstanceOf( Array );
       expect( result.length ).toBeGreaterThan( 0 );
@@ -104,7 +104,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test location structure transformation
      */
     test( 'transforms location with address and geo coordinates', () => {
-      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const result = mf.bandsintownTransformer.transformEvents( fixtureVulvodynia );
       const [ firstEvent ] = result;
 
       expect( firstEvent.location ).toHaveProperty( 'address' );
@@ -132,7 +132,7 @@ describe( 'Bandsintown Transformer', () => {
         }
       ];
 
-      const result = bandsintownTransformer.transformEvents( mixedData );
+      const result = mf.bandsintownTransformer.transformEvents( mixedData );
 
       // Should only include MusicEvent objects (fixture has 4 MusicEvents out of 25 total items)
       expect( result.length ).toBe( 4 );
@@ -142,7 +142,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of empty arrays
      */
     test( 'returns empty array for empty input', () => {
-      const result = bandsintownTransformer.transformEvents( [] );
+      const result = mf.bandsintownTransformer.transformEvents( [] );
 
       expect( result ).toEqual( [] );
     } );
@@ -151,7 +151,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of null/undefined input
      */
     test( 'returns empty array for null input', () => {
-      const result = bandsintownTransformer.transformEvents( null );
+      const result = mf.bandsintownTransformer.transformEvents( null );
 
       expect( result ).toEqual( [] );
     } );
@@ -160,7 +160,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of undefined input
      */
     test( 'returns empty array for undefined input', () => {
-      const result = bandsintownTransformer.transformEvents();
+      const result = mf.bandsintownTransformer.transformEvents();
 
       expect( result ).toEqual( [] );
     } );
@@ -176,7 +176,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithoutGeo );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithoutGeo );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
       expect( result[ 0 ].location.geo ).toBeNull();
@@ -194,7 +194,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithInvalidGeo );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithInvalidGeo );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ O2 Academy Islington' );
       expect( result[ 0 ].location.geo ).toBeNull();
@@ -205,7 +205,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test date and time extraction from startDate using real fixture data
      */
     test( 'correctly extracts date and localTime from startDate', () => {
-      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const result = mf.bandsintownTransformer.transformEvents( fixtureVulvodynia );
       const [ , secondEvent ] = result;
 
       // Second event: Leeds University Stylus with time 17:30:00
@@ -225,7 +225,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 3 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithoutLocation );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithoutLocation );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Rock Café' );
       expect( result[ 0 ].date ).toMatch( /^\d{4}-\d{2}-\d{2}$/u );
@@ -240,7 +240,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test address concatenation
      */
     test( 'concatenates address fields correctly', () => {
-      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const result = mf.bandsintownTransformer.transformEvents( fixtureVulvodynia );
       const [ , secondEvent ] = result;
 
       expect( secondEvent.location.address ).toBe( 'Leeds University Union,, Lifton Pl, LS2 9JT, Leeds, United Kingdom' );
@@ -258,7 +258,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 2 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithPartialAddress );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithPartialAddress );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Legend Club' );
       expect( result[ 0 ].date ).toMatch( /^\d{4}-\d{2}-\d{2}$/u );
@@ -283,7 +283,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 2 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithEmptyAddress );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithEmptyAddress );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Unknown Venue' );
       expect( result[ 0 ].location.address ).toBeNull();
@@ -303,7 +303,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithoutStartDate );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithoutStartDate );
 
       expect( result ).toEqual( [] );
     } );
@@ -324,7 +324,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 3 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithDateOnly );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithDateOnly );
 
       expect( result[ 0 ].name ).toBe( 'Vulvodynia @ Rock Café' );
       expect( result[ 0 ].date ).toBe( futureDateStr );
@@ -342,7 +342,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 1 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithInvalidDate );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithInvalidDate );
 
       expect( result ).toEqual( [] );
     } );
@@ -357,7 +357,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 2 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithNumberDate );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithNumberDate );
 
       expect( result ).toEqual( [] );
     } );
@@ -372,7 +372,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithNullDate );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithNullDate );
 
       expect( result ).toEqual( [] );
     } );
@@ -387,7 +387,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithBooleanDate );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithBooleanDate );
 
       expect( result ).toEqual( [] );
     } );
@@ -402,7 +402,7 @@ describe( 'Bandsintown Transformer', () => {
         } )[ 0 ]
       ];
 
-      const result = bandsintownTransformer.transformEvents( eventWithNullName );
+      const result = mf.bandsintownTransformer.transformEvents( eventWithNullName );
 
       expect( result[ 0 ].name ).toBe( '' );
       expect( result[ 0 ].date ).toMatch( /^\d{4}-\d{2}-\d{2}$/u );
@@ -447,7 +447,7 @@ describe( 'Bandsintown Transformer', () => {
       } );
       const events = [ event1, event2, event3, event4 ];
 
-      const result = bandsintownTransformer.transformEvents( events );
+      const result = mf.bandsintownTransformer.transformEvents( events );
 
       expect( result.length ).toBe( 3 );
       expect( result[ 0 ].date ).toBe( twoDaysAgo );
@@ -468,7 +468,7 @@ describe( 'Bandsintown Transformer', () => {
       } );
       const events = [ event1, event2 ];
 
-      const result = bandsintownTransformer.transformEvents( events );
+      const result = mf.bandsintownTransformer.transformEvents( events );
 
       expect( result.length ).toBe( 2 );
       expect( result[ 0 ].date ).toBe( twoDaysAgo );
@@ -489,7 +489,7 @@ describe( 'Bandsintown Transformer', () => {
       } );
       const events = [ event1, event2 ];
 
-      const result = bandsintownTransformer.transformEvents( events );
+      const result = mf.bandsintownTransformer.transformEvents( events );
 
       expect( result.length ).toBe( 1 );
       expect( result[ 0 ].date ).toBe( twoDaysAgo );
@@ -499,7 +499,7 @@ describe( 'Bandsintown Transformer', () => {
      * Test handling of future events
      */
     test( 'includes all future events', () => {
-      const result = bandsintownTransformer.transformEvents( fixtureVulvodynia );
+      const result = mf.bandsintownTransformer.transformEvents( fixtureVulvodynia );
 
       expect( result.length ).toBe( 4 );
     } );
@@ -520,7 +520,7 @@ describe( 'Bandsintown Transformer', () => {
       } );
       const events = [ event1, event2, event3 ];
 
-      const result = bandsintownTransformer.transformEvents( events );
+      const result = mf.bandsintownTransformer.transformEvents( events );
 
       expect( result.length ).toBe( 1 );
       expect( result[ 0 ].date ).toBe( today );
@@ -542,7 +542,7 @@ describe( 'Bandsintown Transformer', () => {
       } );
       const events = [ event1, event2, event3 ];
 
-      const result = bandsintownTransformer.transformEvents( events );
+      const result = mf.bandsintownTransformer.transformEvents( events );
 
       expect( result.length ).toBe( 3 );
       result.forEach( ( event ) => {

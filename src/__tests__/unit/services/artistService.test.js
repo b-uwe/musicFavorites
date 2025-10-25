@@ -315,7 +315,6 @@ describe( 'artistService', () => {
 
   describe( 'Functions with Mocked Dependencies', () => {
     let ldJsonExtractor;
-    let bandsintownTransformer;
     let fetchQueue;
 
     beforeEach( () => {
@@ -335,7 +334,7 @@ describe( 'artistService', () => {
       require( '../../../services/musicbrainz' );
       mf.musicbrainz.fetchArtist = jest.fn();
       ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
-      bandsintownTransformer = require( '../../../services/bandsintownTransformer' );
+      require( '../../../services/bandsintownTransformer' );
       require( '../../../services/musicbrainzTransformer' );
 
       jest.doMock( '../../../services/fetchQueue', () => ( {
@@ -394,12 +393,12 @@ describe( 'artistService', () => {
         ];
 
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( mockLdJson );
-        bandsintownTransformer.transformEvents.mockReturnValue( mockTransformedEvents );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
 
         const result = await mf.artistService.fetchBandsintownEvents( artistData );
 
         expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://bandsintown.com/a/12345' );
-        expect( bandsintownTransformer.transformEvents ).toHaveBeenCalledWith( mockLdJson );
+        expect( mf.bandsintownTransformer.transformEvents ).toHaveBeenCalledWith( mockLdJson );
         expect( result ).toEqual( mockTransformedEvents );
       } );
 
@@ -455,7 +454,7 @@ describe( 'artistService', () => {
         mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         mf.musicbrainzTransformer.transformArtistData = jest.fn().mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
-        bandsintownTransformer.transformEvents.mockReturnValue( mockEvents );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockEvents );
 
         const result = await mf.artistService.fetchAndEnrichArtistData( 'test-id' );
 
@@ -573,7 +572,7 @@ describe( 'artistService', () => {
         mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         mf.musicbrainzTransformer.transformArtistData = jest.fn().mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
-        bandsintownTransformer.transformEvents.mockReturnValue( [] );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( [] );
         mf.database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
         const result = await mf.artistService.fetchMultipleActs( artistIds );
@@ -664,7 +663,7 @@ describe( 'artistService', () => {
         mf.musicbrainz.fetchArtist.mockResolvedValue( mockMbData );
         mf.musicbrainzTransformer.transformArtistData = jest.fn().mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
-        bandsintownTransformer.transformEvents.mockReturnValue( [] );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( [] );
         mf.database.cacheArtist.mockResolvedValue();
 
         const result = await mf.artistService.fetchMultipleActs( artistIds );
