@@ -290,7 +290,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       database.getAllActIds.mockResolvedValue( [] );
 
       // Pass undefined for cycleIntervalMs to test the ?? operator
-      const startPromise = cacheUpdater.start( { 'cycleIntervalMs': undefined } );
+      cacheUpdater.start( { 'cycleIntervalMs': undefined } );
 
       // Should call runSequentialUpdate once
       await jest.advanceTimersByTimeAsync( 1000 );
@@ -308,7 +308,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       database.getAllActsWithMetadata.mockResolvedValue( [] );
       database.getAllActIds.mockResolvedValue( [] );
 
-      const startPromise = cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
+      cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
 
       // Let runSequentialUpdate complete
       await jest.advanceTimersByTimeAsync( 1000 );

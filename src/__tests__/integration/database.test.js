@@ -3,7 +3,6 @@
  * @module __tests__/services/database
  */
 
-const { MongoClient } = require( 'mongodb' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
 const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
