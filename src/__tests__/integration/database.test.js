@@ -3,7 +3,7 @@
  * @module __tests__/services/database
  */
 
-const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
+require( '../../services/musicbrainzTransformer' );
 const fixtureJungleRot = require( '../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
@@ -241,7 +241,7 @@ describe( 'Database Service', () => {
         'findOne': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
-      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      transformedJungleRot = mf.musicbrainzTransformer.transformArtistData( fixtureJungleRot );
     } );
 
     test( 'should return artist data from cache when found', async () => {
@@ -299,7 +299,7 @@ describe( 'Database Service', () => {
         'updateOne': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
-      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+      transformedTheKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
     } );
 
     test( 'should cache artist data', async () => {
@@ -481,8 +481,8 @@ describe( 'Database Service', () => {
         'find': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
-      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
-      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+      transformedJungleRot = mf.musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      transformedTheKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
     } );
 
     /**
@@ -567,8 +567,8 @@ describe( 'Database Service', () => {
         'find': jest.fn()
       };
       mockDb.collection = jest.fn( () => mockCollection );
-      transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
-      transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+      transformedJungleRot = mf.musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+      transformedTheKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
     } );
 
     /**
