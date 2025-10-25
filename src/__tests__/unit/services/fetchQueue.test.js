@@ -249,5 +249,62 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       jest.useRealTimers();
     }, 15000 );
+
+    /**
+     * Test error handler in triggerBackgroundFetch catch block
+     */
+    test( 'resets flag and logs error when processFetchQueue throws', async () => {
+      jest.useFakeTimers();
+
+      /**
+       * No-op function for console.error mock
+       * @returns {void} Nothing
+       */
+      const noOp = () => {
+        // Intentionally empty - suppresses console output during test
+      };
+
+      // Spy on console.error to suppress output and verify it was called
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation( noOp );
+
+      // Clear modules to force re-require
+      jest.resetModules();
+
+      // Set up a throwing mock for artistService before requiring anything
+      jest.doMock( '../../../services/artistService', () => {
+        throw new Error( 'Simulated require failure' );
+      } );
+
+      // Re-require database and setup mocks
+      require( '../../../services/database' );
+      mf.database.cacheArtist = jest.fn();
+
+      // Require fetchQueue (this will have the broken artistService require)
+      require( '../../../services/fetchQueue' );
+
+      // Trigger background fetch - this will cause processFetchQueue to throw
+      mf.fetchQueue.triggerBackgroundFetch( [ 'test-id' ] );
+
+      // Wait for promise to settle
+      await jest.runAllTimersAsync();
+
+      // Verify console.error was called with error message
+      expect( consoleErrorSpy ).toHaveBeenCalledWith( 'Background fetch error:', 'Simulated require failure' );
+
+      // Cleanup
+      consoleErrorSpy.mockRestore();
+      jest.clearAllMocks();
+      jest.resetModules();
+      jest.dontMock( '../../../services/artistService' );
+
+      // Re-require everything for subsequent tests
+      require( '../../../services/database' );
+      mf.database.cacheArtist = jest.fn();
+      require( '../../../services/artistService' );
+      mf.artistService.fetchAndEnrichArtistData = jest.fn();
+      require( '../../../services/fetchQueue' );
+
+      jest.useRealTimers();
+    }, 15000 );
   } );
 } );
