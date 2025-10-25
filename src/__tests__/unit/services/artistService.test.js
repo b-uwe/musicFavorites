@@ -314,8 +314,6 @@ describe( 'artistService', () => {
   } );
 
   describe( 'Functions with Mocked Dependencies', () => {
-    let fetchQueue;
-
     beforeEach( () => {
       jest.clearAllMocks();
       jest.resetModules();
@@ -337,11 +335,9 @@ describe( 'artistService', () => {
       require( '../../../services/bandsintownTransformer' );
       require( '../../../services/musicbrainzTransformer' );
 
-      jest.doMock( '../../../services/fetchQueue', () => ( {
-        'triggerBackgroundFetch': jest.fn()
-      } ) );
+      require( '../../../services/fetchQueue' );
+      mf.fetchQueue.triggerBackgroundFetch = jest.fn();
 
-      fetchQueue = require( '../../../services/fetchQueue' );
       require( '../../../services/artistService' );
     } );
 
@@ -689,7 +685,7 @@ describe( 'artistService', () => {
 
         const result = await mf.artistService.fetchMultipleActs( artistIds );
 
-        expect( fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ 'id2', 'id3' ] );
+        expect( mf.fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ 'id2', 'id3' ] );
         expect( result ).toEqual( {
           'error': {
             'message': '2 acts not cached. Background fetch initiated. Please try again in a few minutes.',

@@ -19,8 +19,8 @@ jest.mock( '../../services/ldJsonExtractor' );
  * CRITICAL: Import artistService and fetchQueue AFTER mocks are set up
  * This allows us to test real module interactions while mocking external I/O
  */
-const artistService = require( '../../services/artistService' );
-const fetchQueue = require( '../../services/fetchQueue' );
+require( '../../services/artistService' );
+require( '../../services/fetchQueue' );
 
 describe( 'Fetch Queue Integration Tests', () => {
   beforeEach( () => {
@@ -51,7 +51,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.database.cacheArtist.mockResolvedValue();
 
     // Trigger background fetch
-    fetchQueue.triggerBackgroundFetch( actIds );
+    mf.fetchQueue.triggerBackgroundFetch( actIds );
 
     // Advance through both fetches (2 acts × 30s = 60s)
     await jest.advanceTimersByTimeAsync( 60000 );
@@ -91,7 +91,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( result.error.message ).toContain( '3 acts not cached' );
 
     // Verify triggerBackgroundFetch function exists
-    expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+    expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );
 
   /**
@@ -99,11 +99,11 @@ describe( 'Fetch Queue Integration Tests', () => {
    */
   test( 'modules load without circular dependency errors', () => {
     // If we got this far, the modules loaded successfully
-    expect( artistService ).toBeDefined();
-    expect( fetchQueue ).toBeDefined();
+    expect( mf.artistService ).toBeDefined();
+    expect( mf.fetchQueue ).toBeDefined();
     expect( mf.artistService.fetchAndEnrichArtistData ).toBeDefined();
     expect( typeof mf.artistService.fetchAndEnrichArtistData ).toBe( 'function' );
-    expect( fetchQueue.triggerBackgroundFetch ).toBeDefined();
-    expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+    expect( mf.fetchQueue.triggerBackgroundFetch ).toBeDefined();
+    expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );
 } );

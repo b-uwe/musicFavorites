@@ -8,6 +8,7 @@
 
   require( './bandsintownTransformer' );
   require( './database' );
+  require( './fetchQueue' );
   require( './ldJsonExtractor' );
   require( './musicbrainz' );
   require( './musicbrainzTransformer' );
@@ -218,10 +219,8 @@
    * @returns {object} Error response with background fetch notification
    */
   const handleMultipleMissingActs = ( missingIds, cachedCount ) => {
-    const fetchQueue = require( './fetchQueue' );
-
     // Trigger background sequential fetch (adds to queue, prevents duplicates)
-    fetchQueue.triggerBackgroundFetch( missingIds );
+    mf.fetchQueue.triggerBackgroundFetch( missingIds );
 
     return {
       'error': {
