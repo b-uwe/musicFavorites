@@ -70,7 +70,14 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.ldJsonExtractor = {
-    extractLdJson,
     fetchAndExtractLdJson
   };
+
+  // Expose private functions for unit testing when running under Jest
+  if ( process.env.JEST_WORKER_ID ) {
+    globalThis.mf.testing = globalThis.mf.testing || {};
+    globalThis.mf.testing.ldJsonExtractor = {
+      extractLdJson
+    };
+  }
 } )();
