@@ -212,7 +212,9 @@ module.exports = [
   {
     'files': [ 'src/__tests__/**/*.js' ],
     'rules': {
-      'no-undefined': 'off'
+      'no-undefined': 'off',
+      'max-lines-per-function': 'off',
+      'max-lines': [ 'error', 750 ],
     }
   }
 ];
