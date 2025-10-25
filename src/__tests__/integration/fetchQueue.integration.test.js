@@ -27,8 +27,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     jest.clearAllMocks();
 
     // Mock only the database functions used in these tests
-    globalThis.mf.database.getArtistFromCache = jest.fn();
-    globalThis.mf.database.cacheArtist = jest.fn();
+    mf.database.getArtistFromCache = jest.fn();
+    mf.database.cacheArtist = jest.fn();
   } );
 
   /**
@@ -81,7 +81,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.database.cacheArtist.mockResolvedValue();
 
     // Call fetchMultipleActs with 3 missing acts
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await mf.artistService.fetchMultipleActs( actIds );
 
     // Should return error because 2+ acts are missing
     expect( result.error ).toBeDefined();
@@ -98,8 +98,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     // If we got this far, the modules loaded successfully
     expect( artistService ).toBeDefined();
     expect( fetchQueue ).toBeDefined();
-    expect( artistService.fetchAndEnrichArtistData ).toBeDefined();
-    expect( typeof artistService.fetchAndEnrichArtistData ).toBe( 'function' );
+    expect( mf.artistService.fetchAndEnrichArtistData ).toBeDefined();
+    expect( typeof mf.artistService.fetchAndEnrichArtistData ).toBe( 'function' );
     expect( fetchQueue.triggerBackgroundFetch ).toBeDefined();
     expect( typeof fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );

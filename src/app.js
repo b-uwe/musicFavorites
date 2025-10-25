@@ -8,7 +8,7 @@
 
   const express = require( 'express' );
   const path = require( 'path' );
-  const artistService = require( './services/artistService' );
+  require( './services/artistService' );
 
   const app = express();
 
@@ -65,7 +65,7 @@
 
     try {
       const artistIds = id.split( ',' ).map( ( artistId ) => artistId.trim() );
-      const result = await artistService.fetchMultipleActs( artistIds );
+      const result = await mf.artistService.fetchMultipleActs( artistIds );
 
       if ( result.error ) {
         return res.status( 503 ).json( {

@@ -32,11 +32,11 @@ const updateAct = async ( actId ) => {
    * CRITICAL: Lazy require to break circular dependency
    * This function is called after all modules are loaded, so it's safe
    */
-  const { fetchAndEnrichArtistData } = require( './artistService' );
+  require( './artistService' );
 
   try {
     // Fetch and enrich artist data (with silent event failures)
-    const dataToCache = await fetchAndEnrichArtistData( actId, true );
+    const dataToCache = await mf.artistService.fetchAndEnrichArtistData( actId, true );
 
     // Replace cache entry
     await mf.database.cacheArtist( dataToCache );

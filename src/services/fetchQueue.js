@@ -30,7 +30,7 @@ const processFetchQueue = async ( queue ) => {
    * CRITICAL: Lazy require to break circular dependency
    * This function is called after all modules are loaded, so it's safe
    */
-  const artistService = require( './artistService' );
+  require( './artistService' );
 
   // Process queue until empty
   while ( queue.size > 0 ) {
@@ -42,7 +42,7 @@ const processFetchQueue = async ( queue ) => {
 
     try {
       // Fetch and enrich artist data with silent event failures
-      const dataToCache = await artistService.fetchAndEnrichArtistData( actId, true );
+      const dataToCache = await mf.artistService.fetchAndEnrichArtistData( actId, true );
 
       // Cache the result
       await mf.database.cacheArtist( dataToCache );

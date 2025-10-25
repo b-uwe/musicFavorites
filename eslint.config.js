@@ -22,7 +22,6 @@ module.exports = [
         '__filename': 'readonly',
         'Buffer': 'readonly',
         'global': 'readonly',
-        'globalThis': 'readonly',
         'mf': 'readonly',
         'setTimeout': 'readonly',
         'describe': 'readonly',
@@ -213,6 +212,11 @@ module.exports = [
   {
     'files': [ 'src/**/*.js' ],
     'ignores': [ 'src/__tests__/**/*.js' ],
+    'languageOptions': {
+      globals: {
+        'globalThis': 'readonly'
+      }
+    },
     'rules': {
       'no-restricted-properties': [ 'error', {
         'object': 'mf',

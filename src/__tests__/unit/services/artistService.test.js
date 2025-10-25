@@ -11,31 +11,29 @@ jest.mock( '../../../services/bandsintownTransformer' );
 jest.mock( '../../../services/musicbrainzTransformer' );
 
 describe( 'artistService', () => {
-  let artistService;
-
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
-    artistService = require( '../../../services/artistService' );
+    require( '../../../services/artistService' );
   } );
 
   describe( 'Pure Functions (No Mocks)', () => {
     describe( 'getBerlinTimestamp', () => {
       test( 'returns timestamp in YYYY-MM-DD HH:MM:SS format', () => {
-        const timestamp = artistService.getBerlinTimestamp();
+        const timestamp = mf.artistService.getBerlinTimestamp();
 
         expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
       } );
 
       test( 'returns a string', () => {
-        const timestamp = artistService.getBerlinTimestamp();
+        const timestamp = mf.artistService.getBerlinTimestamp();
 
         expect( typeof timestamp ).toBe( 'string' );
       } );
 
       test( 'returns valid timestamps on consecutive calls', () => {
-        const timestamp1 = artistService.getBerlinTimestamp();
-        const timestamp2 = artistService.getBerlinTimestamp();
+        const timestamp1 = mf.artistService.getBerlinTimestamp();
+        const timestamp2 = mf.artistService.getBerlinTimestamp();
 
         expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
         expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
@@ -45,19 +43,19 @@ describe( 'artistService', () => {
 
     describe( 'determineStatus', () => {
       test( 'returns MusicBrainz status when events array is empty', () => {
-        const result = artistService.determineStatus( [], 'active' );
+        const result = mf.artistService.determineStatus( [], 'active' );
 
         expect( result ).toBe( 'active' );
       } );
 
       test( 'returns MusicBrainz status when events is null', () => {
-        const result = artistService.determineStatus( null, 'disbanded' );
+        const result = mf.artistService.determineStatus( null, 'disbanded' );
 
         expect( result ).toBe( 'disbanded' );
       } );
 
       test( 'returns MusicBrainz status when events is undefined', () => {
-        const result = artistService.determineStatus( undefined, 'active' );
+        const result = mf.artistService.determineStatus( undefined, 'active' );
 
         expect( result ).toBe( 'active' );
       } );
@@ -76,7 +74,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'on tour' );
       } );
@@ -95,7 +93,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'tour planned' );
       } );
@@ -114,7 +112,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'active' );
       } );
@@ -146,7 +144,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'on tour' );
       } );
@@ -164,7 +162,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'active' );
       } );
@@ -187,7 +185,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'on tour' );
       } );
@@ -210,7 +208,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'on tour' );
       } );
@@ -229,7 +227,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'on tour' );
       } );
@@ -248,7 +246,7 @@ describe( 'artistService', () => {
           }
         ];
 
-        const result = artistService.determineStatus( events, 'active' );
+        const result = mf.artistService.determineStatus( events, 'active' );
 
         expect( result ).toBe( 'tour planned' );
       } );
@@ -265,7 +263,7 @@ describe( 'artistService', () => {
           setTimeout( () => resolve( 'success' ), 100 );
         } );
 
-        const resultPromise = artistService.withTimeout( fastPromise, 1000 );
+        const resultPromise = mf.testing.artistService.withTimeout( fastPromise, 1000 );
 
         jest.advanceTimersByTime( 100 );
         const result = await resultPromise;
@@ -285,7 +283,7 @@ describe( 'artistService', () => {
           setTimeout( () => resolve( 'too late' ), 2000 );
         } );
 
-        const resultPromise = artistService.withTimeout( slowPromise, 500 );
+        const resultPromise = mf.testing.artistService.withTimeout( slowPromise, 500 );
 
         jest.advanceTimersByTime( 500 );
 
@@ -304,7 +302,7 @@ describe( 'artistService', () => {
           setTimeout( () => reject( new Error( 'Operation failed' ) ), 100 );
         } );
 
-        const resultPromise = artistService.withTimeout( rejectingPromise, 1000 );
+        const resultPromise = mf.testing.artistService.withTimeout( rejectingPromise, 1000 );
 
         jest.advanceTimersByTime( 100 );
 
@@ -331,10 +329,10 @@ describe( 'artistService', () => {
       require( '../../../services/database' );
 
       // Mock only the database functions used by artistService
-      globalThis.mf.database.connect = jest.fn();
-      globalThis.mf.database.testCacheHealth = jest.fn();
-      globalThis.mf.database.getArtistFromCache = jest.fn();
-      globalThis.mf.database.cacheArtist = jest.fn();
+      mf.database.connect = jest.fn();
+      mf.database.testCacheHealth = jest.fn();
+      mf.database.getArtistFromCache = jest.fn();
+      mf.database.cacheArtist = jest.fn();
 
       musicbrainz = require( '../../../services/musicbrainz' );
       ldJsonExtractor = require( '../../../services/ldJsonExtractor' );
@@ -346,7 +344,7 @@ describe( 'artistService', () => {
       } ) );
 
       fetchQueue = require( '../../../services/fetchQueue' );
-      artistService = require( '../../../services/artistService' );
+      require( '../../../services/artistService' );
     } );
 
     afterEach( () => {
@@ -361,7 +359,7 @@ describe( 'artistService', () => {
           'relations': {}
         };
 
-        const result = await artistService.fetchBandsintownEvents( artistData );
+        const result = await mf.artistService.fetchBandsintownEvents( artistData );
 
         expect( result ).toEqual( [] );
         expect( ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
@@ -373,7 +371,7 @@ describe( 'artistService', () => {
           'name': 'Test Artist'
         };
 
-        const result = await artistService.fetchBandsintownEvents( artistData );
+        const result = await mf.artistService.fetchBandsintownEvents( artistData );
 
         expect( result ).toEqual( [] );
       } );
@@ -399,7 +397,7 @@ describe( 'artistService', () => {
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( mockLdJson );
         bandsintownTransformer.transformEvents.mockReturnValue( mockTransformedEvents );
 
-        const result = await artistService.fetchBandsintownEvents( artistData );
+        const result = await mf.artistService.fetchBandsintownEvents( artistData );
 
         expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://bandsintown.com/a/12345' );
         expect( bandsintownTransformer.transformEvents ).toHaveBeenCalledWith( mockLdJson );
@@ -415,7 +413,7 @@ describe( 'artistService', () => {
 
         ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Fetch failed' ) );
 
-        await expect( artistService.fetchBandsintownEvents( artistData, false ) ).rejects.toThrow( 'Fetch failed' );
+        await expect( mf.artistService.fetchBandsintownEvents( artistData, false ) ).rejects.toThrow( 'Fetch failed' );
       } );
 
       test( 'returns empty array on fetch failure when silentFail is true', async () => {
@@ -427,7 +425,7 @@ describe( 'artistService', () => {
 
         ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Fetch failed' ) );
 
-        const result = await artistService.fetchBandsintownEvents( artistData, true );
+        const result = await mf.artistService.fetchBandsintownEvents( artistData, true );
 
         expect( result ).toEqual( [] );
       } );
@@ -460,7 +458,7 @@ describe( 'artistService', () => {
         ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
         bandsintownTransformer.transformEvents.mockReturnValue( mockEvents );
 
-        const result = await artistService.fetchAndEnrichArtistData( 'test-id' );
+        const result = await mf.artistService.fetchAndEnrichArtistData( 'test-id' );
 
         expect( musicbrainz.fetchArtist ).toHaveBeenCalledWith( 'test-id' );
         expect( musicbrainzTransformer.transformArtistData ).toHaveBeenCalledWith( mockMbData );
@@ -487,7 +485,7 @@ describe( 'artistService', () => {
         musicbrainzTransformer.transformArtistData.mockReturnValue( mockTransformed );
         ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Fetch failed' ) );
 
-        const result = await artistService.fetchAndEnrichArtistData( 'test-id', true );
+        const result = await mf.artistService.fetchAndEnrichArtistData( 'test-id', true );
 
         expect( result.events ).toEqual( [] );
       } );
@@ -502,7 +500,7 @@ describe( 'artistService', () => {
         mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
         try {
-          await artistService.fetchMultipleActs( [ 'id1' ] );
+          await mf.artistService.fetchMultipleActs( [ 'id1' ] );
         } catch ( error ) {
           // Expected SVC_002 error
         }
@@ -512,7 +510,7 @@ describe( 'artistService', () => {
         mf.database.getArtistFromCache.mockResolvedValue( { '_id': 'id1',
           'name': 'Test' } );
 
-        const result = await artistService.fetchMultipleActs( [ 'id1' ] );
+        const result = await mf.artistService.fetchMultipleActs( [ 'id1' ] );
 
         expect( mf.database.connect ).toHaveBeenCalled();
         expect( mf.database.testCacheHealth ).toHaveBeenCalled();
@@ -527,7 +525,7 @@ describe( 'artistService', () => {
         mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
         try {
-          await artistService.fetchMultipleActs( [ 'id1' ] );
+          await mf.artistService.fetchMultipleActs( [ 'id1' ] );
         } catch ( error ) {
           // Cache is now unhealthy
         }
@@ -535,7 +533,7 @@ describe( 'artistService', () => {
         mf.database.connect.mockResolvedValue();
         mf.database.testCacheHealth.mockRejectedValue( new Error( 'Health check failed' ) );
 
-        await expect( artistService.fetchMultipleActs( [ 'id1' ] ) ).
+        await expect( mf.artistService.fetchMultipleActs( [ 'id1' ] ) ).
           rejects.
           toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       } );
@@ -545,7 +543,7 @@ describe( 'artistService', () => {
         mf.database.testCacheHealth.mockResolvedValue();
         mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Cache error' ) );
 
-        await expect( artistService.fetchMultipleActs( [ 'id1' ] ) ).
+        await expect( mf.artistService.fetchMultipleActs( [ 'id1' ] ) ).
           rejects.
           toThrow( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
       } );
@@ -579,7 +577,7 @@ describe( 'artistService', () => {
         bandsintownTransformer.transformEvents.mockReturnValue( [] );
         mf.database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
 
-        const result = await artistService.fetchMultipleActs( artistIds );
+        const result = await mf.artistService.fetchMultipleActs( artistIds );
 
         expect( result.acts ).toHaveLength( 2 );
 
@@ -587,7 +585,7 @@ describe( 'artistService', () => {
         mf.database.testCacheHealth.mockClear();
         mf.database.getArtistFromCache.mockResolvedValue( mockCached );
 
-        await artistService.fetchMultipleActs( [ 'id1' ] );
+        await mf.artistService.fetchMultipleActs( [ 'id1' ] );
 
         expect( mf.database.connect ).toHaveBeenCalled();
         expect( mf.database.testCacheHealth ).toHaveBeenCalled();
@@ -596,7 +594,7 @@ describe( 'artistService', () => {
 
     describe( 'fetchMultipleActs - basic validation', () => {
       test( 'returns error when artistIds is not an array', async () => {
-        const result = await artistService.fetchMultipleActs( 'not-an-array' );
+        const result = await mf.artistService.fetchMultipleActs( 'not-an-array' );
 
         expect( result ).toEqual( {
           'error': {
@@ -606,7 +604,7 @@ describe( 'artistService', () => {
       } );
 
       test( 'returns error when artistIds is empty array', async () => {
-        const result = await artistService.fetchMultipleActs( [] );
+        const result = await mf.artistService.fetchMultipleActs( [] );
 
         expect( result ).toEqual( {
           'error': {
@@ -634,7 +632,7 @@ describe( 'artistService', () => {
           mockResolvedValueOnce( mockCached[ 0 ] ).
           mockResolvedValueOnce( mockCached[ 1 ] );
 
-        const result = await artistService.fetchMultipleActs( artistIds );
+        const result = await mf.artistService.fetchMultipleActs( artistIds );
 
         expect( result ).toEqual( {
           'acts': mockCached
@@ -670,7 +668,7 @@ describe( 'artistService', () => {
         bandsintownTransformer.transformEvents.mockReturnValue( [] );
         mf.database.cacheArtist.mockResolvedValue();
 
-        const result = await artistService.fetchMultipleActs( artistIds );
+        const result = await mf.artistService.fetchMultipleActs( artistIds );
 
         expect( result.acts ).toHaveLength( 2 );
         expect( result.acts[ 0 ] ).toEqual( mockCached );
@@ -691,7 +689,7 @@ describe( 'artistService', () => {
           mockResolvedValueOnce( null ).
           mockResolvedValueOnce( null );
 
-        const result = await artistService.fetchMultipleActs( artistIds );
+        const result = await mf.artistService.fetchMultipleActs( artistIds );
 
         expect( fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ 'id2', 'id3' ] );
         expect( result ).toEqual( {

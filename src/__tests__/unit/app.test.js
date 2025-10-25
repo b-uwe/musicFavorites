@@ -6,13 +6,14 @@
 
 const request = require( 'supertest' );
 require( '../../app' );
-const artistService = require( '../../services/artistService' );
-
-jest.mock( '../../services/artistService' );
+require( '../../services/artistService' );
 
 describe( 'Express App - Route Handler Unit Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
+
+    // Mock artistService functions
+    mf.artistService.fetchMultipleActs = jest.fn();
   } );
 
   describe( 'GET /acts/:id - ID parsing logic', () => {
@@ -22,13 +23,13 @@ describe( 'Express App - Route Handler Unit Tests', () => {
     test( 'parses single ID without modification', async () => {
       const actId = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
 
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
       await request( mf.app ).get( `/acts/${actId}` ).expect( 200 );
 
-      expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ actId ] );
+      expect( mf.artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ actId ] );
     } );
 
     /**
@@ -38,13 +39,13 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
       const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
 
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
       await request( mf.app ).get( `/acts/${id1},${id2}` ).expect( 200 );
 
-      expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+      expect( mf.artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
     } );
 
     /**
@@ -54,13 +55,13 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
       const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
 
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
       await request( mf.app ).get( `/acts/${id1}, ${id2} ` ).expect( 200 );
 
-      expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+      expect( mf.artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
     } );
 
     /**
@@ -71,13 +72,13 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
       const id3 = '664c3e0e-42d8-48c1-b209-1efca19c0325';
 
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
       await request( mf.app ).get( `/acts/${id1}  ,  ${id2}  ,  ${id3}` ).expect( 200 );
 
-      expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2, id3 ] );
+      expect( mf.artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2, id3 ] );
     } );
   } );
 
@@ -93,7 +94,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
         }
       ];
 
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': mockActs
       } );
 
@@ -109,7 +110,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that meta includes attribution
      */
     test( 'includes attribution in meta', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
@@ -126,7 +127,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that meta includes license
      */
     test( 'includes license in meta', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
@@ -140,7 +141,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that error response includes meta
      */
     test( 'includes meta in error responses', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'error': {
           'message': 'Test error'
         }
@@ -160,7 +161,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that artistService errors return 503
      */
     test( 'returns 503 when artistService returns error', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'error': {
           'message': '2 acts not cached',
           'missingCount': 2
@@ -177,7 +178,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that thrown errors return 500
      */
     test( 'returns 500 when artistService throws error', async () => {
-      artistService.fetchMultipleActs.mockRejectedValue( new Error( 'Database error' ) );
+      mf.artistService.fetchMultipleActs.mockRejectedValue( new Error( 'Database error' ) );
 
       const response = await request( mf.app ).get( '/acts/test-id' ).expect( 500 );
 
@@ -191,7 +192,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that response includes no-cache headers
      */
     test( 'includes Cache-Control no-cache headers', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
@@ -207,7 +208,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that response includes robots meta tag
      */
     test( 'includes X-Robots-Tag header', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
@@ -223,7 +224,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that ?pretty formats JSON with spaces
      */
     test( 'formats JSON with spaces when ?pretty is present', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
@@ -237,7 +238,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
      * Test that without ?pretty, JSON is compact
      */
     test( 'formats JSON compactly without ?pretty', async () => {
-      artistService.fetchMultipleActs.mockResolvedValue( {
+      mf.artistService.fetchMultipleActs.mockResolvedValue( {
         'acts': []
       } );
 
