@@ -47,10 +47,8 @@ const processFetchQueue = async ( queue ) => {
 
       // Cache the result
       await database.cacheArtist( dataToCache );
-
-      console.log( `Background fetch completed for act: ${actId}` );
     } catch ( error ) {
-      console.error( `Background fetch failed for act ${actId}:`, error.message );
+      // Silent fail
     }
 
     // Wait 30 seconds before processing next act (only if queue not empty)
@@ -87,6 +85,7 @@ const triggerBackgroundFetch = ( artistIds ) => {
       isBackgroundFetchRunning = false;
     } ).
     catch( ( error ) => {
+      // This is defensive programming! It should be impossible to land here as of now
       isBackgroundFetchRunning = false;
       console.error( 'Background fetch error:', error.message );
     } );

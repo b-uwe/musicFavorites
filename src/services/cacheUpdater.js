@@ -155,8 +155,16 @@ const start = async ( options ) => {
   }
 };
 
-module.exports = {
+const moduleExports = {
   runSequentialUpdate,
   start,
   updateAct
 };
+
+// Expose private functions for unit testing when running under Jest
+if ( process.env.JEST_WORKER_ID ) {
+  moduleExports.runCycle = runCycle;
+  moduleExports.sleep = sleep;
+}
+
+module.exports = moduleExports;

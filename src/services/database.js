@@ -272,3 +272,8 @@ module.exports = {
   getAllActIds,
   getAllActsWithMetadata
 };
+
+// Expose client for mocking when running under Jest
+if ( process.env.JEST_WORKER_ID ) {
+  module.exports.client = client;
+}
