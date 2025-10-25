@@ -5,6 +5,9 @@ module.exports = [
   js.configs.recommended,
   jsdoc.configs[ 'flat/recommended' ],
   {
+    'ignores': [ 'src/__tests__/_trash/**' ]
+  },
+  {
     'plugins': {
       jsdoc
     },
