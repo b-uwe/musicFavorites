@@ -147,7 +147,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runSequentialUpdate returns 0 when all acts are fresh
      */
     test( 'returns 0 when all acts are fresh (< 24h old)', async () => {
-      const freshTimestamp = new Date( Date.now() - 1000 * 60 * 60 ).toISOString(); // 1 hour ago
+      const freshTimestamp = new Date( Date.now() - ( 1000 * 60 * 60 ) ).toISOString(); // 1 hour ago
 
       database.getAllActsWithMetadata.mockResolvedValue( [
         {
@@ -196,7 +196,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'processes acts older than 24 hours', async () => {
       jest.useFakeTimers();
 
-      const staleTimestamp = new Date( Date.now() - 48 * 60 * 60 * 1000 ).toISOString();
+      const staleTimestamp = new Date( Date.now() - ( 48 * 60 * 60 * 1000 ) ).toISOString();
 
       database.getAllActsWithMetadata.mockResolvedValue( [
         {
