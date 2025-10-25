@@ -4,11 +4,11 @@
  */
 
 require( '../../../services/bandsintownTransformer' );
-const fixtureModifier = require( '../../../testHelpers/fixtureModifier' );
+require( '../../../testHelpers/fixtureModifier' );
 const fixtureVulvodyniaRaw = require( '../../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 // Normalize fixture dates to be 30 days in the future to prevent test expiration
-const fixtureVulvodynia = fixtureModifier.normalizeDates( fixtureVulvodyniaRaw, 30 );
+const fixtureVulvodynia = mf.testing.fixtureModifier.normalizeDates( fixtureVulvodyniaRaw, 30 );
 
 describe( 'Bandsintown Transformer', () => {
   describe( 'extractDate', () => {
@@ -171,7 +171,7 @@ describe( 'Bandsintown Transformer', () => {
     test( 'handles events with missing geo coordinates', () => {
       // Use real O2 Academy Islington event but remove geo coordinates
       const eventWithoutGeo = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'location.geo': undefined
         } )[ 0 ]
       ];
@@ -188,7 +188,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with non-number geo coordinates', () => {
       const eventWithInvalidGeo = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'location.geo.latitude': '51.5343501',
           'location.geo.longitude': '-0.1058837'
         } )[ 0 ]
@@ -220,7 +220,7 @@ describe( 'Bandsintown Transformer', () => {
     test( 'handles events with missing location gracefully', () => {
       // Use real Rock Café event but remove location entirely
       const eventWithoutLocation = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
           'location': undefined
         } )[ 3 ]
       ];
@@ -252,7 +252,7 @@ describe( 'Bandsintown Transformer', () => {
     test( 'handles events with partial address', () => {
       // Use real Legend Club event but remove street address and postal code
       const eventWithPartialAddress = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
           'location.address.streetAddress': undefined,
           'location.address.postalCode': undefined
         } )[ 2 ]
@@ -274,7 +274,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with completely empty address object', () => {
       const eventWithEmptyAddress = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
           'name': 'Vulvodynia @ Unknown Venue',
           'location.address.streetAddress': null,
           'location.address.postalCode': null,
@@ -298,7 +298,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters out events with missing startDate', () => {
       const eventWithoutStartDate = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'startDate': undefined
         } )[ 0 ]
       ];
@@ -319,7 +319,7 @@ describe( 'Bandsintown Transformer', () => {
       const [ futureDateStr ] = futureDate.toISOString().split( 'T' );
 
       const eventWithDateOnly = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 3, {
           'startDate': futureDateStr
         } )[ 3 ]
       ];
@@ -337,7 +337,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters out events with invalid startDate format', () => {
       const eventWithInvalidDate = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 1, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 1, {
           'startDate': 'invalid-date-format'
         } )[ 1 ]
       ];
@@ -352,7 +352,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters out events with non-string startDate', () => {
       const eventWithNumberDate = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 2, {
           'startDate': 1733259600000
         } )[ 2 ]
       ];
@@ -367,7 +367,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters out events with null startDate', () => {
       const eventWithNullDate = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'startDate': null
         } )[ 0 ]
       ];
@@ -382,7 +382,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters out events with boolean startDate', () => {
       const eventWithBooleanDate = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'startDate': true
         } )[ 0 ]
       ];
@@ -397,7 +397,7 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'handles events with null name gracefully', () => {
       const eventWithNullName = [
-        fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
+        mf.testing.fixtureModifier.modifyArrayItem( fixtureVulvodynia, 0, {
           'name': null
         } )[ 0 ]
       ];
@@ -433,16 +433,16 @@ describe( 'Bandsintown Transformer', () => {
       const twoDaysAgo = getUtcDateDaysAgo( 2 );
       const threeDaysAgo = getUtcDateDaysAgo( 3 );
 
-      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event1 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${threeDaysAgo}T18:00:00Z`
       } );
-      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event2 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${twoDaysAgo}T18:00:00Z`
       } );
-      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event3 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${yesterday}T18:00:00Z`
       } );
-      const event4 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event4 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${today}T18:00:00Z`
       } );
       const events = [ event1, event2, event3, event4 ];
@@ -460,10 +460,10 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'includes events from exactly 2 calendar days ago', () => {
       const twoDaysAgo = getUtcDateDaysAgo( 2 );
-      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event1 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${twoDaysAgo}T00:00:00Z`
       } );
-      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+      const event2 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
         'startDate': `${twoDaysAgo}T23:59:59Z`
       } );
       const events = [ event1, event2 ];
@@ -481,10 +481,10 @@ describe( 'Bandsintown Transformer', () => {
     test( 'excludes events from 3 calendar days ago', () => {
       const threeDaysAgo = getUtcDateDaysAgo( 3 );
       const twoDaysAgo = getUtcDateDaysAgo( 2 );
-      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event1 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${threeDaysAgo}T23:59:59Z`
       } );
-      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+      const event2 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
         'startDate': `${twoDaysAgo}T00:00:00Z`
       } );
       const events = [ event1, event2 ];
@@ -509,13 +509,13 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'excludes events with missing or invalid dates', () => {
       const today = getUtcDateDaysAgo( 0 );
-      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event1 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${today}T18:00:00Z`
       } );
-      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+      const event2 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
         'startDate': undefined
       } );
-      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
+      const event3 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
         'startDate': 'invalid-date'
       } );
       const events = [ event1, event2, event3 ];
@@ -531,13 +531,13 @@ describe( 'Bandsintown Transformer', () => {
      */
     test( 'filters based on UTC calendar days regardless of local timezone', () => {
       const twoDaysAgo = getUtcDateDaysAgo( 2 );
-      const event1 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
+      const event1 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 0 ], {
         'startDate': `${twoDaysAgo}T00:00:00Z`
       } );
-      const event2 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
+      const event2 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 1 ], {
         'startDate': `${twoDaysAgo}T12:00:00Z`
       } );
-      const event3 = fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
+      const event3 = mf.testing.fixtureModifier.modifyFixture( fixtureVulvodynia[ 2 ], {
         'startDate': `${twoDaysAgo}T23:59:59Z`
       } );
       const events = [ event1, event2, event3 ];
