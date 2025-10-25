@@ -9,7 +9,7 @@
   require( 'dotenv' ).config();
   require( './app' );
   require( './services/database' );
-  const cacheUpdater = require( './services/cacheUpdater' );
+  require( './services/cacheUpdater' );
 
   const PORT = process.env.PORT || 3000;
 
@@ -30,7 +30,7 @@
       console.log( 'Connected to MongoDB successfully' );
 
       // Start background cache update cycle (fire-and-forget)
-      cacheUpdater.start().catch( ( error ) => {
+      mf.cacheUpdater.start().catch( ( error ) => {
         console.error( 'Cache updater crashed:', error.message );
       } );
     } catch ( error ) {

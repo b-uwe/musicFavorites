@@ -8,8 +8,6 @@
 jest.mock( '../../../services/database' );
 
 describe( 'cacheUpdater - Unit Tests', () => {
-  let cacheUpdater;
-
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
@@ -26,7 +24,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     require( '../../../services/artistService' );
     mf.artistService.fetchAndEnrichArtistData = jest.fn();
 
-    cacheUpdater = require( '../../../services/cacheUpdater' );
+    require( '../../../services/cacheUpdater' );
   } );
 
   afterEach( () => {
@@ -44,7 +42,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       } );
       mf.database.cacheArtist.mockResolvedValue();
 
-      await cacheUpdater.updateAct( 'test-id' );
+      await mf.cacheUpdater.updateAct( 'test-id' );
 
       expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'test-id', true );
     } );
@@ -56,7 +54,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      await cacheUpdater.updateAct( 'test-id' );
+      await mf.cacheUpdater.updateAct( 'test-id' );
 
       // Second parameter should be true (silent event failures)
       expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'test-id', true );
@@ -75,7 +73,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
       mf.database.cacheArtist.mockResolvedValue();
 
-      await cacheUpdater.updateAct( 'test-id' );
+      await mf.cacheUpdater.updateAct( 'test-id' );
 
       expect( mf.database.cacheArtist ).toHaveBeenCalledWith( mockData );
     } );
@@ -89,7 +87,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockRejectedValue( new Error( 'Fetch failed' ) );
 
       // Should not throw
-      await expect( cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
+      await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
 
       expect( consoleErrorSpy ).toHaveBeenCalledWith(
         expect.stringContaining( 'Failed to update act test-id' ),
@@ -109,7 +107,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.database.cacheArtist.mockRejectedValue( new Error( 'Cache failed' ) );
 
       // Should not throw
-      await expect( cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
+      await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
 
       expect( consoleErrorSpy ).toHaveBeenCalled();
 
@@ -126,7 +124,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
 
-      await cacheUpdater.runSequentialUpdate();
+      await mf.cacheUpdater.runSequentialUpdate();
 
       expect( mf.database.getAllActsWithMetadata ).toHaveBeenCalled();
 
@@ -139,7 +137,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'returns 0 when cache is empty', async () => {
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
 
-      const result = await cacheUpdater.runSequentialUpdate();
+      const result = await mf.cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
     } );
@@ -158,7 +156,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
         }
       ] );
 
-      const result = await cacheUpdater.runSequentialUpdate();
+      const result = await mf.cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
       expect( mf.artistService.fetchAndEnrichArtistData ).not.toHaveBeenCalled();
@@ -180,7 +178,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runSequentialUpdate();
+      const promise = mf.cacheUpdater.runSequentialUpdate();
 
       await jest.runAllTimersAsync();
 
@@ -210,7 +208,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runSequentialUpdate();
+      const promise = mf.cacheUpdater.runSequentialUpdate();
 
       await jest.runAllTimersAsync();
 
@@ -240,7 +238,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runSequentialUpdate();
+      const promise = mf.cacheUpdater.runSequentialUpdate();
 
       // Fast-forward through all timers to completion
       await jest.runAllTimersAsync();
@@ -262,7 +260,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       mf.database.getAllActsWithMetadata.mockRejectedValue( new Error( 'DB error' ) );
 
-      const result = await cacheUpdater.runSequentialUpdate();
+      const result = await mf.cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
       expect( consoleErrorSpy ).toHaveBeenCalledWith(
@@ -279,7 +277,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that start is a function
      */
     test( 'is exported as a function', () => {
-      expect( typeof cacheUpdater.start ).toBe( 'function' );
+      expect( typeof mf.cacheUpdater.start ).toBe( 'function' );
     } );
 
     /**
@@ -292,7 +290,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
 
       // Pass undefined for cycleIntervalMs to test the ?? operator
-      cacheUpdater.start( { 'cycleIntervalMs': undefined } );
+      mf.cacheUpdater.start( { 'cycleIntervalMs': undefined } );
 
       // Should call runSequentialUpdate once
       await jest.advanceTimersByTimeAsync( 1000 );
@@ -310,7 +308,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getAllActIds.mockResolvedValue( [] );
 
-      cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
+      mf.cacheUpdater.start( { 'cycleIntervalMs': 1000 } );
 
       // Let runSequentialUpdate complete
       await jest.advanceTimersByTimeAsync( 1000 );
@@ -339,7 +337,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that sleep is exported when running under Jest
      */
     test( 'is exported when JEST_WORKER_ID is set', () => {
-      expect( typeof cacheUpdater.sleep ).toBe( 'function' );
+      expect( typeof mf.testing.cacheUpdater.sleep ).toBe( 'function' );
     } );
 
     /**
@@ -348,7 +346,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'resolves after specified milliseconds', async () => {
       jest.useFakeTimers();
 
-      const promise = cacheUpdater.sleep( 5000 );
+      const promise = mf.testing.cacheUpdater.sleep( 5000 );
 
       // Should not resolve immediately
       await jest.advanceTimersByTimeAsync( 4999 );
@@ -367,7 +365,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runCycle is exported when running under Jest
      */
     test( 'is exported when JEST_WORKER_ID is set', () => {
-      expect( typeof cacheUpdater.runCycle ).toBe( 'function' );
+      expect( typeof mf.testing.cacheUpdater.runCycle ).toBe( 'function' );
     } );
 
     /**
@@ -378,7 +376,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       mf.database.getAllActIds.mockResolvedValue( [] );
 
-      const promise = cacheUpdater.runCycle( 10000, 5000 );
+      const promise = mf.testing.cacheUpdater.runCycle( 10000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -398,7 +396,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runCycle( 30000, 5000 );
+      const promise = mf.testing.cacheUpdater.runCycle( 30000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -421,7 +419,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runCycle( 10000, 5000 );
+      const promise = mf.testing.cacheUpdater.runCycle( 10000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -442,7 +440,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       mf.database.getAllActIds.mockRejectedValue( new Error( 'DB error' ) );
 
-      const promise = cacheUpdater.runCycle( 10000, 5000 );
+      const promise = mf.testing.cacheUpdater.runCycle( 10000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -471,7 +469,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
         mockResolvedValueOnce( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = cacheUpdater.runCycle( 30000, 5000 );
+      const promise = mf.testing.cacheUpdater.runCycle( 30000, 5000 );
 
       await jest.runAllTimersAsync();
       await promise;
