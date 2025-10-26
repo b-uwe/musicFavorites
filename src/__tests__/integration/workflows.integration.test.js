@@ -42,16 +42,20 @@ describe( 'Real-World Workflow Integration Tests', () => {
   } );
 
   /**
-   * Test complete workflow: cache miss → background fetch → cache hit
+   * Test complete workflow: cache miss → synchronous fetch → cache hit
    */
-  test( 'workflow: first request misses cache, triggers background fetch, second request hits cache', async () => {
-    // First request: cache miss (returns null, triggers 503 for single act with background fetch)
+  test( 'workflow: first request misses cache, fetches synchronously, second request hits cache', async () => {
+    // First request: cache miss, MusicBrainz returns data
     mf.database.getArtistFromCache.mockResolvedValueOnce( null );
+    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
 
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
-    // Single act missing returns 503 and triggers background fetch
-    expect( [ 500, 503 ] ).toContain( response1.status );
+    // Single missing act should fetch synchronously and return 200 with data
+    expect( response1.status ).toBe( 200 );
+    expect( response1.body.acts ).toHaveLength( 1 );
+    expect( response1.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
+    expect( response1.body.acts[ 0 ].name ).toBe( fixtureTheKinks.name );
 
     // Second request: cache hit
     const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
@@ -61,7 +65,7 @@ describe( 'Real-World Workflow Integration Tests', () => {
 
     const response2 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
-    // Should return success
+    // Should return success from cache
     expect( response2.status ).toBe( 200 );
     expect( response2.body.acts ).toHaveLength( 1 );
     expect( response2.body.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
