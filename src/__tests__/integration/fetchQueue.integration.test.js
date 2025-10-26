@@ -261,4 +261,85 @@ describe( 'Fetch Queue Integration Tests', () => {
 
     jest.useRealTimers();
   }, 10000 );
+
+  /**
+   * Test queue handles large number of acts
+   */
+  test( 'triggerBackgroundFetch handles many acts queued at once', async () => {
+    jest.useFakeTimers();
+
+    // Queue 10 acts at once
+    const manyActIds = Array.from( { 'length': 10 }, ( _, i ) => `act-id-${i}` );
+
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheArtist.mockResolvedValue();
+
+    // Trigger background fetch with many IDs
+    mf.fetchQueue.triggerBackgroundFetch( manyActIds );
+
+    // Advance time to process all (10 × 30s = 300s)
+    await jest.advanceTimersByTimeAsync( 300000 );
+
+    // All should be processed
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 10 );
+    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 10 );
+
+    jest.useRealTimers();
+  }, 15000 );
+
+  /**
+   * Test queue state management across concurrent API requests
+   */
+  test( 'queue maintains state correctly during concurrent requests', async () => {
+    jest.useFakeTimers();
+
+    const actIds1 = [ fixtureTheKinks.id ];
+    const actIds2 = [ fixtureVulvodynia.id ];
+
+    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheArtist.mockResolvedValue();
+
+    // Simulate two concurrent API requests
+    const request1 = mf.artistService.fetchMultipleActs( actIds1 );
+    const request2 = mf.artistService.fetchMultipleActs( actIds2 );
+
+    await Promise.all( [ request1, request2 ] );
+
+    // Advance time to process both
+    await jest.advanceTimersByTimeAsync( 60000 );
+
+    // Both should be added to queue and processed
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+
+    jest.useRealTimers();
+  }, 10000 );
+
+  /**
+   * Test duplicate IDs in queue are handled
+   */
+  test( 'triggerBackgroundFetch deduplicates IDs in queue', async () => {
+    jest.useFakeTimers();
+
+    const duplicateIds = [
+      fixtureTheKinks.id,
+      fixtureTheKinks.id,
+      fixtureTheKinks.id
+    ];
+
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheArtist.mockResolvedValue();
+
+    // Trigger with duplicate IDs
+    mf.fetchQueue.triggerBackgroundFetch( duplicateIds );
+
+    // Advance time
+    await jest.advanceTimersByTimeAsync( 60000 );
+
+    // Should only fetch once (queue deduplicates)
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 1 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
+
+    jest.useRealTimers();
+  }, 10000 );
 } );

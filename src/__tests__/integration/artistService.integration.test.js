@@ -32,6 +32,10 @@ describe( 'Artist Service Integration Tests', () => {
     mf.musicbrainz.fetchArtist = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
     mf.database.cacheArtist = jest.fn().mockResolvedValue();
+    mf.database.getArtistFromCache = jest.fn();
+    mf.database.connect = jest.fn().mockResolvedValue();
+    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
+    mf.fetchQueue.triggerBackgroundFetch = jest.fn();
   } );
 
   /**
@@ -140,5 +144,111 @@ describe( 'Artist Service Integration Tests', () => {
      * This tests that bandsintownTransformer.filterPastEvents is called
      */
     expect( events ).toEqual( [] );
+  } );
+
+  /**
+   * Test MusicBrainz API failure during live request
+   */
+  test( 'fetchAndEnrichArtistData handles MusicBrainz API failures', async () => {
+    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz API rate limit exceeded' ) );
+
+    await expect( mf.artistService.fetchAndEnrichArtistData( fixtureVulvodynia.id, false ) ).rejects.toThrow( 'MusicBrainz API rate limit exceeded' );
+  } );
+
+  /**
+   * Test partial failures in multi-act fetches
+   */
+  test( 'fetchMultipleActs throws service error on partial cache failures', async () => {
+    const actIds = [
+      fixtureVulvodynia.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'f35e1992-230b-4d63-9e63-a829caccbcd5'
+    ];
+
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    transformedArtist.events = [];
+
+    // Any failure in cache read will trigger SVC_002
+    mf.database.getArtistFromCache = jest.fn().mockRejectedValue( new Error( 'Cache read failed' ) );
+
+    // Should throw SVC_002 error
+    await expect( mf.artistService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
+  } );
+
+  /**
+   * Test staleness calculation edge case
+   */
+  test( 'fetchMultipleActs correctly identifies stale data at boundary', async () => {
+    const now = new Date();
+
+    // Exactly 24 hours old (should be stale)
+    const exactlyStaleTimestamp = new Date( now.getTime() - ( 24 * 60 * 60 * 1000 ) );
+
+    // Just under 24 hours old (should be fresh)
+    const barelyFreshTimestamp = new Date( now.getTime() - ( ( 24 * 60 * 60 * 1000 ) - 1000 ) );
+
+    const staleArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    staleArtist.events = [];
+    staleArtist.updatedAt = exactlyStaleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    const freshArtist = {
+      ...staleArtist,
+      '_id': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'updatedAt': barelyFreshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
+    };
+
+    mf.database.getArtistFromCache.
+      mockResolvedValueOnce( staleArtist ).
+      mockResolvedValueOnce( freshArtist );
+
+    const result = await mf.artistService.fetchMultipleActs( [
+      fixtureVulvodynia.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325'
+    ] );
+
+    // Should return success
+    expect( result.acts ).toHaveLength( 2 );
+
+    // Should trigger refresh for stale act only
+    expect( mf.fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ fixtureVulvodynia.id ] );
+  } );
+
+  /**
+   * Test Bandsintown URL extraction failure
+   */
+  test( 'fetchAndEnrichArtistData handles artists without Bandsintown URL', async () => {
+    const artistWithoutBandsintown = {
+      ...fixtureVulvodynia,
+      'relations': fixtureVulvodynia.relations.filter( ( rel ) => rel.type !== 'bandsintown' )
+    };
+
+    mf.musicbrainz.fetchArtist.mockResolvedValue( artistWithoutBandsintown );
+
+    const result = await mf.artistService.fetchAndEnrichArtistData(
+      artistWithoutBandsintown.id,
+      false
+    );
+
+    // Should still return transformed data
+    expect( result._id ).toBe( artistWithoutBandsintown.id );
+
+    // But events should be empty
+    expect( result.events ).toEqual( [] );
+
+    // LD+JSON extractor should not be called
+    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+  } );
+
+  /**
+   * Test Bandsintown events fetch failure
+   */
+  test( 'fetchBandsintownEvents handles HTTP errors gracefully', async () => {
+    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    mf.ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'HTTP request timeout' ) );
+
+    await expect( mf.artistService.fetchBandsintownEvents( artist, false ) ).rejects.toThrow( 'HTTP request timeout' );
   } );
 } );
