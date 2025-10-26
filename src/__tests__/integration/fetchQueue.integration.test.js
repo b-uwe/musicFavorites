@@ -41,11 +41,6 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
   } );
 
-  afterEach( () => {
-    // Ensure fake timers are always reset to prevent Jest hanging
-    jest.useRealTimers();
-  } );
-
   /**
    * Test that triggerBackgroundFetch can call fetchAndEnrichArtistData without circular dependency errors
    */
@@ -74,6 +69,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
 
+    // Reset timers to restore normal timing
     jest.useRealTimers();
   }, 10000 );
 
@@ -81,6 +77,8 @@ describe( 'Fetch Queue Integration Tests', () => {
    * Test that fetchMultipleActs can trigger triggerBackgroundFetch for background fetching
    */
   test( 'fetchMultipleActs triggers background fetch via triggerBackgroundFetch', async () => {
+    jest.useFakeTimers();
+
     const actIds = [
       fixtureTheKinks.id,
       fixtureVulvodynia.id,
@@ -104,6 +102,13 @@ describe( 'Fetch Queue Integration Tests', () => {
 
     // Verify triggerBackgroundFetch function exists
     expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
+
+    /*
+     * Advance timers to allow background operations to complete
+     * 3 acts × 30s = 90s
+     */
+    await jest.advanceTimersByTimeAsync( 90000 );
+    jest.useRealTimers();
   } );
 
   /**
