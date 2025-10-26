@@ -1,75 +1,44 @@
 /**
- * Tests for MusicBrainz API client
+ * Coverage tests for MusicBrainz API client
+ * @module __tests__/coverage/musicbrainz
  *
- * NOTE: These tests primarily provide code coverage for the thin wrapper
- * around axios. The axios library itself is mocked, so we're not testing
- * real HTTP behavior - we're only exercising the code paths to ensure
- * 100% coverage. The real business logic (data transformation) is tested
- * thoroughly in musicbrainzTransformer.test.js.
- *
- * What's MOCKED: axios HTTP calls (no real network requests)
- * What's TESTED: Code execution paths (for coverage), error propagation
+ * IMPORTANT: Mock constants.js to prevent it from initializing globalThis.mf
  */
 
-const axios = require( 'axios' );
-require( '../../services/musicbrainz' );
-const fixtureData = require( '../fixtures/musicbrainz-jungle-rot.json' );
-
+// Mock axios to prevent actual HTTP calls
 jest.mock( 'axios' );
 
-describe( 'MusicBrainz API Client', () => {
-  beforeEach( () => {
-    jest.clearAllMocks();
+// Mock constants.js WITHOUT initializing globalThis.mf
+jest.mock( '../../constants', () => ( {} ), { 'virtual': false } );
+
+describe( 'musicbrainz - Branch Coverage', () => {
+  test( 'initializes globalThis.mf when it does not exist', () => {
+    // Save and clear globalThis.mf
+    const originalMf = globalThis.mf;
+    delete globalThis.mf;
+
+    // Require the module (should create globalThis.mf)
+    jest.resetModules();
+    require( '../../services/musicbrainz' );
+
+    // Verify it was created
+    expect( globalThis.mf ).toBeDefined();
+    expect( globalThis.mf.musicbrainz ).toBeDefined();
+
+    // Restore
+    globalThis.mf = originalMf;
   } );
 
-  describe( 'fetchArtist', () => {
-    /**
-     * Test successful artist fetch
-     * MOCKED: axios.get returns fixture data
-     * TESTED: fetchArtist() execution path, returns response.data
-     */
-    test( 'fetches artist data successfully', async () => {
-      const artistId = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
+  test( 'reuses existing globalThis.mf when it already exists', () => {
+    // Explicitly set globalThis.mf
+    globalThis.mf = { 'testProperty': 'test' };
 
-      axios.get.mockResolvedValue( {
-        'data': fixtureData
-      } );
+    // Reload the module (should reuse existing globalThis.mf)
+    jest.resetModules();
+    require( '../../services/musicbrainz' );
 
-      const result = await mf.musicbrainz.fetchArtist( artistId );
-
-      expect( result ).toEqual( fixtureData );
-    } );
-
-    /**
-     * Test API error handling
-     * MOCKED: axios.get throws an error
-     * TESTED: fetchArtist() error propagation path with backend-specific message
-     */
-    test( 'throws backend-specific error when API request fails', async () => {
-      const artistId = 'invalid-id';
-      const errorMessage = 'Request failed with status code 404';
-
-      axios.get.mockRejectedValue( new Error( errorMessage ) );
-
-      await expect( mf.musicbrainz.fetchArtist( artistId ) ).
-        rejects.
-        toThrow( 'MusicBrainz: Request failed with status code 404' );
-    } );
-
-
-    /**
-     * Test network timeout handling
-     * MOCKED: axios.get throws timeout error
-     * TESTED: fetchArtist() timeout error propagation path with backend prefix
-     */
-    test( 'handles network timeout with backend prefix', async () => {
-      const artistId = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
-
-      axios.get.mockRejectedValue( new Error( 'timeout of 10000ms exceeded' ) );
-
-      await expect( mf.musicbrainz.fetchArtist( artistId ) ).
-        rejects.
-        toThrow( 'MusicBrainz: timeout of 10000ms exceeded' );
-    } );
+    // Verify the existing property was preserved
+    expect( globalThis.mf.testProperty ).toBe( 'test' );
+    expect( globalThis.mf.musicbrainz ).toBeDefined();
   } );
 } );

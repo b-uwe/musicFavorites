@@ -18,6 +18,8 @@ require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
+require( '../../services/fetchQueue' );
+require( '../../services/cacheUpdater' );
 require( '../../services/artistService' );
 require( '../../app' );
 
@@ -34,6 +36,9 @@ describe( 'Express App Integration Tests', () => {
     // Mock external HTTP calls
     mf.musicbrainz.fetchArtist = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+
+    // Mock fetchQueue and cacheUpdater
+    mf.fetchQueue.triggerBackgroundFetch = jest.fn();
   } );
 
   /**
@@ -41,10 +46,12 @@ describe( 'Express App Integration Tests', () => {
    */
   test( 'GET /acts/:id returns cached artist through full workflow', async () => {
     const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const now = new Date();
+    const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
 
     transformedArtist.events = [];
     transformedArtist.status = 'disbanded';
-    transformedArtist.updatedAt = '2025-01-01 12:00:00';
+    transformedArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
     // Mock cache hit
     mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
@@ -62,8 +69,10 @@ describe( 'Express App Integration Tests', () => {
 
     // Verify workflow
     expect( mf.database.getArtistFromCache ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    // Should not fetch if cached
+    // Should not fetch immediately if cached with fresh data
     expect( mf.musicbrainz.fetchArtist ).not.toHaveBeenCalled();
+    // Should not trigger background refresh for fresh data
+    expect( mf.fetchQueue.triggerBackgroundFetch ).not.toHaveBeenCalled();
   } );
 
 
