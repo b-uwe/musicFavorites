@@ -99,11 +99,20 @@
     triggerBackgroundFetch
   };
 
-  // Expose private functions for unit testing when running under Jest
+  // Expose private functions and state for unit testing when running under Jest
   if ( process.env.JEST_WORKER_ID ) {
     globalThis.mf.testing = globalThis.mf.testing || {};
     globalThis.mf.testing.fetchQueue = {
-      processFetchQueue
+      processFetchQueue,
+      fetchQueue,
+      /**
+       * Sets the background fetch running flag for test isolation
+       * @param {boolean} value - The value to set
+       * @returns {void}
+       */
+      'setIsRunning': ( value ) => {
+        isBackgroundFetchRunning = value;
+      }
     };
   }
 } )();
