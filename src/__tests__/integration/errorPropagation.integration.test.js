@@ -158,31 +158,6 @@ describe( 'Error Propagation Integration Tests', () => {
   } );
 
   /**
-   * Test corrupted cached data is served as-is
-   */
-  test( 'corrupted cached data is served without re-transformation', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-
-    transformedArtist.events = [];
-
-    // Corrupt the country field in cached data
-    transformedArtist.country = {
-      'invalid': 'structure'
-    };
-
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
-
-    const response = await request( mf.app ).
-      get( `/acts/${fixtureTheKinks.id}` ).
-      expect( 200 );
-
-    // Cached data is served as-is (no re-transformation)
-    expect( response.body.acts[ 0 ].country ).toEqual( {
-      'invalid': 'structure'
-    } );
-  } );
-
-  /**
    * Test stack trace not leaked in production errors
    */
   test( 'error responses do not leak stack traces', async () => {

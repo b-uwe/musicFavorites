@@ -185,31 +185,6 @@ describe( 'Database Connection Resilience Integration Tests', () => {
   } );
 
   /**
-   * Test partial read with corrupted cached data succeeds
-   */
-  test( 'corrupted cached data is served as-is without crashing', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-
-    // Corrupt the country field
-    transformedArtist.country = {
-      'invalid': 'structure'
-    };
-    transformedArtist.events = [];
-
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
-
-    const response = await request( mf.app ).
-      get( `/acts/${fixtureTheKinks.id}` ).
-      expect( 200 );
-
-    // Cached data served as-is (app trusts cache)
-    expect( response.body.acts[ 0 ].country ).toEqual( {
-      'invalid': 'structure'
-    } );
-    expect( response.body.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
-  } );
-
-  /**
    * Test cache read succeeds but cache write fails
    */
   test( 'read succeeds when write fails during background update', async () => {

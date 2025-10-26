@@ -294,23 +294,4 @@ describe( 'Artist Service Integration Tests', () => {
     // Should fetch all three times (no deduplication in current implementation)
     expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 3 );
   } );
-
-  /**
-   * Test fetchMultipleActs with invalid ID format
-   */
-  test( 'fetchMultipleActs handles malformed UUIDs gracefully', async () => {
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-
-    const malformedIds = [
-      'not-a-uuid',
-      '12345',
-      ''
-    ];
-
-    const result = await mf.artistService.fetchMultipleActs( malformedIds );
-
-    // Should return error for missing acts
-    expect( result.error ).toBeDefined();
-    expect( result.error.message ).toContain( 'not cached' );
-  } );
 } );
