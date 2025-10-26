@@ -129,4 +129,44 @@ describe( 'Database Integration Tests', () => {
     expect( result.error ).toBeDefined();
     expect( result.error.message ).toContain( '2 acts not cached' );
   } );
+
+  /**
+   * Test handling of corrupted cache data
+   */
+  test( 'handles corrupted cache data gracefully', async () => {
+    // Return malformed artist data
+    mf.database.getArtistFromCache.mockResolvedValue( {
+      // Missing _id
+      'name': 'Corrupted Artist',
+      'status': 'active'
+    } );
+
+    const result = await mf.artistService.fetchMultipleActs( [ fixtureTheKinks.id ] );
+
+    // Should handle gracefully
+    expect( result.error || result.acts ).toBeDefined();
+  } );
+
+  /**
+   * Test cache operations under concurrent load
+   */
+  test( 'handles concurrent cache operations without race conditions', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+
+    // Simulate 10 concurrent requests
+    const concurrentRequests = Array.from( { 'length': 10 }, () => mf.artistService.fetchMultipleActs( [ fixtureTheKinks.id ] ) );
+
+    const results = await Promise.all( concurrentRequests );
+
+    // All should succeed
+    results.forEach( ( result ) => {
+      expect( result.acts ).toHaveLength( 1 );
+      expect( result.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
+    } );
+
+    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 10 );
+  } );
 } );
