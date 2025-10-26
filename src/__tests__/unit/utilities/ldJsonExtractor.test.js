@@ -4,6 +4,11 @@
 
 const fs = require( 'fs' );
 const path = require( 'path' );
+
+// Mock axios before requiring ldJsonExtractor
+jest.mock( 'axios' );
+
+const axios = require( 'axios' );
 require( '../../../services/ldJsonExtractor' );
 
 /**
@@ -130,24 +135,115 @@ describe( 'LD+JSON Extractor', () => {
   } );
 
   describe( 'fetchAndExtractLdJson', () => {
-    test( 'returns empty array for unreachable URL', async () => {
+    beforeEach( () => {
+      jest.clearAllMocks();
+    } );
+
+    /**
+     * Test that network errors are caught and return empty array
+     */
+    test( 'returns empty array for unreachable URL (network error)', async () => {
       const url = 'https://invalid-domain-that-does-not-exist-12345.com';
+
+      // Mock axios to throw network error
+      axios.get.mockRejectedValue( new Error( 'getaddrinfo ENOTFOUND invalid-domain-that-does-not-exist-12345.com' ) );
 
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
+      expect( axios.get ).toHaveBeenCalledWith(
+        url,
+        expect.objectContaining( {
+          'timeout': expect.any( Number ),
+          'headers': expect.objectContaining( {
+            'User-Agent': expect.any( String )
+          } )
+        } )
+      );
     } );
 
+    /**
+     * Test that invalid URLs are caught and return empty array
+     */
     test( 'returns empty array for invalid URL', async () => {
       const url = 'not-a-valid-url';
 
+      // Mock axios to throw invalid URL error
+      axios.get.mockRejectedValue( new Error( 'Invalid URL' ) );
+
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
     } );
 
+    /**
+     * Test that 404 responses are caught and return empty array
+     */
     test( 'returns empty array for 404 response', async () => {
       const url = 'https://www.bandsintown.com/nonexistent-page-12345';
+
+      // Mock axios to throw 404 error
+      const error404 = new Error( 'Request failed with status code 404' );
+
+      error404.response = {
+        'status': 404,
+        'statusText': 'Not Found'
+      };
+      axios.get.mockRejectedValue( error404 );
+
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( result ).toEqual( [] );
+      expect( axios.get ).toHaveBeenCalledWith(
+        url,
+        expect.objectContaining( {
+          'timeout': expect.any( Number )
+        } )
+      );
+    } );
+
+    /**
+     * Test successful fetch and extraction
+     */
+    test( 'fetches URL and extracts LD+JSON successfully', async () => {
+      const url = 'https://example.com/page';
+      const html = '<html><head><script type="application/ld+json">{"@type":"Person","name":"Test"}</script></head></html>';
+
+      axios.get.mockResolvedValue( {
+        'data': html,
+        'status': 200
+      } );
+
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( result ).toEqual( [
+        {
+          '@type': 'Person',
+          'name': 'Test'
+        }
+      ] );
+      expect( axios.get ).toHaveBeenCalledWith(
+        url,
+        expect.objectContaining( {
+          'timeout': expect.any( Number ),
+          'headers': expect.objectContaining( {
+            'User-Agent': expect.any( String )
+          } )
+        } )
+      );
+    } );
+
+    /**
+     * Test that timeout errors are caught and return empty array
+     */
+    test( 'returns empty array for timeout error', async () => {
+      const url = 'https://slow-server.com';
+
+      // Mock axios to throw timeout error
+      const timeoutError = new Error( 'timeout of 10000ms exceeded' );
+
+      timeoutError.code = 'ECONNABORTED';
+      axios.get.mockRejectedValue( timeoutError );
 
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
