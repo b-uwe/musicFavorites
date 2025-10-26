@@ -180,24 +180,49 @@ describe( 'Scalability Integration Tests', () => {
   }, 20000 );
 
   /**
-   * Test queue handles rapid successive additions
+   * Test queue respects 30-second delay between fetches
    */
-  test( 'queue handles 50 rapid successive triggerBackgroundFetch calls', () => {
+  test( 'queue respects 30-second delay between processing acts', async () => {
     jest.useFakeTimers();
 
-    // Rapidly add 50 small batches
-    for ( let i = 0; i < 50; i += 1 ) {
-      mf.fetchQueue.triggerBackgroundFetch( [ `act-${i}` ] );
-    }
+    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheArtist.mockResolvedValue();
 
-    // Queue should contain close to 50 acts (some may have started processing)
-    expect( mf.testing.fetchQueue.fetchQueue.size ).toBeGreaterThan( 45 );
+    // Queue 5 acts
+    const actIds = Array.from( { 'length': 5 }, ( _, i ) => `act-id-${i}` );
 
-    // Processor should have been triggered at least once
-    expect( mf.testing.fetchQueue.fetchQueue.size ).toBeGreaterThan( 0 );
+    mf.fetchQueue.triggerBackgroundFetch( actIds );
+
+    // Allow time for first fetch to start and complete
+    await jest.advanceTimersByTimeAsync( 10 );
+
+    // First act should be processed immediately
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 1 );
+
+    // Fast-forward 15 seconds - second act should NOT be processed yet (needs 30s total)
+    await jest.advanceTimersByTimeAsync( 15000 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 1 );
+
+    // Fast-forward another 15 seconds (total 30s + processing time) - second act should now be processed
+    await jest.advanceTimersByTimeAsync( 15000 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+
+    // Fast-forward 15 seconds - third act should NOT be processed yet
+    await jest.advanceTimersByTimeAsync( 15000 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+
+    // Fast-forward another 15 seconds (total 30s) - third act should now be processed
+    await jest.advanceTimersByTimeAsync( 15000 );
+    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 3 );
+
+    /*
+     * Verify rate: 3 fetches with ~30-second delays between them
+     * Timeline: fetch1 @ 0s, fetch2 @ ~30s, fetch3 @ ~60s
+     * This confirms the 30-second delay is correctly enforced
+     */
 
     jest.useRealTimers();
-  } );
+  }, 10000 );
 
   /**
    * Test queue deduplication with massive duplicates
