@@ -25,6 +25,7 @@ require( '../../app' );
 describe( 'Scalability Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
 
     // Reset fetch queue state
     mf.testing.fetchQueue.fetchQueue.clear();
@@ -37,6 +38,10 @@ describe( 'Scalability Integration Tests', () => {
     mf.database.cacheArtist = jest.fn().mockResolvedValue();
     mf.musicbrainz.fetchArtist = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+  } );
+
+  afterEach( () => {
+    jest.useRealTimers();
   } );
 
   /**
@@ -100,8 +105,6 @@ describe( 'Scalability Integration Tests', () => {
    * Test queue overflow with 500+ acts queued at once
    */
   test( 'background fetch queue handles 500 acts without crashing', async () => {
-    jest.useFakeTimers();
-
     const actIds = Array.from( {
       'length': 500
     }, ( _, i ) => `act-id-${i}` );
@@ -120,8 +123,6 @@ describe( 'Scalability Integration Tests', () => {
 
     // Should have started processing
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
-
-    jest.useRealTimers();
   }, 20000 );
 
   /**
@@ -183,8 +184,6 @@ describe( 'Scalability Integration Tests', () => {
    * Test queue respects 30-second delay between fetches
    */
   test( 'queue respects 30-second delay between processing acts', async () => {
-    jest.useFakeTimers();
-
     mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
     mf.database.cacheArtist.mockResolvedValue();
 
@@ -220,16 +219,12 @@ describe( 'Scalability Integration Tests', () => {
      * Timeline: fetch1 @ 0s, fetch2 @ ~30s, fetch3 @ ~60s
      * This confirms the 30-second delay is correctly enforced
      */
-
-    jest.useRealTimers();
   }, 10000 );
 
   /**
    * Test queue deduplication with massive duplicates
    */
   test( 'queue deduplicates when same 100 acts requested 10 times', () => {
-    jest.useFakeTimers();
-
     const actIds = Array.from( {
       'length': 100
     }, ( _, i ) => `act-id-${i}` );
@@ -241,8 +236,6 @@ describe( 'Scalability Integration Tests', () => {
 
     // Queue should only have 100 unique acts
     expect( mf.testing.fetchQueue.fetchQueue.size ).toBe( 100 );
-
-    jest.useRealTimers();
   } );
 
   /**
