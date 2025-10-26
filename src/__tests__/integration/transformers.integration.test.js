@@ -82,8 +82,6 @@ describe( 'Transformer Integration Tests', () => {
    * Test status determination with and without events
    */
   test( 'events from different dates are transformed correctly', () => {
-    const mbData = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
-
     // Transform future events
     const futureEvents = mf.testing.fixtureModifier.normalizeDates(
       fixtureBandsintownLdJson,

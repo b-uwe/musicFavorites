@@ -51,7 +51,7 @@ describe( 'Database Integration Tests', () => {
    * Test that cache write failures are handled but don't block the response
    */
   test( 'fetchAndEnrichArtistData still returns data even when cache is unavailable', async () => {
-    // fetchAndEnrichArtistData doesn't cache directly - caller does
+    // FetchAndEnrichArtistData doesn't cache directly - caller does
     const result = await mf.artistService.fetchAndEnrichArtistData(
       fixtureTheKinks.id,
       false
@@ -61,7 +61,7 @@ describe( 'Database Integration Tests', () => {
     expect( result._id ).toBe( fixtureTheKinks.id );
     expect( result.name ).toBe( fixtureTheKinks.name );
 
-    // fetchAndEnrichArtistData doesn't cache - verify fetch happened
+    // FetchAndEnrichArtistData doesn't cache - verify fetch happened
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
   } );
 
