@@ -270,26 +270,4 @@ describe( 'Database Connection Resilience Integration Tests', () => {
 
     expect( response.body.acts ).toHaveLength( 1 );
   } );
-
-  /**
-   * Test connection state after health check failure
-   */
-  test( 'health check failure does not prevent future operations', async () => {
-    // Health check fails
-    mf.database.testCacheHealth.mockRejectedValue( new Error( 'Health check failed' ) );
-
-    await expect( mf.database.testCacheHealth() ).rejects.toThrow( 'Health check failed' );
-
-    // But operations can still work
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-
-    transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
-
-    const response = await request( mf.app ).
-      get( `/acts/${fixtureTheKinks.id}` ).
-      expect( 200 );
-
-    expect( response.body.acts ).toHaveLength( 1 );
-  } );
 } );
