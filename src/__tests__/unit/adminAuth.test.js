@@ -23,8 +23,12 @@ describe( 'Admin Authentication Middleware - Unit Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
 
-    // Mock environment variable
-    process.env.ADMIN_TOTP_SECRET = 'test-secret-key';
+    // Mock environment variable with JSON config
+    process.env.ADMIN_TOTP_CONFIG = JSON.stringify( {
+      'secret': 'test-secret-key',
+      'encoding': 'base32',
+      'window': 1
+    } );
 
     // Setup mock request, response, next
     mockReq = {
@@ -38,21 +42,36 @@ describe( 'Admin Authentication Middleware - Unit Tests', () => {
   } );
 
   afterEach( () => {
-    delete process.env.ADMIN_TOTP_SECRET;
+    delete process.env.ADMIN_TOTP_CONFIG;
   } );
 
-  describe( 'Missing TOTP secret configuration', () => {
+  describe( 'Missing TOTP configuration', () => {
     /**
-     * Test that middleware fails when ADMIN_TOTP_SECRET is not configured
+     * Test that middleware fails when ADMIN_TOTP_CONFIG is not configured
      */
-    test( 'returns 500 when ADMIN_TOTP_SECRET is not set', () => {
-      delete process.env.ADMIN_TOTP_SECRET;
+    test( 'returns 500 when ADMIN_TOTP_CONFIG is not set', () => {
+      delete process.env.ADMIN_TOTP_CONFIG;
 
       mf.adminAuth( mockReq, mockRes, mockNext );
 
       expect( mockRes.status ).toHaveBeenCalledWith( 500 );
       expect( mockRes.json ).toHaveBeenCalledWith( {
         'error': 'Admin authentication not configured'
+      } );
+      expect( mockNext ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that middleware fails when ADMIN_TOTP_CONFIG has invalid JSON
+     */
+    test( 'returns 500 when ADMIN_TOTP_CONFIG is invalid JSON', () => {
+      process.env.ADMIN_TOTP_CONFIG = '{invalid json}';
+
+      mf.adminAuth( mockReq, mockRes, mockNext );
+
+      expect( mockRes.status ).toHaveBeenCalledWith( 500 );
+      expect( mockRes.json ).toHaveBeenCalledWith( {
+        'error': 'Admin authentication misconfigured'
       } );
       expect( mockNext ).not.toHaveBeenCalled();
     } );
@@ -94,6 +113,21 @@ describe( 'Admin Authentication Middleware - Unit Tests', () => {
      */
     test( 'returns 401 when Bearer token is empty', () => {
       mockReq.headers.authorization = 'Bearer ';
+
+      mf.adminAuth( mockReq, mockRes, mockNext );
+
+      expect( mockRes.status ).toHaveBeenCalledWith( 401 );
+      expect( mockRes.json ).toHaveBeenCalledWith( {
+        'error': 'Unauthorized'
+      } );
+      expect( mockNext ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that middleware fails when Bearer token is only whitespace
+     */
+    test( 'returns 401 when Bearer token is only whitespace', () => {
+      mockReq.headers.authorization = 'Bearer    ';
 
       mf.adminAuth( mockReq, mockRes, mockNext );
 

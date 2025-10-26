@@ -34,7 +34,11 @@ npm install
 The following environment variables are required:
 
 - `MONGODB_URI` - MongoDB connection string
-- `ADMIN_TOTP_SECRET` - Base32-encoded secret for TOTP (Time-based One-Time Password) authentication on admin endpoints. Generate using an authenticator app like Aegis, Google Authenticator, or Authy.
+- `ADMIN_TOTP_CONFIG` - JSON object containing TOTP configuration for admin authentication. Example:
+  ```json
+  {"secret":"YOUR_BASE32_SECRET","encoding":"base32","window":1,"step":180,"algorithm":"sha256"}
+  ```
+  Compatible with authenticator apps like Aegis, Google Authenticator, or Authy. The `step` parameter defines the time window in seconds (180 = 3 minutes), and `window` allows for clock drift tolerance.
 
 ### Running the API
 

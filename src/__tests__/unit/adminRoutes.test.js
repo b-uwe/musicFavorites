@@ -131,9 +131,9 @@ describe( 'Admin Routes - Unit Tests', () => {
     } );
 
     /**
-     * Test last cache update time with updated acts
+     * Test last cache update time with updated acts in ascending order
      */
-    test( 'returns most recent cache update time', async () => {
+    test( 'returns most recent cache update time with ascending dates', async () => {
       mockGetAllActIds.mockResolvedValue( [ 'act1', 'act2' ] );
       mockGetAllActsWithMetadata.
         mockResolvedValue( [
@@ -144,6 +144,31 @@ describe( 'Admin Routes - Unit Tests', () => {
           {
             '_id': 'act2',
             'updatedAt': '2025-01-01 12:00:00'
+          }
+        ] );
+
+      const response = await request( app ).
+        get( '/admin/health' ).
+        expect( 200 );
+
+      expect( response.body.lastCacheUpdate ).
+        toBe( '2025-01-01 12:00:00' );
+    } );
+
+    /**
+     * Test last cache update time with updated acts in descending order
+     */
+    test( 'returns most recent cache update time with descending dates', async () => {
+      mockGetAllActIds.mockResolvedValue( [ 'act1', 'act2' ] );
+      mockGetAllActsWithMetadata.
+        mockResolvedValue( [
+          {
+            '_id': 'act1',
+            'updatedAt': '2025-01-01 12:00:00'
+          },
+          {
+            '_id': 'act2',
+            'updatedAt': '2025-01-01 10:00:00'
           }
         ] );
 

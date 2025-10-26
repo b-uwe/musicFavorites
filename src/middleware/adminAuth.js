@@ -28,18 +28,28 @@
 
   /**
    * Middleware to authenticate admin requests using TOTP
-   * Validates Bearer token in Authorization header against TOTP secret
+   * Validates Bearer token in Authorization header against TOTP config
    * @param {object} req - Express request object
    * @param {object} res - Express response object
    * @param {Function} next - Express next middleware function
    * @returns {object|void} Returns 401 response if unauthorized, calls next() if authorized
    */
   const adminAuth = ( req, res, next ) => {
-    const totpSecret = process.env.ADMIN_TOTP_SECRET;
+    const totpConfigJson = process.env.ADMIN_TOTP_CONFIG;
 
-    if ( !totpSecret ) {
+    if ( !totpConfigJson ) {
       return res.status( 500 ).json( {
         'error': 'Admin authentication not configured'
+      } );
+    }
+
+    let totpConfig;
+
+    try {
+      totpConfig = JSON.parse( totpConfigJson );
+    } catch ( error ) {
+      return res.status( 500 ).json( {
+        'error': 'Admin authentication misconfigured'
       } );
     }
 
@@ -60,10 +70,8 @@
     }
 
     const verified = speakeasy.totp.verify( {
-      'secret': totpSecret,
-      'encoding': 'base32',
-      token,
-      'window': 1
+      ...totpConfig,
+      token
     } );
 
     if ( !verified ) {
