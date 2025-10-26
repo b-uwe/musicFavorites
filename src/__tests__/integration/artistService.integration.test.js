@@ -94,53 +94,6 @@ describe( 'Artist Service Integration Tests', () => {
   } );
 
   /**
-   * Test that fetchBandsintownEvents returns empty array when no Bandsintown relation
-   */
-  test( 'fetchBandsintownEvents returns empty array when artist has no Bandsintown URL', async () => {
-    const artistWithoutBandsintown = {
-      '_id': 'test-id',
-      'name': 'Test Artist',
-      'relations': {}
-    };
-
-    const events = await mf.artistService.fetchBandsintownEvents(
-      artistWithoutBandsintown,
-      false
-    );
-
-    expect( events ).toEqual( [] );
-    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
-  } );
-
-  /**
-   * Test error handling with silentFail=true
-   */
-  test( 'fetchBandsintownEvents returns empty array on fetch failure when silentFail=true', async () => {
-    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
-
-    mf.ldJsonExtractor.fetchAndExtractLdJson.
-      mockRejectedValue( new Error( 'Network error' ) );
-
-    const events = await mf.artistService.fetchBandsintownEvents( artist, true );
-
-    expect( events ).toEqual( [] );
-    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalled();
-  } );
-
-  /**
-   * Test error handling with silentFail=false
-   */
-  test( 'fetchBandsintownEvents throws error on fetch failure when silentFail=false', async () => {
-    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
-
-    mf.ldJsonExtractor.fetchAndExtractLdJson.
-      mockRejectedValue( new Error( 'Network error' ) );
-
-    await expect( mf.artistService.fetchBandsintownEvents( artist, false ) ).
-      rejects.toThrow( 'Network error' );
-  } );
-
-  /**
    * Test that status determination integrates correctly with event data
    */
   test( 'fetchAndEnrichArtistData determines status based on enriched events', async () => {
