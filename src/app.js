@@ -82,6 +82,7 @@
       } );
     } catch ( error ) {
       return res.status( 500 ).json( {
+        'meta': META,
         'type': 'error',
         'error': {
           'message': 'Failed to fetch artist data',
