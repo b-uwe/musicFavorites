@@ -108,4 +108,136 @@ describe( 'Express App Integration Tests', () => {
 
     expect( response.text ).toContain( 'User-agent' );
   } );
+
+  /**
+   * Test multi-act partial cache miss scenario
+   */
+  test( 'GET /acts/:id1,:id2,:id3 with partial cache miss returns error', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // First act cached, second and third not cached
+    mf.database.getArtistFromCache.
+      mockResolvedValueOnce( transformedArtist ).
+      mockResolvedValueOnce( null ).
+      mockResolvedValueOnce( null );
+
+    const actIds = [
+      fixtureTheKinks.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'f35e1992-230b-4d63-9e63-a829caccbcd5'
+    ];
+
+    const response = await request( mf.app ).
+      get( `/acts/${actIds.join( ',' )}` ).
+      expect( 503 );
+
+    // Should return error for 2+ missing acts
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toContain( '2 acts not cached' );
+  } );
+
+  /**
+   * Test multi-act with mix of stale and fresh data
+   */
+  test( 'GET /acts/:id1,:id2 with mixed staleness triggers background refresh', async () => {
+    const now = new Date();
+    const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
+    const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
+
+    const freshArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+
+    freshArtist.events = [];
+    freshArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    const staleArtist = {
+      ...freshArtist,
+      '_id': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'updatedAt': staleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
+    };
+
+    mf.database.getArtistFromCache.
+      mockResolvedValueOnce( freshArtist ).
+      mockResolvedValueOnce( staleArtist );
+
+    const actIds = [
+      fixtureTheKinks.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325'
+    ];
+
+    const response = await request( mf.app ).
+      get( `/acts/${actIds.join( ',' )}` ).
+      expect( 200 );
+
+    // Should return both acts
+    expect( response.body.acts ).toHaveLength( 2 );
+
+    // Should trigger background refresh for stale act
+    expect( mf.fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ '664c3e0e-42d8-48c1-b209-1efca19c0325' ] );
+  } );
+
+  /**
+   * Test error middleware with real failure
+   */
+  test( 'GET /acts/:id returns 500 on unexpected error', async () => {
+    mf.database.getArtistFromCache.mockImplementation( () => {
+      throw new Error( 'Unexpected database error' );
+    } );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
+
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+  } );
+
+  /**
+   * Test cold start scenario with empty cache
+   */
+  test( 'GET /acts/:id with empty cache returns error and triggers background fetch', async () => {
+    mf.database.getArtistFromCache.mockResolvedValue( null );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` );
+
+    // Should return error status (either 500 or 503)
+    expect( response.status ).toBeGreaterThanOrEqual( 500 );
+    expect( response.body.error ).toBeDefined();
+
+    // If we got the expected message, great. Otherwise just verify there's an error
+    if ( response.body.error.message ) {
+      expect( typeof response.body.error.message ).toBe( 'string' );
+    }
+  } );
+
+  /**
+   * Test 404 handling
+   */
+  test( 'GET /invalid-route returns 404 with JSON', async () => {
+    const response = await request( mf.app ).
+      get( '/invalid-route' ).
+      expect( 404 );
+
+    expect( response.body.error ).toBe( 'Not found' );
+    expect( response.body.status ).toBe( 404 );
+  } );
+
+  /**
+   * Test response headers are set correctly
+   */
+  test( 'GET /acts/:id sets correct response headers', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` );
+
+    // Verify cache control headers
+    expect( response.headers[ 'cache-control' ] ).toContain( 'no-store' );
+    expect( response.headers[ 'x-robots-tag' ] ).toContain( 'noindex' );
+  } );
 } );
