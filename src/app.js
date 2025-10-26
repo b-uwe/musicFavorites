@@ -9,8 +9,13 @@
   const express = require( 'express' );
   const path = require( 'path' );
   require( './services/artistService' );
+  require( './middleware/requestStats' );
+  require( './routes/admin' );
 
   const app = express();
+
+  // Track request statistics
+  app.use( mf.requestStats.middleware );
 
   /**
    * Standard meta object for all API responses
@@ -43,6 +48,9 @@
     res.set( 'Pragma', 'no-cache' );
     res.set( 'Expires', '0' );
   };
+
+  // Mount admin routes
+  app.use( '/admin', mf.adminRoutes );
 
   /**
    * Get information about one or more music acts

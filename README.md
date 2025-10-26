@@ -29,6 +29,13 @@ cd music-favorites-api
 npm install
 ```
 
+### Environment Variables
+
+The following environment variables are required:
+
+- `MONGODB_URI` - MongoDB connection string
+- `ADMIN_TOTP_SECRET` - Base32-encoded secret for TOTP (Time-based One-Time Password) authentication on admin endpoints. Generate using an authenticator app like Aegis, Google Authenticator, or Authy.
+
 ### Running the API
 
 ```bash
