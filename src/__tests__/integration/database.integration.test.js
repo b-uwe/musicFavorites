@@ -22,6 +22,7 @@ require( '../../services/artistService' );
 describe( 'Database Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
 
     // Default mocks for database health
     mf.database.connect = jest.fn().mockResolvedValue();
@@ -32,6 +33,10 @@ describe( 'Database Integration Tests', () => {
     // Default mocks for external services
     mf.musicbrainz.fetchArtist = jest.fn().mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+  } );
+
+  afterEach( () => {
+    jest.useRealTimers();
   } );
 
   /**
