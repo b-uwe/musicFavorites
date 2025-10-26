@@ -120,6 +120,47 @@ describe( 'database - Unit Tests', () => {
       // But ping called twice
       expect( mockDb.command ).toHaveBeenCalledTimes( 2 );
     } );
+
+    /**
+     * Test resets client on ping failure to allow retry
+     */
+    test( 'resets client on ping failure to allow retry', async () => {
+      mockDb.command.mockResolvedValueOnce( { 'ok': 0 } );
+
+      // First attempt fails
+      await expect( mf.database.connect() ).
+        rejects.
+        toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
+
+      // Set up successful connection for retry
+      mockDb.command.mockResolvedValueOnce( { 'ok': 1 } );
+
+      // Second attempt should succeed (not blocked by failed client)
+      await expect( mf.database.connect() ).resolves.not.toThrow();
+      expect( mockClient.connect ).toHaveBeenCalledTimes( 2 );
+    } );
+
+    /**
+     * Test resets client on connection failure to allow retry
+     */
+    test( 'resets client on connection failure to allow retry', async () => {
+      const error = new Error( 'Connection failed' );
+
+      mockClient.connect.mockRejectedValueOnce( error );
+
+      // First attempt fails
+      await expect( mf.database.connect() ).
+        rejects.
+        toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_011)' );
+
+      // Set up successful connection for retry
+      mockClient.connect.mockResolvedValueOnce();
+      mockDb.command.mockResolvedValueOnce( { 'ok': 1 } );
+
+      // Second attempt should succeed (not blocked by failed client)
+      await expect( mf.database.connect() ).resolves.not.toThrow();
+      expect( mockClient.connect ).toHaveBeenCalledTimes( 2 );
+    } );
   } );
 
   describe( 'disconnect', () => {
@@ -158,6 +199,30 @@ describe( 'database - Unit Tests', () => {
       await expect( mf.database.disconnect() ).
         rejects.
         toThrow( 'Service temporarily unavailable during disconnection. (Error: DB_012)' );
+    } );
+
+    /**
+     * Test keeps client reference when close fails to allow retry
+     */
+    test( 'keeps client reference when close fails to allow retry', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const closeError = new Error( 'Close failed' );
+
+      mockClient.close.mockRejectedValueOnce( closeError );
+
+      // First disconnect attempt fails
+      await expect( mf.database.disconnect() ).
+        rejects.
+        toThrow( 'Service temporarily unavailable during disconnection. (Error: DB_012)' );
+
+      // Set up successful close for retry
+      mockClient.close.mockResolvedValueOnce();
+
+      // Second attempt should succeed (client reference was kept)
+      await expect( mf.database.disconnect() ).resolves.not.toThrow();
+      expect( mockClient.close ).toHaveBeenCalledTimes( 2 );
     } );
   } );
 
@@ -403,6 +468,24 @@ describe( 'database - Unit Tests', () => {
       expect( mockCollection.find ).toHaveBeenCalledWith( {}, { 'projection': { '_id': 1 } } );
       expect( result ).toEqual( [ 'id1', 'id2', 'id3' ] );
     } );
+
+    /**
+     * Test returns empty array when cache is empty
+     */
+    test( 'returns empty array when no acts in cache', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getAllActIds();
+
+      expect( result ).toEqual( [] );
+    } );
   } );
 
   describe( 'getAllActsWithMetadata', () => {
@@ -489,6 +572,54 @@ describe( 'database - Unit Tests', () => {
       expect( result ).toHaveLength( 2 );
       expect( result[ 0 ]._id ).toBe( 'same-id' );
       expect( result[ 1 ]._id ).toBe( 'same-id' );
+    } );
+
+    /**
+     * Test handles acts with missing updatedAt field
+     */
+    test( 'handles acts with missing updatedAt field', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': 'id2'
+          },
+          {
+            '_id': 'id1',
+            'updatedAt': '2025-01-02 12:00:00'
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getAllActsWithMetadata();
+
+      expect( result ).toHaveLength( 2 );
+      expect( result[ 0 ]._id ).toBe( 'id1' );
+      expect( result[ 0 ].updatedAt ).toBe( '2025-01-02 12:00:00' );
+      expect( result[ 1 ]._id ).toBe( 'id2' );
+      expect( result[ 1 ].updatedAt ).toBeUndefined();
+    } );
+
+    /**
+     * Test returns empty array when cache is empty
+     */
+    test( 'returns empty array when no acts in cache', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getAllActsWithMetadata();
+
+      expect( result ).toEqual( [] );
     } );
   } );
 } );
