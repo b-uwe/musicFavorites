@@ -99,11 +99,22 @@
     triggerBackgroundFetch
   };
 
+  /**
+   * Resets module state for testing
+   * ONLY available during Jest test execution
+   * @returns {void}
+   */
+  const resetForTesting = () => {
+    fetchQueue.clear();
+    isBackgroundFetchRunning = false;
+  };
+
   // Expose private functions for unit testing when running under Jest
   if ( process.env.JEST_WORKER_ID ) {
     globalThis.mf.testing = globalThis.mf.testing || {};
     globalThis.mf.testing.fetchQueue = {
-      processFetchQueue
+      processFetchQueue,
+      resetForTesting
     };
   }
 } )();
