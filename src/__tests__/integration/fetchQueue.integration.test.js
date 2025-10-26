@@ -41,6 +41,11 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
   } );
 
+  afterEach( () => {
+    // Ensure fake timers are always reset to prevent Jest hanging
+    jest.useRealTimers();
+  } );
+
   /**
    * Test that triggerBackgroundFetch can call fetchAndEnrichArtistData without circular dependency errors
    */
@@ -68,8 +73,6 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
-
-    jest.useRealTimers();
   }, 10000 );
 
   /**
@@ -141,8 +144,6 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 3 );
     // But only 2 should be cached (the successful ones)
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
-
-    jest.useRealTimers();
   }, 10000 );
 
   /**
@@ -173,8 +174,6 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
     // Both cache attempts should be made (even though second fails)
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
-
-    jest.useRealTimers();
   }, 10000 );
 
   /**
@@ -209,8 +208,6 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
-
-    jest.useRealTimers();
   }, 10000 );
 
   /**
@@ -248,7 +245,5 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Verify background processing occurred
     expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
     expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
-
-    jest.useRealTimers();
   }, 10000 );
 } );

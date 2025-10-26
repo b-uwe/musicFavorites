@@ -8,6 +8,9 @@
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
+// Load fixture modifier for test data manipulation
+require( '../../testHelpers/fixtureModifier' );
+
 // Mock external dependencies BEFORE requiring modules
 jest.mock( '../../services/database' );
 jest.mock( '../../services/musicbrainz' );
@@ -120,28 +123,13 @@ describe( 'Artist Service Integration Tests', () => {
     const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
 
     /*
-     * Mock LD+JSON with past events
-     * Note: The fixture already has past events, but let's be explicit
+     * Use fixture modifier to create past events
+     * normalizeDates with negative value moves dates to the past
      */
-    const pastEventsLdJson = [
-      {
-        '@type': 'MusicEvent',
-        'name': 'Past Concert',
-        'startDate': '2020-01-01T19:00:00',
-        'location': {
-          'name': 'Old Venue',
-          'address': {
-            'streetAddress': '123 Past St',
-            'addressLocality': 'Old City',
-            'addressCountry': 'OC'
-          },
-          'geo': {
-            'latitude': 1.0,
-            'longitude': 1.0
-          }
-        }
-      }
-    ];
+    const pastEventsLdJson = mf.testing.fixtureModifier.normalizeDates(
+      fixtureBandsintownLdJson,
+      -365
+    );
 
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( pastEventsLdJson );
 
@@ -151,9 +139,6 @@ describe( 'Artist Service Integration Tests', () => {
      * Events older than 2 days should be filtered out
      * This tests that bandsintownTransformer.filterPastEvents is called
      */
-    const hasEventsFromYear2020 = events.
-      some( ( event ) => event.date && event.date.startsWith( '2020' ) );
-
-    expect( hasEventsFromYear2020 ).toBe( false );
+    expect( events ).toEqual( [] );
   } );
 } );
