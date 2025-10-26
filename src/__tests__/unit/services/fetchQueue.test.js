@@ -41,7 +41,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       } );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -64,7 +64,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -91,7 +91,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( mockData );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -114,7 +114,7 @@ describe( 'fetchQueue - Unit Tests', () => {
         mockResolvedValueOnce( { '_id': 'id2' } );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -138,7 +138,7 @@ describe( 'fetchQueue - Unit Tests', () => {
         mockRejectedValueOnce( new Error( 'Cache failed' ) ).
         mockResolvedValueOnce();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
@@ -160,7 +160,7 @@ describe( 'fetchQueue - Unit Tests', () => {
       mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( {} );
       mf.database.cacheArtist.mockResolvedValue();
 
-      const promise = mf.fetchQueue.processFetchQueue( queue );
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
 
       await jest.runAllTimersAsync();
       await promise;
