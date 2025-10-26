@@ -45,39 +45,41 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
   } );
 
   /**
-   * Test MusicBrainz 429 rate limit error
+   * Test MusicBrainz 429 rate limit error - user perspective
    */
-  test( 'MusicBrainz 429 rate limit error is handled gracefully', async () => {
-    const rateLimitError = new Error( 'Rate limit exceeded' );
+  test( 'MusicBrainz 429 rate limit error returns 500 to user', async () => {
+    const rateLimitError = new Error( 'MusicBrainz API error: Rate limit exceeded' );
 
     rateLimitError.statusCode = 429;
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( rateLimitError );
 
-    // Trigger background fetch
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    // Should not crash, just log error
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    // Should return error with details
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
-   * Test MusicBrainz 503 service unavailable
+   * Test MusicBrainz 503 service unavailable - user perspective
    */
-  test( 'MusicBrainz 503 service unavailable is handled', async () => {
-    const serviceError = new Error( 'Service temporarily unavailable' );
+  test( 'MusicBrainz 503 service unavailable returns 500 to user', async () => {
+    const serviceError = new Error( 'MusicBrainz API error: Service temporarily unavailable' );
 
     serviceError.statusCode = 503;
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( serviceError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
@@ -103,52 +105,57 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
   } );
 
   /**
-   * Test network error during MusicBrainz fetch
+   * Test network error during MusicBrainz fetch - user perspective
    */
-  test( 'network error during MusicBrainz fetch is handled', async () => {
-    const networkError = new Error( 'ECONNREFUSED' );
+  test( 'network error during MusicBrainz fetch returns 500 to user', async () => {
+    const networkError = new Error( 'MusicBrainz API error: ECONNREFUSED' );
 
     networkError.code = 'ECONNREFUSED';
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( networkError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
-   * Test DNS resolution failure
+   * Test DNS resolution failure - user perspective
    */
-  test( 'DNS resolution failure is handled gracefully', async () => {
-    const dnsError = new Error( 'getaddrinfo ENOTFOUND musicbrainz.org' );
+  test( 'DNS resolution failure returns 500 to user', async () => {
+    const dnsError = new Error( 'MusicBrainz API error: getaddrinfo ENOTFOUND musicbrainz.org' );
 
     dnsError.code = 'ENOTFOUND';
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( dnsError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
-   * Test MusicBrainz returns malformed JSON
+   * Test MusicBrainz returns malformed JSON - user perspective
    */
-  test( 'malformed JSON from MusicBrainz is handled', async () => {
-    const parseError = new Error( 'Unexpected token < in JSON at position 0' );
+  test( 'malformed JSON from MusicBrainz returns 500 to user', async () => {
+    const parseError = new Error( 'MusicBrainz API error: Unexpected token < in JSON at position 0' );
 
     parseError.name = 'SyntaxError';
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( parseError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
@@ -217,20 +224,21 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
   } );
 
   /**
-   * Test SSL certificate error
+   * Test SSL certificate error - user perspective
    */
-  test( 'SSL certificate error is handled gracefully', async () => {
-    const sslError = new Error( 'unable to verify the first certificate' );
+  test( 'SSL certificate error returns 500 to user', async () => {
+    const sslError = new Error( 'MusicBrainz API error: unable to verify the first certificate' );
 
     sslError.code = 'UNABLE_TO_VERIFY_LEAF_SIGNATURE';
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( sslError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
@@ -252,36 +260,35 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
   } );
 
   /**
-   * Test upstream API returns 404 for valid request
+   * Test upstream API returns 404 for valid request - user perspective
    */
-  test( 'MusicBrainz 404 for existing artist is handled', async () => {
-    const notFoundError = new Error( 'Artist not found' );
+  test( 'MusicBrainz 404 for existing artist returns 500 to user', async () => {
+    const notFoundError = new Error( 'MusicBrainz API error: Artist not found' );
 
     notFoundError.statusCode = 404;
+    mf.database.getArtistFromCache.mockResolvedValue( null );
     mf.musicbrainz.fetchArtist.mockRejectedValue( notFoundError );
 
-    mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 
   /**
-   * Test API request via HTTP when called from user
+   * Test cache miss with upstream error returns proper error to user
    */
-  test( 'cached miss triggers background fetch despite upstream errors', async () => {
+  test( 'cache miss with upstream error returns 500 to user', async () => {
     mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'Rate limited' ) );
+    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz API error: Rate limited' ) );
 
-    const response = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 500 );
 
-    // Should return error immediately
-    expect( response.status ).toBeGreaterThanOrEqual( 500 );
-
-    // Background fetch should be triggered
-    await jest.advanceTimersByTimeAsync( 35000 );
-
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
+    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.details ).toBeDefined();
   } );
 } );
