@@ -240,4 +240,42 @@ describe( 'Express App Integration Tests', () => {
     expect( response.headers[ 'cache-control' ] ).toContain( 'no-store' );
     expect( response.headers[ 'x-robots-tag' ] ).toContain( 'noindex' );
   } );
+
+  /**
+   * Test error responses include META attribution
+   */
+  test( 'GET /acts/:id error responses include meta with attribution', async () => {
+    mf.database.getArtistFromCache.mockResolvedValue( null );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` );
+
+    // Should be error response
+    expect( response.status ).toBeGreaterThanOrEqual( 500 );
+
+    // But should still include meta
+    expect( response.body.meta ).toBeDefined();
+    expect( response.body.meta.attribution ).toBeDefined();
+    expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
+    expect( response.body.meta.repository ).toBeDefined();
+  } );
+
+  /**
+   * Test 503 error responses include meta
+   */
+  test( 'GET /acts/:id 503 errors include complete meta object', async () => {
+    // Create scenario that returns 503
+    mf.database.getArtistFromCache.mockResolvedValueOnce( null ).mockResolvedValueOnce( null );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id},other-id` ).
+      expect( 503 );
+
+    // Verify meta is included in 503 response
+    expect( response.body.meta ).toBeDefined();
+    expect( response.body.meta.attribution ).toBeDefined();
+    expect( response.body.meta.attribution.sources ).toContain( 'MusicBrainz' );
+    expect( response.body.meta.attribution.sources ).toContain( 'Bandsintown' );
+    expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
+  } );
 } );

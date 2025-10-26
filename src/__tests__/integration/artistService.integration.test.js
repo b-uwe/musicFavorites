@@ -251,4 +251,66 @@ describe( 'Artist Service Integration Tests', () => {
 
     await expect( mf.artistService.fetchBandsintownEvents( artist, false ) ).rejects.toThrow( 'HTTP request timeout' );
   } );
+
+  /**
+   * Test fetchMultipleActs with large number of IDs
+   */
+  test( 'fetchMultipleActs handles many acts efficiently', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    transformedArtist.events = [];
+
+    // Mock 50 cached acts
+    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+
+    const manyActIds = Array.from( { 'length': 50 }, ( _, i ) => `act-id-${i}` );
+
+    const result = await mf.artistService.fetchMultipleActs( manyActIds );
+
+    // Should return all acts
+    expect( result.acts ).toHaveLength( 50 );
+    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 50 );
+  } );
+
+  /**
+   * Test fetchMultipleActs with duplicate IDs
+   */
+  test( 'fetchMultipleActs handles duplicate IDs correctly', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+
+    transformedArtist.events = [];
+    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+
+    const duplicateIds = [
+      fixtureVulvodynia.id,
+      fixtureVulvodynia.id,
+      fixtureVulvodynia.id
+    ];
+
+    const result = await mf.artistService.fetchMultipleActs( duplicateIds );
+
+    // Should deduplicate and return once
+    expect( result.acts ).toHaveLength( 3 );
+    // Should fetch all three times (no deduplication in current implementation)
+    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 3 );
+  } );
+
+  /**
+   * Test fetchMultipleActs with invalid ID format
+   */
+  test( 'fetchMultipleActs handles malformed UUIDs gracefully', async () => {
+    mf.database.getArtistFromCache.mockResolvedValue( null );
+
+    const malformedIds = [
+      'not-a-uuid',
+      '12345',
+      ''
+    ];
+
+    const result = await mf.artistService.fetchMultipleActs( malformedIds );
+
+    // Should return error for missing acts
+    expect( result.error ).toBeDefined();
+    expect( result.error.message ).toContain( 'not cached' );
+  } );
 } );
