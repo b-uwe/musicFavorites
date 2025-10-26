@@ -7,6 +7,7 @@
    */
 
   require( './bandsintownTransformer' );
+  require( './cacheUpdater' );
   require( './database' );
   require( './fetchQueue' );
   require( './ldJsonExtractor' );
@@ -14,7 +15,6 @@
   require( './musicbrainzTransformer' );
 
   let cacheHealthy = true;
-
   const DB_TIMEOUT_MS = 500;
 
   /**
@@ -187,6 +187,43 @@
   };
 
   /**
+   * Checks cached acts for staleness and triggers background refresh
+   * @param {Array<object>} cachedActs - Array of cached act objects
+   * @returns {void}
+   */
+  const checkAndRefreshStaleActs = ( cachedActs ) => {
+    if ( cachedActs.length === 0 ) {
+      return;
+    }
+
+    const staleActIds = cachedActs.
+      filter( ( act ) => mf.cacheUpdater.isActStale( act ) ).
+      map( ( act ) => act._id );
+
+    if ( staleActIds.length > 0 ) {
+      mf.fetchQueue.triggerBackgroundFetch( staleActIds );
+    }
+  };
+
+  /**
+   * Fetches cached data for multiple artists with timeout protection
+   * @param {Array<string>} artistIds - Array of artist IDs to fetch
+   * @returns {Promise<Array>} Array of cached results (null if not cached)
+   * @throws {Error} When cache is unavailable or timeout (SVC_002)
+   */
+  const fetchCachedActs = async ( artistIds ) => {
+    try {
+      return await Promise.all( artistIds.map( ( id ) => withTimeout(
+        mf.database.getArtistFromCache( id ),
+        DB_TIMEOUT_MS
+      ) ) );
+    } catch ( error ) {
+      cacheHealthy = false;
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
+    }
+  };
+
+  /**
    * Handles case where exactly 1 act is missing
    * @param {string} missingId - The missing artist ID
    * @param {Array<object>} cachedActs - Already cached acts
@@ -248,24 +285,12 @@
       };
     }
 
-    // Ensure cache is healthy before proceeding
     await ensureCacheHealthy();
 
-    // Wrap cache reads with timeout to prevent hanging on database issues
-    let cacheResults;
-
-    try {
-      cacheResults = await Promise.all( artistIds.map( ( id ) => withTimeout(
-        mf.database.getArtistFromCache( id ),
-        DB_TIMEOUT_MS
-      ) ) );
-    } catch ( error ) {
-      // On error, flag cache as unhealthy and fail immediately
-      cacheHealthy = false;
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
-    }
-
+    const cacheResults = await fetchCachedActs( artistIds );
     const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
+
+    checkAndRefreshStaleActs( cachedActs );
 
     if ( missingIds.length === 0 ) {
       return {

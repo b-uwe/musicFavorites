@@ -161,6 +161,7 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.cacheUpdater = {
+    isActStale,
     runSequentialUpdate,
     start,
     updateAct
