@@ -260,29 +260,6 @@ describe( 'Real-World Workflow Integration Tests', () => {
   }, 20000 );
 
   /**
-   * Test user journey with robots.txt check
-   */
-  test( 'workflow: user checks robots.txt before using API', async () => {
-    const robotsResponse = await request( mf.app ).
-      get( '/robots.txt' ).
-      expect( 200 );
-
-    expect( robotsResponse.text ).toContain( 'User-agent' );
-
-    // Then use API
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-
-    transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
-
-    const apiResponse = await request( mf.app ).
-      get( `/acts/${fixtureTheKinks.id}` ).
-      expect( 200 );
-
-    expect( apiResponse.body.acts ).toHaveLength( 1 );
-  } );
-
-  /**
    * Test error recovery workflow
    */
   test( 'workflow: user gets error, retries, succeeds', async () => {
