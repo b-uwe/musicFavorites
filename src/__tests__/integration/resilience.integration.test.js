@@ -185,18 +185,28 @@ describe( 'Database Connection Resilience Integration Tests', () => {
   } );
 
   /**
-   * Test partial read success with corrupted data
+   * Test partial read with corrupted cached data succeeds
    */
-  test( 'partial read with corrupted data is handled', async () => {
-    // Return incomplete/corrupted artist object
-    mf.database.getArtistFromCache.mockResolvedValue( {
-      'name': 'Incomplete Artist'
+  test( 'corrupted cached data is served as-is without crashing', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+
+    // Corrupt the country field
+    transformedArtist.country = {
+      'invalid': 'structure'
+    };
+    transformedArtist.events = [];
+
+    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+
+    const response = await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 200 );
+
+    // Cached data served as-is (app trusts cache)
+    expect( response.body.acts[ 0 ].country ).toEqual( {
+      'invalid': 'structure'
     } );
-
-    const response = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
-
-    // Should handle gracefully (either error or sanitized response)
-    expect( response.status ).toBeGreaterThanOrEqual( 200 );
+    expect( response.body.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
   } );
 
   /**
