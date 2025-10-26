@@ -304,4 +304,65 @@ describe( 'fetchQueue - Unit Tests', () => {
       jest.useRealTimers();
     }, 15000 );
   } );
+
+  describe( 'setIsRunning (test helper)', () => {
+    /**
+     * Test that setIsRunning function is exposed for testing
+     */
+    test( 'is exposed in mf.testing.fetchQueue', () => {
+      expect( typeof mf.testing.fetchQueue.setIsRunning ).toBe( 'function' );
+    } );
+
+    /**
+     * Test that setIsRunning correctly sets the flag to true
+     */
+    test( 'sets isBackgroundFetchRunning flag to true', async () => {
+      jest.useFakeTimers();
+
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
+      mf.database.cacheArtist.mockResolvedValue();
+
+      // Set flag to true using setIsRunning
+      mf.testing.fetchQueue.setIsRunning( true );
+
+      // Try to trigger background fetch - should return early because flag is true
+      mf.fetchQueue.triggerBackgroundFetch( [ 'test-id' ] );
+
+      await jest.runAllTimersAsync();
+
+      // Should not have called fetchAndEnrichArtistData because flag was already true
+      expect( mf.artistService.fetchAndEnrichArtistData ).not.toHaveBeenCalled();
+
+      // Reset flag for subsequent tests
+      mf.testing.fetchQueue.setIsRunning( false );
+
+      jest.useRealTimers();
+    }, 15000 );
+
+    /**
+     * Test that setIsRunning correctly sets the flag to false
+     */
+    test( 'sets isBackgroundFetchRunning flag to false', async () => {
+      jest.useFakeTimers();
+
+      mf.artistService.fetchAndEnrichArtistData.mockResolvedValue( { '_id': 'id1' } );
+      mf.database.cacheArtist.mockResolvedValue();
+
+      // Set flag to false using setIsRunning
+      mf.testing.fetchQueue.setIsRunning( false );
+
+      // Trigger background fetch - should work because flag is false
+      mf.fetchQueue.triggerBackgroundFetch( [ 'test-id' ] );
+
+      await jest.runAllTimersAsync();
+
+      // Should have called fetchAndEnrichArtistData because flag was false
+      expect( mf.artistService.fetchAndEnrichArtistData ).toHaveBeenCalledWith( 'test-id', true );
+
+      // Reset flag for subsequent tests
+      mf.testing.fetchQueue.setIsRunning( false );
+
+      jest.useRealTimers();
+    }, 15000 );
+  } );
 } );
