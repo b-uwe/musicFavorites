@@ -27,7 +27,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     jest.clearAllMocks();
 
     // Reset fetchQueue state between tests
-    mf.testing.fetchQueue.resetForTesting();
+    mf.testing.fetchQueue.fetchQueue.clear();
+    mf.testing.fetchQueue.setIsRunning( false );
 
     // Mock only the database functions used in these tests
     mf.database.getArtistFromCache = jest.fn();
