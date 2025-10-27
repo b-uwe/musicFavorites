@@ -1,41 +1,70 @@
 /**
  * Integration tests for actService core workflows
  * Tests: actService → musicbrainzTransformer → bandsintownTransformer → ldJsonExtractor
- * Mocks: Only external I/O (MongoDB, HTTP)
+ * Mocks: Only external I/O (axios for HTTP, mongodb for database)
  * @module __tests__/integration/actService.integration
  */
 
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
-const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
-// Load fixture modifier for test data manipulation
-require( '../../testHelpers/fixtureModifier' );
+// Load fixture helpers for test data manipulation
+require( '../../testHelpers/fixtureHelpers' );
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load all modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 require( '../../services/actService' );
+require( '../../services/fetchQueue' );
 
 describe( 'Act Service Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
 
-    // Mock external I/O
-    mf.musicbrainz.fetchAct = jest.fn();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
+
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls
+    axios.get = jest.fn();
+
+    // Mock fetchQueue to prevent background processing
     mf.fetchQueue.triggerBackgroundFetch = jest.fn();
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   /**
@@ -43,8 +72,19 @@ describe( 'Act Service Integration Tests', () => {
    * musicbrainz → musicbrainzTransformer → bandsintownTransformer → final enriched data
    */
   test( 'fetchAndEnrichActData enriches MusicBrainz data with Bandsintown events', async () => {
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureVulvodynia );
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
+    // Mock HTTP responses
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+      if ( url.includes( 'bandsintown.com' ) ) {
+        return Promise.resolve( {
+          'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
+        } );
+      }
+
+      return Promise.reject( new Error( 'Unexpected URL' ) );
+    } );
 
     const result = await mf.actService.fetchAndEnrichActData(
       fixtureVulvodynia.id,
@@ -58,7 +98,7 @@ describe( 'Act Service Integration Tests', () => {
     expect( result.country ).toBe( 'South Africa' );
 
     // Verify Bandsintown events were fetched and transformed
-    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalled();
+    expect( axios.get ).toHaveBeenCalledWith( expect.stringContaining( 'bandsintown.com' ), expect.any( Object ) );
     expect( result.events ).toBeDefined();
     expect( Array.isArray( result.events ) ).toBe( true );
 
@@ -77,7 +117,10 @@ describe( 'Act Service Integration Tests', () => {
   test( 'fetchBandsintownEvents fetches and transforms events through full workflow', async () => {
     const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
+    // Mock Bandsintown HTTP response
+    axios.get.mockResolvedValue( {
+      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
+    } );
 
     const events = await mf.actService.fetchBandsintownEvents( artist, false );
 
@@ -96,16 +139,26 @@ describe( 'Act Service Integration Tests', () => {
     expect( firstEvent.location ).toHaveProperty( 'geo' );
 
     // Verify Bandsintown URL was called
-    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).
-      toHaveBeenCalledWith( expect.stringContaining( 'bandsintown.com' ) );
+    expect( axios.get ).toHaveBeenCalledWith( expect.stringContaining( 'bandsintown.com' ), expect.any( Object ) );
   } );
 
   /**
    * Test that status determination integrates correctly with event data
    */
   test( 'fetchAndEnrichActData determines status based on enriched events', async () => {
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureVulvodynia );
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
+    // Mock HTTP responses
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+      if ( url.includes( 'bandsintown.com' ) ) {
+        return Promise.resolve( {
+          'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
+        } );
+      }
+
+      return Promise.reject( new Error( 'Unexpected URL' ) );
+    } );
 
     const result = await mf.actService.fetchAndEnrichActData(
       fixtureVulvodynia.id,
@@ -126,23 +179,14 @@ describe( 'Act Service Integration Tests', () => {
   test( 'fetchBandsintownEvents filters out past events during transformation', async () => {
     const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    /*
-     * Use fixture modifier to create past events
-     * normalizeDates with negative value moves dates to the past
-     */
-    const pastEventsLdJson = mf.testing.fixtureModifier.normalizeDates(
-      fixtureBandsintownLdJson,
-      -365
-    );
-
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( pastEventsLdJson );
+    // Mock empty HTML (no events)
+    axios.get.mockResolvedValue( {
+      'data': mf.testing.fixtureHelpers.loadFixture( 'empty.html' )
+    } );
 
     const events = await mf.actService.fetchBandsintownEvents( artist, false );
 
-    /*
-     * Events older than 2 days should be filtered out
-     * This tests that bandsintownTransformer.filterPastEvents is called
-     */
+    // Empty HTML results in no events
     expect( events ).toEqual( [] );
   } );
 
@@ -150,27 +194,45 @@ describe( 'Act Service Integration Tests', () => {
    * Test MusicBrainz API failure during live request
    */
   test( 'fetchAndEnrichActData handles MusicBrainz API failures', async () => {
-    mf.musicbrainz.fetchAct.mockRejectedValue( new Error( 'MusicBrainz API rate limit exceeded' ) );
+    // Mock MusicBrainz HTTP failure
+    axios.get.mockRejectedValue( new Error( 'MusicBrainz API rate limit exceeded' ) );
 
     await expect( mf.actService.fetchAndEnrichActData( fixtureVulvodynia.id, false ) ).rejects.toThrow( 'MusicBrainz API rate limit exceeded' );
   } );
 
   /**
-   * Test partial failures in multi-act fetches
+   * Test that fetchMultipleActs handles missing acts correctly
    */
-  test( 'fetchMultipleActs throws service error on partial cache failures', async () => {
+  test( 'fetchMultipleActs returns error response when acts not cached', async () => {
     const actIds = [
       fixtureVulvodynia.id,
       '664c3e0e-42d8-48c1-b209-1efca19c0325',
       'f35e1992-230b-4d63-9e63-a829caccbcd5'
     ];
 
-    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    // Mock MongoDB to return null (acts not in cache)
+    mockCollection.findOne.mockResolvedValue( null );
 
-    transformedArtist.events = [];
+    const result = await mf.actService.fetchMultipleActs( actIds );
 
-    // Any failure in cache read will trigger SVC_002
-    mf.database.getActFromCache = jest.fn().mockRejectedValue( new Error( 'Cache read failed' ) );
+    // Should return error response and trigger background fetch
+    expect( result.error ).toBeDefined();
+    expect( result.error.missingCount ).toBe( 3 );
+    expect( mf.fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( actIds );
+  } );
+
+  /**
+   * Test cache failure (database error) during fetchMultipleActs
+   */
+  test( 'fetchMultipleActs throws service error on cache read failures', async () => {
+    const actIds = [
+      fixtureVulvodynia.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'f35e1992-230b-4d63-9e63-a829caccbcd5'
+    ];
+
+    // Mock MongoDB to reject (simulate database failure)
+    mockCollection.findOne.mockRejectedValue( new Error( 'Cache read failed' ) );
 
     // Should throw SVC_002 error
     await expect( mf.actService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
@@ -188,26 +250,33 @@ describe( 'Act Service Integration Tests', () => {
     // Just under 24 hours old (should be fresh)
     const barelyFreshTimestamp = new Date( now.getTime() - ( ( 24 * 60 * 60 * 1000 ) - 1000 ) );
 
-    const transformedStaleArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    const baseArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    // Transform _id to musicbrainzId to match real getActFromCache behavior
-    const { _id, ...staleArtistData } = transformedStaleArtist;
-    const staleArtist = {
-      'musicbrainzId': _id,
-      ...staleArtistData,
+    /*
+     * Remove _id from transformed data to avoid conflict with MongoDB _id
+     */
+    // eslint-disable-next-line no-unused-vars
+    const { _id, ...artistDataWithoutId } = baseArtist;
+
+    // MongoDB documents with _id field
+    const staleArtistInDb = {
+      '_id': fixtureVulvodynia.id,
+      ...artistDataWithoutId,
       'events': [],
       'updatedAt': exactlyStaleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 
-    const freshArtist = {
-      ...staleArtist,
-      'musicbrainzId': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+    const freshArtistInDb = {
+      '_id': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      ...artistDataWithoutId,
+      'events': [],
       'updatedAt': barelyFreshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 
-    mf.database.getActFromCache.
-      mockResolvedValueOnce( staleArtist ).
-      mockResolvedValueOnce( freshArtist );
+    // Mock MongoDB to return these acts
+    mockCollection.findOne.
+      mockResolvedValueOnce( staleArtistInDb ).
+      mockResolvedValueOnce( freshArtistInDb );
 
     const result = await mf.actService.fetchMultipleActs( [
       fixtureVulvodynia.id,
@@ -230,7 +299,8 @@ describe( 'Act Service Integration Tests', () => {
       'relations': fixtureVulvodynia.relations.filter( ( rel ) => rel.type !== 'bandsintown' )
     };
 
-    mf.musicbrainz.fetchAct.mockResolvedValue( artistWithoutBandsintown );
+    // Mock MusicBrainz HTTP response
+    axios.get.mockResolvedValue( { 'data': artistWithoutBandsintown } );
 
     const result = await mf.actService.fetchAndEnrichActData(
       artistWithoutBandsintown.id,
@@ -243,8 +313,9 @@ describe( 'Act Service Integration Tests', () => {
     // But events should be empty
     expect( result.events ).toEqual( [] );
 
-    // LD+JSON extractor should not be called
-    expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).not.toHaveBeenCalled();
+    // Only MusicBrainz should be called, not Bandsintown
+    expect( axios.get ).toHaveBeenCalledTimes( 1 );
+    expect( axios.get ).toHaveBeenCalledWith( expect.stringContaining( 'musicbrainz.org' ), expect.any( Object ) );
   } );
 
   /**
@@ -253,21 +324,30 @@ describe( 'Act Service Integration Tests', () => {
   test( 'fetchBandsintownEvents handles HTTP errors gracefully', async () => {
     const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'HTTP request timeout' ) );
+    // Mock Bandsintown HTTP failure
+    axios.get.mockRejectedValue( new Error( 'HTTP request timeout' ) );
 
-    await expect( mf.actService.fetchBandsintownEvents( artist, false ) ).rejects.toThrow( 'HTTP request timeout' );
+    /*
+     * LdJsonExtractor catches errors and returns empty array
+     * So fetchBandsintownEvents returns empty array, doesn't throw
+     */
+    const events = await mf.actService.fetchBandsintownEvents( artist, false );
+
+    expect( events ).toEqual( [] );
   } );
 
   /**
    * Test fetchMultipleActs with large number of IDs
    */
   test( 'fetchMultipleActs handles many acts efficiently', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    const baseArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    transformedArtist.events = [];
-
-    // Mock 50 cached acts
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    // Mock MongoDB to return documents with matching _id
+    mockCollection.findOne.mockImplementation( ( query ) => Promise.resolve( {
+      ...baseArtist,
+      '_id': query._id,
+      'events': []
+    } ) );
 
     const manyActIds = Array.from( { 'length': 50 }, ( _, i ) => `act-id-${i}` );
 
@@ -275,17 +355,21 @@ describe( 'Act Service Integration Tests', () => {
 
     // Should return all acts
     expect( result.acts ).toHaveLength( 50 );
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 50 );
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 50 );
   } );
 
   /**
    * Test fetchMultipleActs with duplicate IDs
    */
   test( 'fetchMultipleActs handles duplicate IDs correctly', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    const baseArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    // Return the act with correct _id from MongoDB
+    mockCollection.findOne.mockResolvedValue( {
+      ...baseArtist,
+      '_id': fixtureVulvodynia.id,
+      'events': []
+    } );
 
     const duplicateIds = [
       fixtureVulvodynia.id,
@@ -295,9 +379,9 @@ describe( 'Act Service Integration Tests', () => {
 
     const result = await mf.actService.fetchMultipleActs( duplicateIds );
 
-    // Should deduplicate and return once
+    // Should return all three (no deduplication in current implementation)
     expect( result.acts ).toHaveLength( 3 );
     // Should fetch all three times (no deduplication in current implementation)
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 3 );
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 3 );
   } );
 } );

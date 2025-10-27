@@ -3,7 +3,7 @@
  */
 
 require( '../../../services/musicbrainzTransformer' );
-require( '../../../testHelpers/fixtureModifier' );
+require( '../../../testHelpers/fixtureHelpers' );
 const fixtureJungleRot = require( '../../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../../fixtures/musicbrainz-the-kinks.json' );
 
@@ -240,7 +240,7 @@ describe( 'MusicBrainz Data Transformer', () => {
        * Test null-safety for missing relation.url
        */
       test( 'handles null relation gracefully', () => {
-        const dataWithNullRelation = mf.testing.fixtureModifier.modifyFixture( fixtureJungleRot, {
+        const dataWithNullRelation = mf.testing.fixtureHelpers.modifyFixture( fixtureJungleRot, {
           'relations': [
             null,
             { 'type': 'bandcamp',
@@ -259,7 +259,7 @@ describe( 'MusicBrainz Data Transformer', () => {
        * Test null-safety for missing artist metadata
        */
       test( 'handles missing artist metadata gracefully', () => {
-        const dataWithMissingFields = mf.testing.fixtureModifier.modifyFixture( fixtureJungleRot, {
+        const dataWithMissingFields = mf.testing.fixtureHelpers.modifyFixture( fixtureJungleRot, {
           'relations': undefined,
           'area': null,
           'begin-area': null,

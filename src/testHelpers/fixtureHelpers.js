@@ -2,10 +2,24 @@
   'use strict';
 
   /**
-   * Test utility for modifying fixture data
-   * Allows creation of edge case test data based on real fixtures
-   * @module testHelpers/fixtureModifier
+   * Test utilities for loading and modifying fixture data
+   * Provides helpers for integration tests to work with fixture files
+   * @module testHelpers/fixtureHelpers
    */
+
+  const fs = require( 'fs' );
+  const path = require( 'path' );
+
+  /**
+   * Loads an HTML fixture file from the fixtures/ldjson directory
+   * @param {string} filename - The fixture filename (e.g., 'bandsintown-vulvodynia.html')
+   * @returns {string} File contents as UTF-8 string
+   */
+  const loadFixture = ( filename ) => {
+    const fixturePath = path.join( __dirname, '../__tests__/fixtures/ldjson', filename );
+
+    return fs.readFileSync( fixturePath, 'utf8' );
+  };
 
   /**
    * Deep clones an object to prevent mutation
@@ -35,12 +49,12 @@
    * Supports dot notation (e.g., "location.address.city")
    * Supports bracket notation for arrays (e.g., "events[0].name")
    * @param {object} obj - Object to modify
-   * @param {string} path - Path to property (dot or bracket notation)
+   * @param {string} propertyPath - Path to property (dot or bracket notation)
    * @param {*} value - Value to set (undefined to delete property)
    * @returns {void}
    */
-  const setNestedValue = ( obj, path, value ) => {
-    const parts = path.
+  const setNestedValue = ( obj, propertyPath, value ) => {
+    const parts = propertyPath.
       split( /\.|\[/u ).
       map( ( part ) => part.replace( /\]/gu, '' ) );
 
@@ -74,8 +88,8 @@
   const modifyFixture = ( fixture, modifications ) => {
     const cloned = deepClone( fixture );
 
-    Object.keys( modifications ).forEach( ( path ) => {
-      setNestedValue( cloned, path, modifications[ path ] );
+    Object.keys( modifications ).forEach( ( propertyPath ) => {
+      setNestedValue( cloned, propertyPath, modifications[ propertyPath ] );
     } );
 
     return cloned;
@@ -184,7 +198,8 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.testing = globalThis.mf.testing || {};
-  globalThis.mf.testing.fixtureModifier = {
+  globalThis.mf.testing.fixtureHelpers = {
+    loadFixture,
     modifyFixture,
     modifyArrayItem,
     normalizeDates

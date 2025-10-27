@@ -9,13 +9,15 @@ const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
-// Load fixture modifier
-require( '../../testHelpers/fixtureModifier' );
+// Load fixture helpers
+require( '../../testHelpers/fixtureHelpers' );
 
-// Mock only external HTTP
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock axios for HTTP calls (not business logic)
+jest.mock( 'axios' );
 
-// Load modules
+const axios = require( 'axios' );
+
+// Load real business logic modules
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
@@ -23,7 +25,6 @@ require( '../../services/bandsintownTransformer' );
 describe( 'Transformer Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
   } );
 
   /**
@@ -38,15 +39,17 @@ describe( 'Transformer Integration Tests', () => {
     expect( mbTransformed.name ).toBe( fixtureVulvodynia.name );
     expect( mbTransformed.country ).toBe( 'South Africa' );
 
-    // Step 2: Mock LD+JSON fetch
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
+    // Step 2: Mock axios to return HTML fixture
+    axios.get.mockResolvedValue( {
+      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
+    } );
 
     // Step 3: Get Bandsintown URL from transformed data
     const bandsintownUrl = mbTransformed.relations.bandsintown;
 
     expect( bandsintownUrl ).toBe( 'https://www.bandsintown.com/a/6461184' );
 
-    // Step 4: Fetch and transform events
+    // Step 4: Fetch and transform events using real modules
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
     const events = mf.bandsintownTransformer.transformEvents( ldJson );
 
@@ -83,7 +86,7 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'events from different dates are transformed correctly', () => {
     // Transform future events
-    const futureEvents = mf.testing.fixtureModifier.normalizeDates(
+    const futureEvents = mf.testing.fixtureHelpers.normalizeDates(
       fixtureBandsintownLdJson,
       30
     );
@@ -113,7 +116,7 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'past events are filtered out during transformation', () => {
     // Create past events (365 days ago)
-    const pastEvents = mf.testing.fixtureModifier.normalizeDates(
+    const pastEvents = mf.testing.fixtureHelpers.normalizeDates(
       fixtureBandsintownLdJson,
       -365
     );
