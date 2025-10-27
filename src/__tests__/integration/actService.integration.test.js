@@ -222,6 +222,23 @@ describe( 'Act Service Integration Tests', () => {
   } );
 
   /**
+   * Test cache failure (database error) during fetchMultipleActs
+   */
+  test( 'fetchMultipleActs throws service error on cache read failures', async () => {
+    const actIds = [
+      fixtureVulvodynia.id,
+      '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'f35e1992-230b-4d63-9e63-a829caccbcd5'
+    ];
+
+    // Mock MongoDB to reject (simulate database failure)
+    mockCollection.findOne.mockRejectedValue( new Error( 'Cache read failed' ) );
+
+    // Should throw SVC_002 error
+    await expect( mf.actService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
+  } );
+
+  /**
    * Test staleness calculation edge case
    */
   test( 'fetchMultipleActs correctly identifies stale data at boundary', async () => {
