@@ -5,6 +5,8 @@
  * @module __tests__/integration/transformers.integration
  */
 
+const fs = require( 'fs' );
+const path = require( 'path' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
@@ -12,18 +14,30 @@ const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvod
 // Load fixture modifier
 require( '../../testHelpers/fixtureModifier' );
 
-// Mock only external HTTP
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock axios for HTTP calls (not business logic)
+jest.mock( 'axios' );
 
-// Load modules
+const axios = require( 'axios' );
+
+// Load real business logic modules
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 
+/**
+ * Loads HTML fixture file
+ * @param {string} filename - The fixture filename
+ * @returns {string} File contents
+ */
+const loadFixture = ( filename ) => {
+  const fixturePath = path.join( __dirname, '../fixtures/ldjson', filename );
+
+  return fs.readFileSync( fixturePath, 'utf8' );
+};
+
 describe( 'Transformer Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
   } );
 
   /**
@@ -38,15 +52,19 @@ describe( 'Transformer Integration Tests', () => {
     expect( mbTransformed.name ).toBe( fixtureVulvodynia.name );
     expect( mbTransformed.country ).toBe( 'South Africa' );
 
-    // Step 2: Mock LD+JSON fetch
-    mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
+    // Step 2: Mock axios to return HTML fixture
+    const fixtureHtml = loadFixture( 'bandsintown-vulvodynia.html' );
+
+    axios.get.mockResolvedValue( {
+      'data': fixtureHtml
+    } );
 
     // Step 3: Get Bandsintown URL from transformed data
     const bandsintownUrl = mbTransformed.relations.bandsintown;
 
     expect( bandsintownUrl ).toBe( 'https://www.bandsintown.com/a/6461184' );
 
-    // Step 4: Fetch and transform events
+    // Step 4: Fetch and transform events using real modules
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
     const events = mf.bandsintownTransformer.transformEvents( ldJson );
 

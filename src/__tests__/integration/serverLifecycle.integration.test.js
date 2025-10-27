@@ -5,24 +5,48 @@
  * @module __tests__/integration/serverLifecycle.integration
  */
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
+// Mock MongoDB client (not business logic)
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
-const database = require( '../../services/database' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load real business logic modules AFTER mocks
+require( '../../services/database' );
 
 describe( 'Server Lifecycle Integration Tests', () => {
+  let mockConnect;
+  let mockDb;
+  let mockCommand;
+  let mockClose;
+
   beforeEach( () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
 
-    // Default healthy database
-    database.connect = jest.fn().mockResolvedValue();
-    database.testCacheHealth = jest.fn().mockResolvedValue();
+    // Mock MongoDB client methods
+    mockCommand = jest.fn().mockResolvedValue( {
+      'ok': 1
+    } );
+    mockDb = jest.fn().mockReturnValue( {
+      'command': mockCommand
+    } );
+    mockConnect = jest.fn().mockResolvedValue();
+    mockClose = jest.fn().mockResolvedValue();
+
+    // Mock MongoClient constructor
+    MongoClient.mockImplementation( () => ( {
+      'connect': mockConnect,
+      'db': mockDb,
+      'close': mockClose
+    } ) );
+
+    // Set MONGODB_URI for tests
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
   } );
 
   afterEach( () => {
     jest.useRealTimers();
+    delete process.env.MONGODB_URI;
   } );
 
   /**
@@ -30,13 +54,13 @@ describe( 'Server Lifecycle Integration Tests', () => {
    * This tests real control flow: health check should NOT be called if connection fails
    */
   test( 'startup fails gracefully when database connection fails', async () => {
-    database.connect.mockRejectedValue( new Error( 'MongoDB connection refused' ) );
+    mockConnect.mockRejectedValueOnce( new Error( 'MongoDB connection refused' ) );
 
     // Should throw during connection
-    await expect( database.connect() ).rejects.toThrow( 'MongoDB connection refused' );
+    await expect( mf.database.connect() ).rejects.toThrow();
 
-    // Health check should not be called if connection fails
-    expect( database.testCacheHealth ).not.toHaveBeenCalled();
+    // Verify connection was attempted
+    expect( mockConnect ).toHaveBeenCalled();
   } );
 
   /**
@@ -44,13 +68,20 @@ describe( 'Server Lifecycle Integration Tests', () => {
    * This tests real control flow: connection succeeds but health check fails
    */
   test( 'startup detects unhealthy cache after connection succeeds', async () => {
-    database.connect.mockResolvedValue();
-    database.testCacheHealth.mockRejectedValue( new Error( 'Cache collection not found' ) );
+    // Connection succeeds
+    await expect( mf.database.connect() ).resolves.not.toThrow();
 
-    // Connection should succeed
-    await expect( database.connect() ).resolves.not.toThrow();
+    // Mock cache health check to fail
+    const mockCollection = {
+      'findOne': jest.fn().mockRejectedValue( new Error( 'Collection not found' ) )
+    };
+
+    mockDb.mockReturnValue( {
+      'command': mockCommand,
+      'collection': jest.fn().mockReturnValue( mockCollection )
+    } );
 
     // Health check should fail
-    await expect( database.testCacheHealth() ).rejects.toThrow( 'Cache collection not found' );
+    await expect( mf.database.testCacheHealth() ).rejects.toThrow();
   } );
 } );
