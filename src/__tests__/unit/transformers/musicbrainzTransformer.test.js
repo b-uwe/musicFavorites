@@ -3,7 +3,7 @@
  */
 
 require( '../../../services/musicbrainzTransformer' );
-require( '../../../testHelpers/fixtureModifier' );
+require( '../../../testHelpers/fixtureHelpers' );
 const fixtureJungleRot = require( '../../fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( '../../fixtures/musicbrainz-the-kinks.json' );
 

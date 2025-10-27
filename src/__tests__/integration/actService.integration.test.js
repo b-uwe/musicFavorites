@@ -9,7 +9,7 @@ const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 // Load fixture modifier for test data manipulation
-require( '../../testHelpers/fixtureModifier' );
+require( '../../testHelpers/fixtureHelpers' );
 
 // Mock external dependencies BEFORE requiring modules
 jest.mock( '../../services/database' );

@@ -1,11 +1,33 @@
 /**
- * Tests for fixture modifier test utility
- * @module __tests__/testHelpers/fixtureModifier
+ * Tests for fixture helpers test utility
+ * @module __tests__/testHelpers/fixtureHelpers
  */
 
-require( '../../testHelpers/fixtureModifier' );
+require( '../../testHelpers/fixtureHelpers' );
 
-describe( 'Fixture Modifier', () => {
+describe( 'Fixture Helpers', () => {
+  describe( 'loadFixture', () => {
+    test( 'loads HTML fixture file correctly', () => {
+      const html = mf.testing.fixtureHelpers.loadFixture( 'single-block.html' );
+
+      expect( typeof html ).toBe( 'string' );
+      expect( html.length ).toBeGreaterThan( 0 );
+    } );
+
+    test( 'loads Bandsintown fixture correctly', () => {
+      const html = mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' );
+
+      expect( html ).toContain( 'Vulvodynia' );
+      expect( html ).toContain( 'application/ld+json' );
+    } );
+  } );
+
+  describe( 'fixtureModifier (backward compatibility)', () => {
+    test( 'old fixtureModifier namespace still works', () => {
+      expect( mf.testing.fixtureModifier ).toBe( mf.testing.fixtureHelpers );
+    } );
+  } );
+
   describe( 'modifyFixture', () => {
     /**
      * Test deep cloning to prevent original fixture mutation

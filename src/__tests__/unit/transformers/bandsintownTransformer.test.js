@@ -4,7 +4,7 @@
  */
 
 require( '../../../services/bandsintownTransformer' );
-require( '../../../testHelpers/fixtureModifier' );
+require( '../../../testHelpers/fixtureHelpers' );
 const fixtureVulvodyniaRaw = require( '../../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
 // Normalize fixture dates to be 30 days in the future to prevent test expiration

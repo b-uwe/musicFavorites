@@ -5,14 +5,12 @@
  * @module __tests__/integration/transformers.integration
  */
 
-const fs = require( 'fs' );
-const path = require( 'path' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
 
-// Load fixture modifier
-require( '../../testHelpers/fixtureModifier' );
+// Load fixture helpers
+require( '../../testHelpers/fixtureHelpers' );
 
 // Mock axios for HTTP calls (not business logic)
 jest.mock( 'axios' );
@@ -24,16 +22,7 @@ require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 
-/**
- * Loads HTML fixture file
- * @param {string} filename - The fixture filename
- * @returns {string} File contents
- */
-const loadFixture = ( filename ) => {
-  const fixturePath = path.join( __dirname, '../fixtures/ldjson', filename );
-
-  return fs.readFileSync( fixturePath, 'utf8' );
-};
+const { loadFixture } = mf.testing.fixtureHelpers;
 
 describe( 'Transformer Integration Tests', () => {
   beforeEach( () => {

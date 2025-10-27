@@ -5,29 +5,18 @@
  * @module __tests__/integration/ldJsonExtractor.integration
  */
 
-const fs = require( 'fs' );
-const path = require( 'path' );
-
 // Mock axios for HTTP calls (not business logic)
 jest.mock( 'axios' );
 
 const axios = require( 'axios' );
 
 // Load real business logic modules
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 
-/**
- * Loads HTML fixture file
- * @param {string} filename - The fixture filename
- * @returns {string} File contents
- */
-const loadFixture = ( filename ) => {
-  const fixturePath = path.join( __dirname, '../fixtures/ldjson', filename );
-
-  return fs.readFileSync( fixturePath, 'utf8' );
-};
+const { loadFixture } = mf.testing.fixtureHelpers;
 
 describe( 'LD+JSON Extractor Integration Tests', () => {
   beforeEach( () => {
