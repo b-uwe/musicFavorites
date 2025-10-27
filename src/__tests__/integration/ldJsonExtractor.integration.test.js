@@ -109,16 +109,21 @@ describe( 'LD+JSON Extractor Integration Tests', () => {
   /**
    * Test LD+JSON with mixed valid/invalid events
    */
-  test( 'mixed valid and invalid LD+JSON events filters correctly', async () => {
-    axios.get.mockResolvedValue( {
-      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
+  test( 'mixed valid and invalid LD+JSON events filters correctly', () => {
+    const fixtureBandsintownLdJson = require( '../fixtures/ldjson/bandsintown-vulvodynia.json' );
+
+    /*
+     * Create mixed fixture: normalize first event to future,
+     * break second event by removing required field
+     */
+    const normalizedLdJson = mf.testing.fixtureHelpers.normalizeDates( fixtureBandsintownLdJson, 30 );
+    const mixedLdJson = mf.testing.fixtureHelpers.modifyArrayItem( normalizedLdJson, 1, {
+      'name': undefined
     } );
 
-    const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( 'https://www.bandsintown.com/a/6461184' );
+    const events = mf.bandsintownTransformer.transformEvents( mixedLdJson );
 
-    const events = mf.bandsintownTransformer.transformEvents( ldJson );
-
-    // Should only include valid events
+    // Should only include valid events (first one should pass, second should be filtered)
     expect( events.length ).toBeGreaterThanOrEqual( 1 );
 
     // All returned events should have required fields
