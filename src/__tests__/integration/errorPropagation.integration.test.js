@@ -1,19 +1,21 @@
 /**
  * Integration tests for error propagation across modules
  * Tests: Errors flow correctly from database → service → app → HTTP response
- * Mocks: Only external I/O (MongoDB, HTTP)
+ * Mocks: Only external I/O (mongodb for database, axios for HTTP)
  * @module __tests__/integration/errorPropagation.integration
  */
 
 const request = require( 'supertest' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -22,23 +24,55 @@ require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Error Propagation Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
 
-    // Default mocks
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchAct = jest.fn();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
+
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls
+    axios.get = jest.fn().mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   /**
    * Test database error propagates to HTTP 500
    */
   test( 'database error propagates to HTTP 500 with proper error structure', async () => {
-    mf.database.getActFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
+    // Mock MongoDB driver to reject at database read level
+    mockCollection.findOne.mockRejectedValue( new Error( 'Database connection lost' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -58,7 +92,8 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test async rejection propagates correctly
    */
   test( 'async database rejection propagates to HTTP 500', async () => {
-    mf.database.getActFromCache.mockRejectedValue( new Error( 'Async database error' ) );
+    // Mock MongoDB driver to reject asynchronously
+    mockCollection.findOne.mockRejectedValue( new Error( 'Async database error' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -71,8 +106,8 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test service layer error propagates to HTTP 503
    */
   test( 'service error for missing acts propagates to HTTP 503', async () => {
-    // Multiple acts missing triggers 503
-    mf.database.getActFromCache.mockResolvedValue( null );
+    // Multiple acts missing triggers 503 - MongoDB returns null
+    mockCollection.findOne.mockResolvedValue( null );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id},other-id` ).
@@ -89,7 +124,8 @@ describe( 'Error Propagation Integration Tests', () => {
     const timeoutError = new Error( 'Operation timed out after 30s' );
 
     timeoutError.code = 'ETIMEDOUT';
-    mf.database.getActFromCache.mockRejectedValue( timeoutError );
+    // Mock MongoDB driver timeout
+    mockCollection.findOne.mockRejectedValue( timeoutError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -102,7 +138,8 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test null/undefined error handling through layers
    */
   test( 'null errors are handled gracefully across layers', async () => {
-    mf.database.getActFromCache.mockImplementation( () => {
+    // Mock MongoDB driver to throw null
+    mockCollection.findOne.mockImplementation( () => {
       throw null;
     } );
 
@@ -122,7 +159,8 @@ describe( 'Error Propagation Integration Tests', () => {
       'stack': 'Some stack trace'
     };
 
-    mf.database.getActFromCache.mockRejectedValue( weirdError );
+    // Mock MongoDB driver to reject with weird error
+    mockCollection.findOne.mockRejectedValue( weirdError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` );
@@ -137,7 +175,8 @@ describe( 'Error Propagation Integration Tests', () => {
   test( 'concurrent requests with errors are handled independently', async () => {
     let callCount = 0;
 
-    mf.database.getActFromCache.mockImplementation( () => {
+    // Mock MongoDB driver to throw different errors on each call
+    mockCollection.findOne.mockImplementation( () => {
       callCount += 1;
 
       if ( callCount === 1 ) {
@@ -161,7 +200,8 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test stack trace not leaked in production errors
    */
   test( 'error responses do not leak stack traces', async () => {
-    mf.database.getActFromCache.mockImplementation( () => {
+    // Mock MongoDB driver to throw error with stack trace
+    mockCollection.findOne.mockImplementation( () => {
       const error = new Error( 'Internal error' );
 
       error.stack = 'SENSITIVE STACK TRACE DATA';
