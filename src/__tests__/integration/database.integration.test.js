@@ -1,38 +1,73 @@
 /**
  * Integration tests for database error handling and resilience
  * Tests: Database failure scenarios and recovery
- * Mocks: Only MongoDB (testing failure scenarios)
+ * Mocks: Only external I/O (mongodb for database, axios for HTTP)
  * @module __tests__/integration/database.integration
  */
 
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
-// Mock database BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/actService' );
+require( '../../services/fetchQueue' );
 
 describe( 'Database Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
 
-    // Default mocks for database health
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
 
-    // Default mocks for external services
-    mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( fixtureTheKinks );
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls
+    axios.get = jest.fn().mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // Mock fetchQueue to prevent background processing
+    mf.fetchQueue.triggerBackgroundFetch = jest.fn();
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   afterEach( () => {
@@ -43,8 +78,8 @@ describe( 'Database Integration Tests', () => {
    * Test that cache read failures result in service error
    */
   test( 'fetchMultipleActs throws service error on cache read failures', async () => {
-    // Simulate database read failure
-    mf.database.getActFromCache = jest.fn().mockRejectedValue( new Error( 'MongoDB connection lost' ) );
+    // Simulate database read failure at MongoDB driver level
+    mockCollection.findOne.mockRejectedValue( new Error( 'MongoDB connection lost' ) );
 
     const actIds = [ fixtureTheKinks.id ];
 
@@ -66,8 +101,11 @@ describe( 'Database Integration Tests', () => {
     expect( result._id ).toBe( fixtureTheKinks.id );
     expect( result.name ).toBe( fixtureTheKinks.name );
 
-    // FetchAndEnrichArtistData doesn't cache - verify fetch happened
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    // FetchAndEnrichArtistData doesn't cache - verify fetch happened via axios
+    expect( axios.get ).toHaveBeenCalledWith(
+      expect.stringContaining( 'musicbrainz.org' ),
+      expect.any( Object )
+    );
   } );
 
   /**
@@ -84,8 +122,8 @@ describe( 'Database Integration Tests', () => {
     expect( result1._id ).toBe( fixtureTheKinks.id );
     expect( result2._id ).toBe( fixtureTheKinks.id );
 
-    // Both should attempt to fetch from MusicBrainz
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    // Both should attempt to fetch from MusicBrainz via axios
+    expect( axios.get ).toHaveBeenCalledTimes( 2 );
   } );
 
   /**
@@ -97,8 +135,8 @@ describe( 'Database Integration Tests', () => {
       '664c3e0e-42d8-48c1-b209-1efca19c0325'
     ];
 
-    // First read fails - this will trigger SVC_002
-    mf.database.getActFromCache = jest.fn().mockRejectedValue( new Error( 'Read error' ) );
+    // First read fails at MongoDB driver level - this will trigger SVC_002
+    mockCollection.findOne.mockRejectedValue( new Error( 'Read error' ) );
 
     // Should throw SVC_002 when any cache read fails
     await expect( mf.actService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
@@ -108,10 +146,16 @@ describe( 'Database Integration Tests', () => {
    * Test cache health check failures
    */
   test( 'database connection check failures are handled', async () => {
-    mf.database.connect = jest.fn().mockRejectedValue( new Error( 'Failed to connect to MongoDB' ) );
+    // Disconnect first
+    await mf.database.disconnect();
 
-    // Connection failure should be catchable
-    await expect( mf.database.connect() ).rejects.toThrow( 'Failed to connect to MongoDB' );
+    // Mock MongoClient to fail connection at driver level
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockRejectedValue( new Error( 'Failed to connect to MongoDB' ) )
+    } ) );
+
+    // Connection failure should be catchable and wrapped in DB_011 error
+    await expect( mf.database.connect() ).rejects.toThrow( 'DB_011' );
   } );
 
   /**
@@ -123,8 +167,8 @@ describe( 'Database Integration Tests', () => {
       '664c3e0e-42d8-48c1-b209-1efca19c0325'
     ];
 
-    // Return null for first, undefined for second
-    mf.database.getActFromCache = jest.fn().
+    // Return null for first, undefined for second at MongoDB driver level
+    mockCollection.findOne.
       mockResolvedValueOnce( null ).
       mockResolvedValueOnce();
 
@@ -167,8 +211,8 @@ describe( 'Database Integration Tests', () => {
    * is tested in unit tests.
    */
   test( 'handles corrupted cache data gracefully', async () => {
-    // Simulate corrupted cache: artist object missing required _id field
-    mf.database.getActFromCache.mockResolvedValue( {
+    // Simulate corrupted cache: artist object missing required _id field from MongoDB
+    mockCollection.findOne.mockResolvedValue( {
       // Missing _id - this makes the object unusable
       'name': 'Corrupted Artist',
       'status': 'active'
@@ -188,22 +232,27 @@ describe( 'Database Integration Tests', () => {
    * Test cache operations under concurrent load
    */
   test( 'handles concurrent cache operations without race conditions', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+    // MongoDB returns cached data with _id (database format)
+    const cachedData = {
+      '_id': fixtureTheKinks.id,
+      'name': fixtureTheKinks.name,
+      'status': 'active',
+      'events': []
+    };
 
-    transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Simulate 10 concurrent requests
     const concurrentRequests = Array.from( { 'length': 10 }, () => mf.actService.fetchMultipleActs( [ fixtureTheKinks.id ] ) );
 
     const results = await Promise.all( concurrentRequests );
 
-    // All should succeed
+    // All should succeed - note: database.getActFromCache transforms _id to musicbrainzId
     results.forEach( ( result ) => {
       expect( result.acts ).toHaveLength( 1 );
-      expect( result.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
+      expect( result.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
     } );
 
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 10 );
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 10 );
   } );
 } );
