@@ -93,12 +93,12 @@ describe( 'actService - cache staleness checking', () => {
 
       const mockCached = [
         {
-          '_id': 'id1',
+          'musicbrainzId': 'id1',
           'name': 'Artist 1',
           'updatedAt': formattedTimestamp
         },
         {
-          '_id': 'id2',
+          'musicbrainzId': 'id2',
           'name': 'Artist 2',
           'updatedAt': formattedTimestamp
         }
@@ -118,7 +118,7 @@ describe( 'actService - cache staleness checking', () => {
 
     test( 'triggers background refresh for acts with missing updatedAt', async () => {
       const mockCached = {
-        '_id': 'id1',
+        'musicbrainzId': 'id1',
         'name': 'Artist 1'
       };
 
@@ -141,17 +141,17 @@ describe( 'actService - cache staleness checking', () => {
 
       const mockCached = [
         {
-          '_id': 'id1',
+          'musicbrainzId': 'id1',
           'name': 'Artist 1',
           'updatedAt': freshFormatted
         },
         {
-          '_id': 'id2',
+          'musicbrainzId': 'id2',
           'name': 'Artist 2',
           'updatedAt': staleFormatted
         },
         {
-          '_id': 'id3',
+          'musicbrainzId': 'id3',
           'name': 'Artist 3'
         }
       ];

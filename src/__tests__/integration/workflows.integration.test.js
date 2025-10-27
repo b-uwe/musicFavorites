@@ -77,12 +77,18 @@ describe( 'Real-World Workflow Integration Tests', () => {
   test( 'workflow: stale cached data is served while background refresh happens', async () => {
     const now = new Date();
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
-    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
-    staleArtist.events = [];
-    staleArtist.updatedAt = staleTimestamp.toLocaleString( 'sv-SE', {
-      'timeZone': 'Europe/Berlin'
-    } );
+    // Transform _id to musicbrainzId to match real getActFromCache behavior
+    const { _id, ...artistData } = transformedArtist;
+    const staleArtist = {
+      'musicbrainzId': _id,
+      ...artistData,
+      'events': [],
+      'updatedAt': staleTimestamp.toLocaleString( 'sv-SE', {
+        'timeZone': 'Europe/Berlin'
+      } )
+    };
 
     mf.database.getActFromCache.mockResolvedValue( staleArtist );
 
