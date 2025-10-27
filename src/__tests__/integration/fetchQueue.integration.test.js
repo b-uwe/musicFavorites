@@ -1,44 +1,67 @@
 /**
  * Integration tests for fetch queue functionality
  * These tests use real module imports to catch circular dependencies
- * Only external dependencies (database, HTTP) are mocked
+ * Only external I/O (mongodb for database, axios for HTTP) are mocked
  * @module __tests__/integration/fetchQueue.integration
  */
 
-require( '../../services/database' );
-require( '../../services/musicbrainz' );
-require( '../../services/ldJsonExtractor' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-/*
- * CRITICAL: Import actService and fetchQueue AFTER mocks are set up
- * This allows us to test real module interactions while mocking external I/O
- */
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
+require( '../../services/database' );
+require( '../../services/musicbrainz' );
+require( '../../services/ldJsonExtractor' );
 require( '../../services/actService' );
 require( '../../services/fetchQueue' );
 
 describe( 'Fetch Queue Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
+
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
 
     // Reset fetchQueue state between tests
     mf.testing.fetchQueue.fetchQueue.clear();
     mf.testing.fetchQueue.setIsRunning( false );
 
-    // Mock only the database functions used in these tests
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn();
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
 
-    // Mock musicbrainz functions
-    mf.musicbrainz.fetchAct = jest.fn();
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
 
-    // Mock ldJsonExtractor - CRITICAL for background fetch to work
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    // Mock axios for HTTP calls
+    axios.get = jest.fn();
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   /**
@@ -52,10 +75,17 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
-    mf.database.cacheAct.mockResolvedValue();
+    // Mock axios for HTTP calls - return fixtures for MusicBrainz
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( fixtureTheKinks.id ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+      if ( url.includes( fixtureVulvodynia.id ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -63,11 +93,12 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Advance through both fetches (2 acts × 30s = 60s)
     await jest.advanceTimersByTimeAsync( 60000 );
 
-    // Verify fetchAndEnrichActData was called (indirectly through processFetchQueue)
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureVulvodynia.id );
-    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
+    // Verify axios was called for MusicBrainz fetches
+    expect( axios.get ).toHaveBeenCalled();
+    expect( axios.get.mock.calls.some( ( call ) => call[ 0 ].includes( fixtureTheKinks.id ) ) ).toBe( true );
+    expect( axios.get.mock.calls.some( ( call ) => call[ 0 ].includes( fixtureVulvodynia.id ) ) ).toBe( true );
+    // Verify MongoDB cache writes occurred
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
 
     // Reset timers to restore normal timing
     jest.useRealTimers();
@@ -85,13 +116,17 @@ describe( 'Fetch Queue Integration Tests', () => {
       '664c3e0e-42d8-48c1-b209-1efca19c0325'
     ];
 
-    // All acts are missing from cache
-    mf.database.getActFromCache.mockResolvedValue( null );
+    // All acts are missing from cache at MongoDB level
+    mockCollection.findOne.mockResolvedValue( null );
 
-    // Mock the background fetch behavior
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
-    mf.database.cacheAct.mockResolvedValue();
+    // Mock axios for background fetch behavior
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Call fetchMultipleActs with 3 missing acts
     const result = await mf.actService.fetchMultipleActs( actIds );
@@ -136,10 +171,24 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    // First succeeds, second fails, third succeeds
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchAct.mockRejectedValueOnce( new Error( 'MusicBrainz fetch failed' ) );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
+    // First succeeds, second fails, third succeeds at axios level
+    let callCount = 0;
+
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        callCount++;
+        if ( callCount === 1 ) {
+          return Promise.resolve( { 'data': fixtureTheKinks } );
+        }
+        if ( callCount === 2 ) {
+          return Promise.reject( new Error( 'MusicBrainz fetch failed' ) );
+        }
+
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -147,10 +196,12 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Advance through all fetches (3 acts × 30s = 90s)
     await jest.advanceTimersByTimeAsync( 90000 );
 
-    // All 3 should be attempted
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 3 );
+    // All 3 should be attempted via axios
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 3 );
     // But only 2 should be cached (the successful ones)
-    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -166,12 +217,22 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
+    // Mock axios for successful fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( fixtureTheKinks.id ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+      if ( url.includes( fixtureVulvodynia.id ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
 
-    // First cache succeeds, second fails
-    mf.database.cacheAct.mockResolvedValueOnce();
-    mf.database.cacheAct.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // First cache succeeds, second fails at MongoDB level
+    mockCollection.updateOne.
+      mockResolvedValueOnce( { 'acknowledged': true } ).
+      mockRejectedValueOnce( new Error( 'Cache write failed' ) );
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -180,9 +241,11 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Both should be fetched
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 2 );
     // Both cache attempts should be made (even though second fails)
-    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -197,8 +260,17 @@ describe( 'Fetch Queue Integration Tests', () => {
     const actIds1 = [ fixtureTheKinks.id ];
     const actIds2 = [ fixtureVulvodynia.id ];
 
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
+    // Mock axios for both fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( fixtureTheKinks.id ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+      if ( url.includes( fixtureVulvodynia.id ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Start first background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds1 );
@@ -216,9 +288,11 @@ describe( 'Fetch Queue Integration Tests', () => {
      * Both should be processed by the SAME processor
      * This proves concurrent processors weren't started
      */
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureVulvodynia.id );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 2 );
+    expect( musicbrainzCalls.some( ( call ) => call[ 0 ].includes( fixtureTheKinks.id ) ) ).toBe( true );
+    expect( musicbrainzCalls.some( ( call ) => call[ 0 ].includes( fixtureVulvodynia.id ) ) ).toBe( true );
 
     jest.useRealTimers();
   }, 10000 );
@@ -234,14 +308,20 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    // Both acts missing from cache
-    mf.database.getActFromCache.mockResolvedValue( null );
+    // Both acts missing from cache at MongoDB level
+    mockCollection.findOne.mockResolvedValue( null );
 
-    // Mock successful fetches
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
+    // Mock successful axios fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( fixtureTheKinks.id ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+      if ( url.includes( fixtureVulvodynia.id ) ) {
+        return Promise.resolve( { 'data': fixtureVulvodynia } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Call fetchMultipleActs (triggers background fetch)
     const apiResult = await mf.actService.fetchMultipleActs( actIds );
@@ -256,8 +336,10 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Verify background processing occurred
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
-    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 2 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -271,8 +353,14 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Queue 10 acts at once
     const manyActIds = Array.from( { 'length': 10 }, ( _, i ) => `act-id-${i}` );
 
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockResolvedValue();
+    // Mock axios for all fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Trigger background fetch with many IDs
     mf.fetchQueue.triggerBackgroundFetch( manyActIds );
@@ -281,8 +369,10 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 300000 );
 
     // All should be processed
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 10 );
-    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 10 );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 10 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 10 );
 
     jest.useRealTimers();
   }, 15000 );
@@ -296,9 +386,17 @@ describe( 'Fetch Queue Integration Tests', () => {
     const actIds1 = [ fixtureTheKinks.id ];
     const actIds2 = [ fixtureVulvodynia.id ];
 
-    mf.database.getActFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockResolvedValue();
+    // All acts missing from cache
+    mockCollection.findOne.mockResolvedValue( null );
+
+    // Mock axios for fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Simulate two concurrent API requests
     const request1 = mf.actService.fetchMultipleActs( actIds1 );
@@ -310,7 +408,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Both should be added to queue and processed
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -327,8 +427,14 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureTheKinks.id
     ];
 
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockResolvedValue();
+    // Mock axios for fetches
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     // Trigger with duplicate IDs
     mf.fetchQueue.triggerBackgroundFetch( duplicateIds );
@@ -337,8 +443,10 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Should only fetch once (queue deduplicates)
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 1 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 1 );
+    expect( musicbrainzCalls[ 0 ][ 0 ] ).toContain( fixtureTheKinks.id );
 
     jest.useRealTimers();
   }, 10000 );
