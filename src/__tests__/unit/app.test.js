@@ -271,6 +271,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
     test( 'returns 404 JSON for invalid routes', async () => {
       const response = await request( mf.app ).get( '/invalid/path' ).expect( 404 );
 
+      expect( response.headers[ 'content-type' ] ).toMatch( /application\/json/u );
       expect( response.body ).toHaveProperty( 'error', 'Not found' );
       expect( response.body ).toHaveProperty( 'status', 404 );
     } );
@@ -281,6 +282,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
     test( 'returns 404 JSON for root path', async () => {
       const response = await request( mf.app ).get( '/' ).expect( 404 );
 
+      expect( response.headers[ 'content-type' ] ).toMatch( /application\/json/u );
       expect( response.body.error ).toMatch( /not found/iu );
       expect( response.body.status ).toBe( 404 );
     } );
@@ -291,6 +293,7 @@ describe( 'Express App - Route Handler Unit Tests', () => {
     test( 'returns 404 for POST on GET-only route', async () => {
       const response = await request( mf.app ).post( '/acts/test-id' ).expect( 404 );
 
+      expect( response.headers[ 'content-type' ] ).toMatch( /application\/json/u );
       expect( response.body.status ).toBe( 404 );
     } );
   } );
