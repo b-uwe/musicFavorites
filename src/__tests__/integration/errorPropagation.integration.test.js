@@ -18,7 +18,7 @@ require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Error Propagation Integration Tests', () => {
@@ -28,9 +28,9 @@ describe( 'Error Propagation Integration Tests', () => {
     // Default mocks
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
   } );
 
@@ -38,7 +38,7 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test database error propagates to HTTP 500
    */
   test( 'database error propagates to HTTP 500 with proper error structure', async () => {
-    mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
+    mf.database.getActFromCache.mockRejectedValue( new Error( 'Database connection lost' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -46,7 +46,7 @@ describe( 'Error Propagation Integration Tests', () => {
 
     // Verify error structure
     expect( response.body.error ).toBeDefined();
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
 
     // Verify meta is included
@@ -58,7 +58,7 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test async rejection propagates correctly
    */
   test( 'async database rejection propagates to HTTP 500', async () => {
-    mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Async database error' ) );
+    mf.database.getActFromCache.mockRejectedValue( new Error( 'Async database error' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -72,7 +72,7 @@ describe( 'Error Propagation Integration Tests', () => {
    */
   test( 'service error for missing acts propagates to HTTP 503', async () => {
     // Multiple acts missing triggers 503
-    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getActFromCache.mockResolvedValue( null );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id},other-id` ).
@@ -89,7 +89,7 @@ describe( 'Error Propagation Integration Tests', () => {
     const timeoutError = new Error( 'Operation timed out after 30s' );
 
     timeoutError.code = 'ETIMEDOUT';
-    mf.database.getArtistFromCache.mockRejectedValue( timeoutError );
+    mf.database.getActFromCache.mockRejectedValue( timeoutError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -102,7 +102,7 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test null/undefined error handling through layers
    */
   test( 'null errors are handled gracefully across layers', async () => {
-    mf.database.getArtistFromCache.mockImplementation( () => {
+    mf.database.getActFromCache.mockImplementation( () => {
       throw null;
     } );
 
@@ -122,7 +122,7 @@ describe( 'Error Propagation Integration Tests', () => {
       'stack': 'Some stack trace'
     };
 
-    mf.database.getArtistFromCache.mockRejectedValue( weirdError );
+    mf.database.getActFromCache.mockRejectedValue( weirdError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` );
@@ -137,7 +137,7 @@ describe( 'Error Propagation Integration Tests', () => {
   test( 'concurrent requests with errors are handled independently', async () => {
     let callCount = 0;
 
-    mf.database.getArtistFromCache.mockImplementation( () => {
+    mf.database.getActFromCache.mockImplementation( () => {
       callCount += 1;
 
       if ( callCount === 1 ) {
@@ -161,7 +161,7 @@ describe( 'Error Propagation Integration Tests', () => {
    * Test stack trace not leaked in production errors
    */
   test( 'error responses do not leak stack traces', async () => {
-    mf.database.getArtistFromCache.mockImplementation( () => {
+    mf.database.getActFromCache.mockImplementation( () => {
       const error = new Error( 'Internal error' );
 
       error.stack = 'SENSITIVE STACK TRACE DATA';

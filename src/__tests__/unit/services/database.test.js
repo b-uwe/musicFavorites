@@ -249,12 +249,12 @@ describe( 'database - Unit Tests', () => {
     } );
   } );
 
-  describe( 'getArtistFromCache', () => {
+  describe( 'getActFromCache', () => {
     /**
      * Test throws DB_004 when not connected
      */
     test( 'throws DB_004 error when client is null', async () => {
-      await expect( mf.database.getArtistFromCache( 'test-id' ) ).
+      await expect( mf.database.getActFromCache( 'test-id' ) ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
     } );
@@ -268,7 +268,7 @@ describe( 'database - Unit Tests', () => {
 
       mockCollection.findOne.mockResolvedValue( null );
 
-      const result = await mf.database.getArtistFromCache( 'test-id' );
+      const result = await mf.database.getActFromCache( 'test-id' );
 
       expect( result ).toBeNull();
       expect( mockCollection.findOne ).toHaveBeenCalledWith( { '_id': 'test-id' } );
@@ -277,7 +277,7 @@ describe( 'database - Unit Tests', () => {
     /**
      * Test returns artist with musicbrainzId mapping
      */
-    test( 'returns artist data with _id mapped to musicbrainzId', async () => {
+    test( 'returns act data with _id mapped to musicbrainzId', async () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
@@ -287,7 +287,7 @@ describe( 'database - Unit Tests', () => {
         'status': 'active'
       } );
 
-      const result = await mf.database.getArtistFromCache( 'test-id' );
+      const result = await mf.database.getActFromCache( 'test-id' );
 
       expect( result ).toEqual( {
         'musicbrainzId': 'test-id',
@@ -297,12 +297,12 @@ describe( 'database - Unit Tests', () => {
     } );
   } );
 
-  describe( 'cacheArtist', () => {
+  describe( 'cacheAct', () => {
     /**
      * Test throws DB_005 when not connected
      */
     test( 'throws DB_005 error when client is null', async () => {
-      await expect( mf.database.cacheArtist( { '_id': 'test-id' } ) ).
+      await expect( mf.database.cacheAct( { '_id': 'test-id' } ) ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
     } );
@@ -314,15 +314,15 @@ describe( 'database - Unit Tests', () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
-      await expect( mf.database.cacheArtist( { 'name': 'Test' } ) ).
+      await expect( mf.database.cacheAct( { 'name': 'Test' } ) ).
         rejects.
         toThrow( 'Invalid request. Please try again later. (Error: DB_006)' );
     } );
 
     /**
-     * Test upserts artist data
+     * Test upserts act data
      */
-    test( 'upserts artist data to cache', async () => {
+    test( 'upserts act data to cache', async () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
@@ -334,7 +334,7 @@ describe( 'database - Unit Tests', () => {
         'status': 'active'
       };
 
-      await mf.database.cacheArtist( artistData );
+      await mf.database.cacheAct( artistData );
 
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         { '_id': 'test-id' },
@@ -352,7 +352,7 @@ describe( 'database - Unit Tests', () => {
 
       mockCollection.updateOne.mockResolvedValue( { 'acknowledged': false } );
 
-      await expect( mf.database.cacheArtist( { '_id': 'test-id' } ) ).
+      await expect( mf.database.cacheAct( { '_id': 'test-id' } ) ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
     } );

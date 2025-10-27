@@ -20,7 +20,7 @@ require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/fetchQueue' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Real-World Workflow Integration Tests', () => {
@@ -34,9 +34,9 @@ describe( 'Real-World Workflow Integration Tests', () => {
     // Default mocks
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
     mf.fetchQueue.triggerBackgroundFetch = jest.fn();
   } );
@@ -46,8 +46,8 @@ describe( 'Real-World Workflow Integration Tests', () => {
    */
   test( 'workflow: first request misses cache, fetches synchronously, second request hits cache', async () => {
     // First request: cache miss, MusicBrainz returns data
-    mf.database.getArtistFromCache.mockResolvedValueOnce( null );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
+    mf.database.getActFromCache.mockResolvedValueOnce( null );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
 
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
@@ -58,10 +58,10 @@ describe( 'Real-World Workflow Integration Tests', () => {
     expect( response1.body.acts[ 0 ].name ).toBe( fixtureTheKinks.name );
 
     // Second request: cache hit
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValueOnce( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValueOnce( transformedArtist );
 
     const response2 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
@@ -77,14 +77,14 @@ describe( 'Real-World Workflow Integration Tests', () => {
   test( 'workflow: stale cached data is served while background refresh happens', async () => {
     const now = new Date();
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
-    const staleArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     staleArtist.events = [];
     staleArtist.updatedAt = staleTimestamp.toLocaleString( 'sv-SE', {
       'timeZone': 'Europe/Berlin'
     } );
 
-    mf.database.getArtistFromCache.mockResolvedValue( staleArtist );
+    mf.database.getActFromCache.mockResolvedValue( staleArtist );
 
     // First request with stale data
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
@@ -101,10 +101,10 @@ describe( 'Real-World Workflow Integration Tests', () => {
    * Test concurrent user requests for same popular artist
    */
   test( 'workflow: 10 concurrent users request same artist (cached)', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     // Simulate 10 concurrent requests
     const requests = Array.from( {
@@ -120,23 +120,23 @@ describe( 'Real-World Workflow Integration Tests', () => {
     } );
 
     // Cache should be accessed 10 times
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 10 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 10 );
   } );
 
   /**
    * Test user requests multiple artists, some cached, some not
    */
   test( 'workflow: user requests 5 artists where 3 are cached and 2 are not', async () => {
-    const transformedKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedKinks = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedKinks.events = [];
 
-    const transformedVulvodynia = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const transformedVulvodynia = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     transformedVulvodynia.events = [];
 
     // First 3 cached, last 2 not
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockResolvedValueOnce( transformedKinks ).
       mockResolvedValueOnce( transformedKinks ).
       mockResolvedValueOnce( transformedKinks ).
@@ -162,10 +162,10 @@ describe( 'Real-World Workflow Integration Tests', () => {
    * Test user browses multiple artists sequentially
    */
   test( 'workflow: user browses 5 different artists sequentially', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const artistIds = [
       'artist1',
@@ -184,17 +184,17 @@ describe( 'Real-World Workflow Integration Tests', () => {
     }
 
     // Should have queried cache 5 times
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 5 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 5 );
   } );
 
   /**
    * Test user requests with pretty formatting
    */
   test( 'workflow: user requests pretty-formatted JSON', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}?pretty` ).
@@ -211,10 +211,10 @@ describe( 'Real-World Workflow Integration Tests', () => {
    * Test peak load: many users requesting different artists
    */
   test( 'workflow: peak load with 20 concurrent users requesting different artists', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     // 20 different artists
     const requests = Array.from( {
@@ -228,14 +228,14 @@ describe( 'Real-World Workflow Integration Tests', () => {
       expect( response.status ).toBe( 200 );
     } );
 
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 20 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 20 );
   }, 15000 );
 
   /**
    * Test repeated requests for same artist (caching effectiveness)
    */
   test( 'workflow: same artist requested 100 times (cache efficiency)', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
 
@@ -247,7 +247,7 @@ describe( 'Real-World Workflow Integration Tests', () => {
       'timeZone': 'Europe/Berlin'
     } );
 
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     // Make 100 requests for same artist
     for ( let i = 0; i < 100; i += 1 ) {
@@ -257,7 +257,7 @@ describe( 'Real-World Workflow Integration Tests', () => {
     }
 
     // All 100 should hit cache
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 100 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 100 );
 
     // Background fetch should not be triggered (data is fresh)
     expect( mf.fetchQueue.triggerBackgroundFetch ).not.toHaveBeenCalled();
@@ -268,17 +268,17 @@ describe( 'Real-World Workflow Integration Tests', () => {
    */
   test( 'workflow: user gets error, retries, succeeds', async () => {
     // First request fails
-    mf.database.getArtistFromCache.mockRejectedValueOnce( new Error( 'Temporary database issue' ) );
+    mf.database.getActFromCache.mockRejectedValueOnce( new Error( 'Temporary database issue' ) );
 
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
     expect( response1.status ).toBe( 500 );
 
     // Second request succeeds
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValueOnce( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValueOnce( transformedArtist );
 
     const response2 = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).

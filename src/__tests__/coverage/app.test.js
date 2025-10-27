@@ -3,8 +3,8 @@
  * @module __tests__/coverage/app
  */
 
-// Mock artistService to prevent it from initializing globalThis.mf
-jest.mock( '../../services/artistService', () => ( {} ) );
+// Mock actService to prevent it from initializing globalThis.mf
+jest.mock( '../../services/actService', () => ( {} ) );
 
 describe( 'app - Branch Coverage', () => {
   test( 'initializes globalThis.mf when it does not exist', () => {

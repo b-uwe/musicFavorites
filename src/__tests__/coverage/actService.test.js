@@ -1,7 +1,7 @@
 /**
- * Coverage tests for artistService module
+ * Coverage tests for actService module
  * These tests exercise code paths for 100% branch coverage
- * @module __tests__/coverage/artistService
+ * @module __tests__/coverage/actService
  */
 
 // Mock all dependencies to prevent them from initializing globalThis.mf
@@ -13,7 +13,7 @@ jest.mock( '../../services/ldJsonExtractor', () => ( {} ) );
 jest.mock( '../../services/musicbrainz', () => ( {} ) );
 jest.mock( '../../services/musicbrainzTransformer', () => ( {} ) );
 
-describe( 'artistService - Branch Coverage', () => {
+describe( 'actService - Branch Coverage', () => {
   test( 'initializes globalThis.mf when it does not exist', () => {
     jest.isolateModules( () => {
       // Save original state
@@ -26,11 +26,11 @@ describe( 'artistService - Branch Coverage', () => {
       delete process.env.JEST_WORKER_ID;
 
       // Re-require module to trigger initialization
-      require( '../../services/artistService' );
+      require( '../../services/actService' );
 
       // Verify mf was created
       expect( globalThis.mf ).toBeDefined();
-      expect( globalThis.mf.artistService ).toBeDefined();
+      expect( globalThis.mf.actService ).toBeDefined();
 
       // Restore original state
       globalThis.mf = originalMf;
@@ -50,11 +50,11 @@ describe( 'artistService - Branch Coverage', () => {
       delete process.env.JEST_WORKER_ID;
 
       // Re-require module
-      require( '../../services/artistService' );
+      require( '../../services/actService' );
 
       // Verify existing properties are preserved
       expect( globalThis.mf.testProperty ).toBe( 'test' );
-      expect( globalThis.mf.artistService ).toBeDefined();
+      expect( globalThis.mf.actService ).toBeDefined();
 
       // Cleanup
       delete globalThis.mf.testProperty;
@@ -68,12 +68,12 @@ describe( 'artistService - Branch Coverage', () => {
       expect( process.env.JEST_WORKER_ID ).toBeDefined();
 
       // Re-require module
-      require( '../../services/artistService' );
+      require( '../../services/actService' );
 
       // Verify testing namespace was created
       expect( globalThis.mf.testing ).toBeDefined();
-      expect( globalThis.mf.testing.artistService ).toBeDefined();
-      expect( globalThis.mf.testing.artistService.withTimeout ).toBeDefined();
+      expect( globalThis.mf.testing.actService ).toBeDefined();
+      expect( globalThis.mf.testing.actService.withTimeout ).toBeDefined();
     } );
   } );
 
@@ -85,11 +85,11 @@ describe( 'artistService - Branch Coverage', () => {
       globalThis.mf.testing.testProperty = 'test';
 
       // Re-require module
-      require( '../../services/artistService' );
+      require( '../../services/actService' );
 
       // Verify existing properties are preserved
       expect( globalThis.mf.testing.testProperty ).toBe( 'test' );
-      expect( globalThis.mf.testing.artistService ).toBeDefined();
+      expect( globalThis.mf.testing.actService ).toBeDefined();
 
       // Cleanup
       delete globalThis.mf.testing.testProperty;

@@ -26,8 +26,8 @@
   /**
    * Updates a single act by fetching fresh data and replacing cache
    * Skips update on error without throwing
-   * Uses lazy require to avoid circular dependency with artistService
-   * @param {string} actId - The MusicBrainz artist ID to update
+   * Uses lazy require to avoid circular dependency with actService
+   * @param {string} actId - The MusicBrainz act ID to update
    * @returns {Promise<void>} Resolves when update completes or fails
    */
   const updateAct = async ( actId ) => {
@@ -35,14 +35,14 @@
      * CRITICAL: Lazy require to break circular dependency
      * This function is called after all modules are loaded, so it's safe
      */
-    require( './artistService' );
+    require( './actService' );
 
     try {
-      // Fetch and enrich artist data (with silent event failures)
-      const dataToCache = await mf.artistService.fetchAndEnrichArtistData( actId, true );
+      // Fetch and enrich act data (with silent event failures)
+      const dataToCache = await mf.actService.fetchAndEnrichActData( actId, true );
 
       // Replace cache entry
-      await mf.database.cacheArtist( dataToCache );
+      await mf.database.cacheAct( dataToCache );
     } catch ( error ) {
       console.error( `Failed to update act ${actId}:`, error.message );
     }

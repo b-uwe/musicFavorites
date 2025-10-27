@@ -1,9 +1,9 @@
 /**
- * Tests for artistService.fetchMultipleActs with smart caching
- * @module __tests__/services/artistService.fetchMultiple
+ * Tests for actService.fetchMultipleActs with smart caching
+ * @module __tests__/services/actService.fetchMultiple
  */
 
-const artistService = require( '../../services/artistService' );
+const actService = require( '../../services/actService' );
 const database = require( '../../services/database' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
 const musicbrainzTransformer = require( '../../services/musicbrainzTransformer' );
@@ -25,16 +25,16 @@ describe( 'fetchMultipleActs', () => {
 
   beforeEach( () => {
     jest.clearAllMocks();
-    transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-    transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
-    transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
+    transformedTheKinks = musicbrainzTransformer.transformActData( fixtureTheKinks );
+    transformedVulvodynia = musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    transformedJungleRot = musicbrainzTransformer.transformActData( fixtureJungleRot );
   } );
 
   /**
    * Test invalid input handling
    */
   test( 'returns error for empty array', async () => {
-    const result = await artistService.fetchMultipleActs( [] );
+    const result = await actService.fetchMultipleActs( [] );
 
     expect( result.error ).toBeDefined();
     expect( result.error.message ).toContain( 'Invalid input' );
@@ -44,7 +44,7 @@ describe( 'fetchMultipleActs', () => {
    * Test invalid input handling - non-array
    */
   test( 'returns error for non-array input', async () => {
-    const result = await artistService.fetchMultipleActs( 'not-an-array' );
+    const result = await actService.fetchMultipleActs( 'not-an-array' );
 
     expect( result.error ).toBeDefined();
     expect( result.error.message ).toContain( 'Invalid input' );
@@ -69,16 +69,16 @@ describe( 'fetchMultipleActs', () => {
       ...transformedVulvodynia
     };
 
-    database.getArtistFromCache.mockResolvedValueOnce( cachedTheKinks );
-    database.getArtistFromCache.mockResolvedValueOnce( cachedVulvodynia );
+    database.getActFromCache.mockResolvedValueOnce( cachedTheKinks );
+    database.getActFromCache.mockResolvedValueOnce( cachedVulvodynia );
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.acts ).toBeDefined();
     expect( result.acts ).toHaveLength( 2 );
     expect( result.acts[ 0 ] ).toEqual( cachedTheKinks );
     expect( result.acts[ 1 ] ).toEqual( cachedVulvodynia );
-    expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+    expect( musicbrainzClient.fetchAct ).not.toHaveBeenCalled();
   } );
 
   /**
@@ -96,20 +96,20 @@ describe( 'fetchMultipleActs', () => {
     };
 
     // First is cached, second is missing
-    database.getArtistFromCache.mockResolvedValueOnce( cachedTheKinks );
-    database.getArtistFromCache.mockResolvedValueOnce( null );
+    database.getActFromCache.mockResolvedValueOnce( cachedTheKinks );
+    database.getActFromCache.mockResolvedValueOnce( null );
 
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+    musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    database.cacheAct.mockResolvedValue();
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.acts ).toBeDefined();
     expect( result.acts ).toHaveLength( 2 );
     expect( result.error ).not.toBeDefined();
-    expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedVulvodynia._id );
-    expect( database.cacheArtist ).toHaveBeenCalled();
+    expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedVulvodynia._id );
+    expect( database.cacheAct ).toHaveBeenCalled();
     expect( fetchQueue.processFetchQueue ).not.toHaveBeenCalled();
   } );
 
@@ -119,14 +119,14 @@ describe( 'fetchMultipleActs', () => {
   test( 'caches the freshly fetched act when 1 is missing', async () => {
     const actIds = [ transformedTheKinks._id ];
 
-    database.getArtistFromCache.mockResolvedValue( null );
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    database.getActFromCache.mockResolvedValue( null );
+    musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    database.cacheAct.mockResolvedValue();
 
-    await artistService.fetchMultipleActs( actIds );
+    await actService.fetchMultipleActs( actIds );
 
-    expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+    expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
       '_id': transformedTheKinks._id,
       'name': transformedTheKinks.name
     } ) );
@@ -143,17 +143,17 @@ describe( 'fetchMultipleActs', () => {
     ];
 
     // All missing
-    database.getArtistFromCache.mockResolvedValue( null );
+    database.getActFromCache.mockResolvedValue( null );
     fetchQueue.processFetchQueue.mockResolvedValue();
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.error ).toBeDefined();
     expect( result.error.message ).toContain( '3 acts not cached' );
     expect( result.error.message ).toContain( 'Background fetch initiated' );
     expect( result.error.missingCount ).toBe( 3 );
     expect( result.error.cachedCount ).toBe( 0 );
-    expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+    expect( musicbrainzClient.fetchAct ).not.toHaveBeenCalled();
     expect( fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( actIds );
   } );
 
@@ -173,11 +173,11 @@ describe( 'fetchMultipleActs', () => {
     };
 
     // First cached, others missing
-    database.getArtistFromCache.mockResolvedValueOnce( cachedTheKinks );
-    database.getArtistFromCache.mockResolvedValueOnce( null );
-    database.getArtistFromCache.mockResolvedValueOnce( null );
+    database.getActFromCache.mockResolvedValueOnce( cachedTheKinks );
+    database.getActFromCache.mockResolvedValueOnce( null );
+    database.getActFromCache.mockResolvedValueOnce( null );
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.error ).toBeDefined();
     expect( result.error.missingCount ).toBe( 2 );
@@ -194,12 +194,12 @@ describe( 'fetchMultipleActs', () => {
   test( 'formats response with musicbrainzId for single missing act', async () => {
     const actIds = [ transformedTheKinks._id ];
 
-    database.getArtistFromCache.mockResolvedValue( null );
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    database.getActFromCache.mockResolvedValue( null );
+    musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockResolvedValue();
+    database.cacheAct.mockResolvedValue();
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.acts ).toBeDefined();
     expect( result.acts[ 0 ].musicbrainzId ).toBe( transformedTheKinks._id );
@@ -212,12 +212,12 @@ describe( 'fetchMultipleActs', () => {
   test( 'continues when caching fails for single missing act', async () => {
     const actIds = [ transformedTheKinks._id ];
 
-    database.getArtistFromCache.mockResolvedValue( null );
-    musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    database.getActFromCache.mockResolvedValue( null );
+    musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
     ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+    database.cacheAct.mockRejectedValue( new Error( 'Cache write failed' ) );
 
-    const result = await artistService.fetchMultipleActs( actIds );
+    const result = await actService.fetchMultipleActs( actIds );
 
     expect( result.acts ).toBeDefined();
     expect( result.acts ).toHaveLength( 1 );

@@ -2,8 +2,8 @@
   'use strict';
 
   /**
-   * Artist service with transparent caching
-   * @module services/artistService
+   * Act service with transparent caching
+   * @module services/actService
    */
 
   require( './bandsintownTransformer' );
@@ -113,17 +113,17 @@
   };
 
   /**
-   * Fetches Bandsintown events for an artist
-   * @param {object} artistData - Transformed artist data with relations
+   * Fetches Bandsintown events for an act
+   * @param {object} actData - Transformed act data with relations
    * @param {boolean} silentFail - If true, returns empty array on error instead of throwing
    * @returns {Promise<Array>} Array of transformed events or empty array
    */
-  const fetchBandsintownEvents = async ( artistData, silentFail = false ) => {
-    if ( !artistData.relations?.bandsintown ) {
+  const fetchBandsintownEvents = async ( actData, silentFail = false ) => {
+    if ( !actData.relations?.bandsintown ) {
       return [];
     }
 
-    const bandsintownUrl = artistData.relations.bandsintown;
+    const bandsintownUrl = actData.relations.bandsintown;
 
     try {
       const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
@@ -138,15 +138,15 @@
   };
 
   /**
-   * Fetches and enriches artist data from MusicBrainz with events and computed status
-   * @param {string} artistId - The MusicBrainz artist ID
+   * Fetches and enriches act data from MusicBrainz with events and computed status
+   * @param {string} actId - The MusicBrainz act ID
    * @param {boolean} silentEventFail - If true, event fetch errors return empty array instead of throwing
-   * @returns {Promise<object>} Complete artist data with events, status, and timestamp
+   * @returns {Promise<object>} Complete act data with events, status, and timestamp
    */
-  const fetchAndEnrichArtistData = async ( artistId, silentEventFail = false ) => {
+  const fetchAndEnrichActData = async ( actId, silentEventFail = false ) => {
     // Fetch fresh data from MusicBrainz
-    const mbData = await mf.musicbrainz.fetchArtist( artistId );
-    const transformedData = mf.musicbrainzTransformer.transformArtistData( mbData );
+    const mbData = await mf.musicbrainz.fetchAct( actId );
+    const transformedData = mf.musicbrainzTransformer.transformActData( mbData );
 
     // Fetch Bandsintown events if available
     const events = await fetchBandsintownEvents( transformedData, silentEventFail );
@@ -164,19 +164,19 @@
 
   /**
    * Categorizes acts as cached or missing
-   * @param {Array<string>} artistIds - Array of artist IDs
+   * @param {Array<string>} actIds - Array of act IDs
    * @param {Array<object|null>} cacheResults - Corresponding cache results
    * @returns {object} Object with cachedActs and missingIds arrays
    */
-  const categorizeActs = ( artistIds, cacheResults ) => {
+  const categorizeActs = ( actIds, cacheResults ) => {
     const cachedActs = [];
     const missingIds = [];
 
-    for ( let i = 0; i < artistIds.length; i += 1 ) {
+    for ( let i = 0; i < actIds.length; i += 1 ) {
       if ( cacheResults[ i ] ) {
         cachedActs.push( cacheResults[ i ] );
       } else {
-        missingIds.push( artistIds[ i ] );
+        missingIds.push( actIds[ i ] );
       }
     }
 
@@ -206,15 +206,15 @@
   };
 
   /**
-   * Fetches cached data for multiple artists with timeout protection
-   * @param {Array<string>} artistIds - Array of artist IDs to fetch
+   * Fetches cached data for multiple acts with timeout protection
+   * @param {Array<string>} actIds - Array of act IDs to fetch
    * @returns {Promise<Array>} Array of cached results (null if not cached)
    * @throws {Error} When cache is unavailable or timeout (SVC_002)
    */
-  const fetchCachedActs = async ( artistIds ) => {
+  const fetchCachedActs = async ( actIds ) => {
     try {
-      return await Promise.all( artistIds.map( ( id ) => withTimeout(
-        mf.database.getArtistFromCache( id ),
+      return await Promise.all( actIds.map( ( id ) => withTimeout(
+        mf.database.getActFromCache( id ),
         DB_TIMEOUT_MS
       ) ) );
     } catch ( error ) {
@@ -225,15 +225,15 @@
 
   /**
    * Handles case where exactly 1 act is missing
-   * @param {string} missingId - The missing artist ID
+   * @param {string} missingId - The missing act ID
    * @param {Array<object>} cachedActs - Already cached acts
    * @returns {Promise<object>} Result with all acts
    */
   const handleSingleMissingAct = async ( missingId, cachedActs ) => {
-    const freshData = await fetchAndEnrichArtistData( missingId );
+    const freshData = await fetchAndEnrichActData( missingId );
 
     // Cache asynchronously (fire-and-forget)
-    mf.database.cacheArtist( freshData ).catch( () => {
+    mf.database.cacheAct( freshData ).catch( () => {
       cacheHealthy = false;
     } );
 
@@ -251,7 +251,7 @@
 
   /**
    * Handles case where 2+ acts are missing
-   * @param {Array<string>} missingIds - Array of missing artist IDs
+   * @param {Array<string>} missingIds - Array of missing act IDs
    * @param {number} cachedCount - Number of cached acts
    * @returns {object} Error response with background fetch notification
    */
@@ -272,23 +272,23 @@
   /**
    * Fetches multiple acts with smart caching strategy
    * Protects upstream services by failing fast when cache is unhealthy
-   * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs
+   * @param {Array<string>} actIds - Array of MusicBrainz act IDs
    * @returns {Promise<object>} Result object with acts array or error
    * @throws {Error} When cache is unhealthy or unavailable
    */
-  const fetchMultipleActs = async ( artistIds ) => {
-    if ( !Array.isArray( artistIds ) || artistIds.length === 0 ) {
+  const fetchMultipleActs = async ( actIds ) => {
+    if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
       return {
         'error': {
-          'message': 'Invalid input: artistIds must be a non-empty array'
+          'message': 'Invalid input: actIds must be a non-empty array'
         }
       };
     }
 
     await ensureCacheHealthy();
 
-    const cacheResults = await fetchCachedActs( artistIds );
-    const { cachedActs, missingIds } = categorizeActs( artistIds, cacheResults );
+    const cacheResults = await fetchCachedActs( actIds );
+    const { cachedActs, missingIds } = categorizeActs( actIds, cacheResults );
 
     checkAndRefreshStaleActs( cachedActs );
 
@@ -307,9 +307,9 @@
 
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
-  globalThis.mf.artistService = {
+  globalThis.mf.actService = {
     determineStatus,
-    fetchAndEnrichArtistData,
+    fetchAndEnrichActData,
     fetchBandsintownEvents,
     fetchMultipleActs,
     getBerlinTimestamp
@@ -318,7 +318,7 @@
   // Expose private functions for unit testing when running under Jest
   if ( process.env.JEST_WORKER_ID ) {
     globalThis.mf.testing = globalThis.mf.testing || {};
-    globalThis.mf.testing.artistService = {
+    globalThis.mf.testing.actService = {
       withTimeout
     };
   }

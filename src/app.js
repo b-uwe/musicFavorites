@@ -8,7 +8,7 @@
 
   const express = require( 'express' );
   const path = require( 'path' );
-  require( './services/artistService' );
+  require( './services/actService' );
 
   const app = express();
 
@@ -64,8 +64,8 @@
     setResponseHeaders( res );
 
     try {
-      const artistIds = id.split( ',' ).map( ( artistId ) => artistId.trim() );
-      const result = await mf.artistService.fetchMultipleActs( artistIds );
+      const actIds = id.split( ',' ).map( ( actId ) => actId.trim() );
+      const result = await mf.actService.fetchMultipleActs( actIds );
 
       if ( result.error ) {
         return res.status( 503 ).json( {
@@ -85,7 +85,7 @@
         'meta': META,
         'type': 'error',
         'error': {
-          'message': 'Failed to fetch artist data',
+          'message': 'Failed to fetch act data',
           'details': error.message
         }
       } );

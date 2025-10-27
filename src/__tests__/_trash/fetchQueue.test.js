@@ -22,8 +22,8 @@ describe( 'Fetch Queue Service', () => {
 
   beforeEach( () => {
     jest.clearAllMocks();
-    transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-    transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    transformedTheKinks = musicbrainzTransformer.transformActData( fixtureTheKinks );
+    transformedVulvodynia = musicbrainzTransformer.transformActData( fixtureVulvodynia );
   } );
 
   describe( 'triggerBackgroundFetch', () => {
@@ -35,16 +35,16 @@ describe( 'Fetch Queue Service', () => {
 
       const actIds = [ transformedTheKinks._id ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       await jest.runAllTimersAsync();
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedTheKinks._id );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedTheKinks._id );
+      expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
         '_id': transformedTheKinks._id,
         'name': transformedTheKinks.name
       } ) );
@@ -63,18 +63,18 @@ describe( 'Fetch Queue Service', () => {
         transformedVulvodynia._id
       ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       // Advance timers to process both acts (30s delay between them)
       await jest.advanceTimersByTimeAsync( 60000 );
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 2 );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 10000 );
@@ -94,18 +94,18 @@ describe( 'Fetch Queue Service', () => {
         transformedVulvodynia._id
       ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockRejectedValueOnce( new Error( 'Not found' ) );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockRejectedValueOnce( new Error( 'Not found' ) );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       await jest.advanceTimersByTimeAsync( 90000 );
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 3 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 3 );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 2 );
       expect( consoleErrorSpy ).toHaveBeenCalledWith(
         'Background fetch failed for act invalid-id:',
         'Not found'
@@ -125,16 +125,16 @@ describe( 'Fetch Queue Service', () => {
 
       const actIds = [ transformedTheKinks._id ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       // Should complete without 30s delay after last act
       await jest.runAllTimersAsync();
 
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 10000 );
@@ -152,18 +152,18 @@ describe( 'Fetch Queue Service', () => {
         transformedVulvodynia._id
       ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
-      database.cacheArtist.mockResolvedValueOnce();
+      database.cacheAct.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
+      database.cacheAct.mockResolvedValueOnce();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       await jest.advanceTimersByTimeAsync( 60000 );
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 2 );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 2 );
       expect( consoleErrorSpy ).toHaveBeenCalled();
 
       consoleErrorSpy.mockRestore();
@@ -178,15 +178,15 @@ describe( 'Fetch Queue Service', () => {
 
       const actIds = [ transformedVulvodynia._id ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Event fetch failed' ) );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       fetchQueue.triggerBackgroundFetch( actIds );
 
       await jest.runAllTimersAsync();
 
-      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
         '_id': transformedVulvodynia._id,
         'events': []
       } ) );
@@ -203,10 +203,10 @@ describe( 'Fetch Queue Service', () => {
       const actIds1 = [ transformedTheKinks._id ];
       const actIds2 = [ transformedVulvodynia._id ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       // Start first fetch
       fetchQueue.triggerBackgroundFetch( actIds1 );
@@ -218,14 +218,14 @@ describe( 'Fetch Queue Service', () => {
       await jest.runAllTimersAsync();
 
       // Both should have been processed
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedTheKinks._id );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedVulvodynia._id );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedTheKinks._id );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedVulvodynia._id );
 
       jest.useRealTimers();
     }, 10000 );
 
     /**
-     * Test error handling in background fetch when database.cacheArtist throws synchronously
+     * Test error handling in background fetch when database.cacheAct throws synchronously
      */
     test( 'handles errors in processFetchQueue and resets flag', async () => {
       jest.useFakeTimers();
@@ -234,11 +234,11 @@ describe( 'Fetch Queue Service', () => {
 
       const actIds = [ transformedTheKinks._id ];
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
 
-      // Make database.cacheArtist throw synchronously to trigger catch block
-      database.cacheArtist.mockImplementation( () => {
+      // Make database.cacheAct throw synchronously to trigger catch block
+      database.cacheAct.mockImplementation( () => {
         throw new Error( 'Synchronous database error' );
       } );
 

@@ -8,7 +8,7 @@ This project is fully open-source and designed for **educational and non-commerc
 ## Features
 
 - Aggregate concert and festival data from multiple public sources.
-- Expose a consistent REST API for querying artists, events, and venues.
+- Expose a consistent REST API for querying acts, events, and venues.
 - Standardized data schema and aggregation logic for easy consumption.
 - Open for community contributions while keeping all code under **AGPLv3**.
 
