@@ -1,8 +1,8 @@
 /**
- * Integration tests for artistService core workflows
- * Tests: artistService → musicbrainzTransformer → bandsintownTransformer → ldJsonExtractor
+ * Integration tests for actService core workflows
+ * Tests: actService → musicbrainzTransformer → bandsintownTransformer → ldJsonExtractor
  * Mocks: Only external I/O (MongoDB, HTTP)
- * @module __tests__/integration/artistService.integration
+ * @module __tests__/integration/actService.integration
  */
 
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
@@ -22,31 +22,31 @@ require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 
-describe( 'Artist Service Integration Tests', () => {
+describe( 'Act Service Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
 
     // Mock external I/O
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    mf.database.getActFromCache = jest.fn();
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
     mf.fetchQueue.triggerBackgroundFetch = jest.fn();
   } );
 
   /**
-   * Test fetchAndEnrichArtistData workflow:
+   * Test fetchAndEnrichActData workflow:
    * musicbrainz → musicbrainzTransformer → bandsintownTransformer → final enriched data
    */
-  test( 'fetchAndEnrichArtistData enriches MusicBrainz data with Bandsintown events', async () => {
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+  test( 'fetchAndEnrichActData enriches MusicBrainz data with Bandsintown events', async () => {
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureVulvodynia );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
 
-    const result = await mf.artistService.fetchAndEnrichArtistData(
+    const result = await mf.actService.fetchAndEnrichActData(
       fixtureVulvodynia.id,
       false
     );
@@ -75,11 +75,11 @@ describe( 'Artist Service Integration Tests', () => {
    * Test fetchBandsintownEvents integration with transformers
    */
   test( 'fetchBandsintownEvents fetches and transforms events through full workflow', async () => {
-    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
 
-    const events = await mf.artistService.fetchBandsintownEvents( artist, false );
+    const events = await mf.actService.fetchBandsintownEvents( artist, false );
 
     // Verify events were transformed
     expect( Array.isArray( events ) ).toBe( true );
@@ -103,11 +103,11 @@ describe( 'Artist Service Integration Tests', () => {
   /**
    * Test that status determination integrates correctly with event data
    */
-  test( 'fetchAndEnrichArtistData determines status based on enriched events', async () => {
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+  test( 'fetchAndEnrichActData determines status based on enriched events', async () => {
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureVulvodynia );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownLdJson );
 
-    const result = await mf.artistService.fetchAndEnrichArtistData(
+    const result = await mf.actService.fetchAndEnrichActData(
       fixtureVulvodynia.id,
       false
     );
@@ -124,7 +124,7 @@ describe( 'Artist Service Integration Tests', () => {
    * Test that past events are filtered out during transformation
    */
   test( 'fetchBandsintownEvents filters out past events during transformation', async () => {
-    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     /*
      * Use fixture modifier to create past events
@@ -137,7 +137,7 @@ describe( 'Artist Service Integration Tests', () => {
 
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( pastEventsLdJson );
 
-    const events = await mf.artistService.fetchBandsintownEvents( artist, false );
+    const events = await mf.actService.fetchBandsintownEvents( artist, false );
 
     /*
      * Events older than 2 days should be filtered out
@@ -149,10 +149,10 @@ describe( 'Artist Service Integration Tests', () => {
   /**
    * Test MusicBrainz API failure during live request
    */
-  test( 'fetchAndEnrichArtistData handles MusicBrainz API failures', async () => {
-    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz API rate limit exceeded' ) );
+  test( 'fetchAndEnrichActData handles MusicBrainz API failures', async () => {
+    mf.musicbrainz.fetchAct.mockRejectedValue( new Error( 'MusicBrainz API rate limit exceeded' ) );
 
-    await expect( mf.artistService.fetchAndEnrichArtistData( fixtureVulvodynia.id, false ) ).rejects.toThrow( 'MusicBrainz API rate limit exceeded' );
+    await expect( mf.actService.fetchAndEnrichActData( fixtureVulvodynia.id, false ) ).rejects.toThrow( 'MusicBrainz API rate limit exceeded' );
   } );
 
   /**
@@ -165,15 +165,15 @@ describe( 'Artist Service Integration Tests', () => {
       'f35e1992-230b-4d63-9e63-a829caccbcd5'
     ];
 
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     transformedArtist.events = [];
 
     // Any failure in cache read will trigger SVC_002
-    mf.database.getArtistFromCache = jest.fn().mockRejectedValue( new Error( 'Cache read failed' ) );
+    mf.database.getActFromCache = jest.fn().mockRejectedValue( new Error( 'Cache read failed' ) );
 
     // Should throw SVC_002 error
-    await expect( mf.artistService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
+    await expect( mf.actService.fetchMultipleActs( actIds ) ).rejects.toThrow( 'SVC_002' );
   } );
 
   /**
@@ -188,7 +188,7 @@ describe( 'Artist Service Integration Tests', () => {
     // Just under 24 hours old (should be fresh)
     const barelyFreshTimestamp = new Date( now.getTime() - ( ( 24 * 60 * 60 * 1000 ) - 1000 ) );
 
-    const staleArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     staleArtist.events = [];
     staleArtist.updatedAt = exactlyStaleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
@@ -199,11 +199,11 @@ describe( 'Artist Service Integration Tests', () => {
       'updatedAt': barelyFreshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockResolvedValueOnce( staleArtist ).
       mockResolvedValueOnce( freshArtist );
 
-    const result = await mf.artistService.fetchMultipleActs( [
+    const result = await mf.actService.fetchMultipleActs( [
       fixtureVulvodynia.id,
       '664c3e0e-42d8-48c1-b209-1efca19c0325'
     ] );
@@ -218,15 +218,15 @@ describe( 'Artist Service Integration Tests', () => {
   /**
    * Test Bandsintown URL extraction failure
    */
-  test( 'fetchAndEnrichArtistData handles artists without Bandsintown URL', async () => {
+  test( 'fetchAndEnrichActData handles artists without Bandsintown URL', async () => {
     const artistWithoutBandsintown = {
       ...fixtureVulvodynia,
       'relations': fixtureVulvodynia.relations.filter( ( rel ) => rel.type !== 'bandsintown' )
     };
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( artistWithoutBandsintown );
+    mf.musicbrainz.fetchAct.mockResolvedValue( artistWithoutBandsintown );
 
-    const result = await mf.artistService.fetchAndEnrichArtistData(
+    const result = await mf.actService.fetchAndEnrichActData(
       artistWithoutBandsintown.id,
       false
     );
@@ -245,41 +245,41 @@ describe( 'Artist Service Integration Tests', () => {
    * Test Bandsintown events fetch failure
    */
   test( 'fetchBandsintownEvents handles HTTP errors gracefully', async () => {
-    const artist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const artist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'HTTP request timeout' ) );
 
-    await expect( mf.artistService.fetchBandsintownEvents( artist, false ) ).rejects.toThrow( 'HTTP request timeout' );
+    await expect( mf.actService.fetchBandsintownEvents( artist, false ) ).rejects.toThrow( 'HTTP request timeout' );
   } );
 
   /**
    * Test fetchMultipleActs with large number of IDs
    */
   test( 'fetchMultipleActs handles many acts efficiently', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     transformedArtist.events = [];
 
     // Mock 50 cached acts
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const manyActIds = Array.from( { 'length': 50 }, ( _, i ) => `act-id-${i}` );
 
-    const result = await mf.artistService.fetchMultipleActs( manyActIds );
+    const result = await mf.actService.fetchMultipleActs( manyActIds );
 
     // Should return all acts
     expect( result.acts ).toHaveLength( 50 );
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 50 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 50 );
   } );
 
   /**
    * Test fetchMultipleActs with duplicate IDs
    */
   test( 'fetchMultipleActs handles duplicate IDs correctly', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const duplicateIds = [
       fixtureVulvodynia.id,
@@ -287,11 +287,11 @@ describe( 'Artist Service Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    const result = await mf.artistService.fetchMultipleActs( duplicateIds );
+    const result = await mf.actService.fetchMultipleActs( duplicateIds );
 
     // Should deduplicate and return once
     expect( result.acts ).toHaveLength( 3 );
     // Should fetch all three times (no deduplication in current implementation)
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledTimes( 3 );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 3 );
   } );
 } );

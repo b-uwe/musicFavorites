@@ -1,9 +1,9 @@
 /**
  * Tests for artist service with transparent caching
- * @module __tests__/services/artistService
+ * @module __tests__/services/actService
  */
 
-const artistService = require( '../../services/artistService' );
+const actService = require( '../../services/actService' );
 const database = require( '../../services/database' );
 const fixtureModifier = require( '../../testHelpers/fixtureModifier' );
 const musicbrainzClient = require( '../../services/musicbrainz' );
@@ -18,18 +18,18 @@ jest.mock( '../../services/database' );
 jest.mock( '../../services/musicbrainz' );
 jest.mock( '../../services/ldJsonExtractor' );
 
-const { determineStatus } = artistService;
+const { determineStatus } = actService;
 
-describe( 'Artist Service', () => {
+describe( 'Act Service', () => {
   let transformedJungleRot;
   let transformedTheKinks;
   let transformedVulvodynia;
 
   beforeEach( () => {
     jest.clearAllMocks();
-    transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
-    transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-    transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    transformedJungleRot = musicbrainzTransformer.transformActData( fixtureJungleRot );
+    transformedTheKinks = musicbrainzTransformer.transformActData( fixtureTheKinks );
+    transformedVulvodynia = musicbrainzTransformer.transformActData( fixtureVulvodynia );
   } );
 
   describe( 'determineStatus - unit tests', () => {
@@ -62,7 +62,7 @@ describe( 'Artist Service', () => {
     test( 'throws error when Bandsintown fetch fails and silentFail is undefined', async () => {
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
 
-      await expect( artistService.fetchBandsintownEvents( transformedVulvodynia ) ).rejects.toThrow( 'Network error' );
+      await expect( actService.fetchBandsintownEvents( transformedVulvodynia ) ).rejects.toThrow( 'Network error' );
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
     } );
 
@@ -72,24 +72,24 @@ describe( 'Artist Service', () => {
     test( 'does NOT throw when Bandsintown fetch fails and silentFail is true', async () => {
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
 
-      const result = await artistService.fetchBandsintownEvents( transformedVulvodynia, true );
+      const result = await actService.fetchBandsintownEvents( transformedVulvodynia, true );
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
 
       expect( result ).toEqual( [] );
     } );
   } );
 
-  describe( 'fetchAndEnrichArtistData - direct tests', () => {
+  describe( 'fetchAndEnrichActData - direct tests', () => {
     /**
      * Test that silentEventFail=true returns empty events on Bandsintown error
      */
     test( 'returns empty events when Bandsintown fetch fails and silentEventFail=true', async () => {
       const artistId = transformedVulvodynia._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
 
-      const result = await artistService.fetchAndEnrichArtistData( artistId, true );
+      const result = await actService.fetchAndEnrichActData( artistId, true );
 
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
       expect( result ).toHaveProperty( 'events' );
@@ -104,10 +104,10 @@ describe( 'Artist Service', () => {
     test( 'throws error when Bandsintown fetch fails and silentEventFail=undefined', async () => {
       const artistId = transformedVulvodynia._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
 
-      await expect( artistService.fetchAndEnrichArtistData( artistId ) ).rejects.toThrow( 'Network error' );
+      await expect( actService.fetchAndEnrichActData( artistId ) ).rejects.toThrow( 'Network error' );
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
     } );
   } );

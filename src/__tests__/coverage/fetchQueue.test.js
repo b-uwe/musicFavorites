@@ -4,7 +4,7 @@
  */
 
 // Mock dependencies to prevent them from initializing globalThis.mf
-jest.mock( '../../services/artistService', () => ( {} ) );
+jest.mock( '../../services/actService', () => ( {} ) );
 
 describe( 'fetchQueue - Branch Coverage', () => {
   test( 'initializes globalThis.mf when it does not exist', () => {

@@ -57,11 +57,11 @@
   };
 
   /**
-   * Transforms MusicBrainz artist data to our unified JSON format
-   * @param {object} mbData - Raw MusicBrainz artist data
-   * @returns {object} Transformed artist data
+   * Transforms MusicBrainz act data to our unified JSON format
+   * @param {object} mbData - Raw MusicBrainz act data
+   * @returns {object} Transformed act data
    */
-  const transformArtistData = ( mbData ) => {
+  const transformActData = ( mbData ) => {
     const relations = ( mbData.relations || [] ).
       map( processRelation ).
       filter( ( entry ) => entry !== null ).
@@ -90,6 +90,6 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.musicbrainzTransformer = {
-    transformArtistData
+    transformActData
   };
 } )();

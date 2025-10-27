@@ -1,9 +1,9 @@
 /**
- * Unit tests for artistService cache staleness checking
- * @module __tests__/unit/services/artistService.staleness
+ * Unit tests for actService cache staleness checking
+ * @module __tests__/unit/services/actService.staleness
  */
 
-describe( 'artistService - cache staleness checking', () => {
+describe( 'actService - cache staleness checking', () => {
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
@@ -16,16 +16,16 @@ describe( 'artistService - cache staleness checking', () => {
     require( '../../../services/musicbrainzTransformer' );
     require( '../../../services/fetchQueue' );
     require( '../../../services/cacheUpdater' );
-    require( '../../../services/artistService' );
+    require( '../../../services/actService' );
 
     // Spy on database functions
     jest.spyOn( mf.database, 'connect' ).mockResolvedValue();
     jest.spyOn( mf.database, 'testCacheHealth' ).mockResolvedValue();
-    jest.spyOn( mf.database, 'getArtistFromCache' ).mockResolvedValue( null );
-    jest.spyOn( mf.database, 'cacheArtist' ).mockResolvedValue();
+    jest.spyOn( mf.database, 'getActFromCache' ).mockResolvedValue( null );
+    jest.spyOn( mf.database, 'cacheAct' ).mockResolvedValue();
 
     // Spy on other service functions
-    jest.spyOn( mf.musicbrainz, 'fetchArtist' ).mockResolvedValue( {} );
+    jest.spyOn( mf.musicbrainz, 'fetchAct' ).mockResolvedValue( {} );
     jest.spyOn( mf.ldJsonExtractor, 'fetchAndExtractLdJson' ).mockResolvedValue( {} );
     jest.spyOn( mf.fetchQueue, 'triggerBackgroundFetch' ).mockImplementation( () => {
       // No-op - background fetch is mocked for tests
@@ -38,19 +38,19 @@ describe( 'artistService - cache staleness checking', () => {
 
   describe( 'fetchMultipleActs staleness detection', () => {
     test( 'does not trigger refresh when no acts are cached', async () => {
-      mf.database.getArtistFromCache.mockResolvedValue( null );
-      mf.musicbrainz.fetchArtist.mockResolvedValue( {
+      mf.database.getActFromCache.mockResolvedValue( null );
+      mf.musicbrainz.fetchAct.mockResolvedValue( {
         'id': 'id1',
         'name': 'Test Artist'
       } );
-      mf.musicbrainzTransformer.transformArtistData = jest.fn().mockReturnValue( {
+      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( {
         '_id': 'id1',
         'name': 'Test Artist',
         'status': 'active'
       } );
       mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( [] );
 
-      const result = await mf.artistService.fetchMultipleActs( [ 'id1' ] );
+      const result = await mf.actService.fetchMultipleActs( [ 'id1' ] );
 
       expect( result.acts ).toHaveLength( 1 );
       expect( mf.fetchQueue.triggerBackgroundFetch ).not.toHaveBeenCalled();
@@ -74,11 +74,11 @@ describe( 'artistService - cache staleness checking', () => {
         }
       ];
 
-      mf.database.getArtistFromCache.
+      mf.database.getActFromCache.
         mockResolvedValueOnce( mockCached[ 0 ] ).
         mockResolvedValueOnce( mockCached[ 1 ] );
 
-      const result = await mf.artistService.fetchMultipleActs( [ 'id1', 'id2' ] );
+      const result = await mf.actService.fetchMultipleActs( [ 'id1', 'id2' ] );
 
       expect( result ).toEqual( {
         'acts': mockCached
@@ -104,11 +104,11 @@ describe( 'artistService - cache staleness checking', () => {
         }
       ];
 
-      mf.database.getArtistFromCache.
+      mf.database.getActFromCache.
         mockResolvedValueOnce( mockCached[ 0 ] ).
         mockResolvedValueOnce( mockCached[ 1 ] );
 
-      const result = await mf.artistService.fetchMultipleActs( [ 'id1', 'id2' ] );
+      const result = await mf.actService.fetchMultipleActs( [ 'id1', 'id2' ] );
 
       expect( result ).toEqual( {
         'acts': mockCached
@@ -122,9 +122,9 @@ describe( 'artistService - cache staleness checking', () => {
         'name': 'Artist 1'
       };
 
-      mf.database.getArtistFromCache.mockResolvedValueOnce( mockCached );
+      mf.database.getActFromCache.mockResolvedValueOnce( mockCached );
 
-      const result = await mf.artistService.fetchMultipleActs( [ 'id1' ] );
+      const result = await mf.actService.fetchMultipleActs( [ 'id1' ] );
 
       expect( result ).toEqual( {
         'acts': [ mockCached ]
@@ -156,12 +156,12 @@ describe( 'artistService - cache staleness checking', () => {
         }
       ];
 
-      mf.database.getArtistFromCache.
+      mf.database.getActFromCache.
         mockResolvedValueOnce( mockCached[ 0 ] ).
         mockResolvedValueOnce( mockCached[ 1 ] ).
         mockResolvedValueOnce( mockCached[ 2 ] );
 
-      const result = await mf.artistService.fetchMultipleActs( [ 'id1', 'id2', 'id3' ] );
+      const result = await mf.actService.fetchMultipleActs( [ 'id1', 'id2', 'id3' ] );
 
       expect( result ).toEqual( {
         'acts': mockCached

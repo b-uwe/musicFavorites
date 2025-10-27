@@ -1,6 +1,6 @@
 /**
  * Integration tests for cache updater functionality
- * Tests: cacheUpdater → artistService → database workflow
+ * Tests: cacheUpdater → actService → database workflow
  * Mocks: Only external I/O (MongoDB, HTTP)
  * @module __tests__/integration/cacheUpdater.integration
  */
@@ -16,7 +16,7 @@ jest.mock( '../../services/ldJsonExtractor' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../services/cacheUpdater' );
 
 describe( 'Cache Updater Integration Tests', () => {
@@ -26,10 +26,10 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // Mock database functions
     mf.database.getAllActsWithMetadata = jest.fn();
-    mf.database.cacheArtist = jest.fn();
+    mf.database.cacheAct = jest.fn();
 
     // Mock external HTTP calls
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
   } );
 
@@ -40,19 +40,19 @@ describe( 'Cache Updater Integration Tests', () => {
   /**
    * Test updateAct workflow: fetch from MusicBrainz → enrich → cache
    */
-  test( 'updateAct fetches artist data and caches it through full workflow', async () => {
+  test( 'updateAct fetches act data and caches it through full workflow', async () => {
     // Mock successful MusicBrainz fetch
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Call updateAct
     await mf.cacheUpdater.updateAct( fixtureTheKinks.id );
 
     // Verify full workflow executed
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
     // LD+JSON extraction happens conditionally based on Bandsintown relation
-    expect( mf.database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+    expect( mf.database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
       '_id': fixtureTheKinks.id,
       'name': fixtureTheKinks.name,
       'status': expect.any( String )
@@ -63,13 +63,13 @@ describe( 'Cache Updater Integration Tests', () => {
    * Test that errors in the workflow are caught and don't crash
    */
   test( 'updateAct handles errors gracefully without throwing', async () => {
-    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz API error' ) );
+    mf.musicbrainz.fetchAct.mockRejectedValue( new Error( 'MusicBrainz API error' ) );
 
     // Should not throw
     await expect( mf.cacheUpdater.updateAct( 'some-id' ) ).resolves.not.toThrow();
 
     // Should not attempt to cache when fetch fails
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( mf.database.cacheAct ).not.toHaveBeenCalled();
   } );
 
   /**
@@ -87,9 +87,9 @@ describe( 'Cache Updater Integration Tests', () => {
       }
     ] );
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Start the update (will process async)
     const updatePromise = mf.cacheUpdater.runSequentialUpdate();
@@ -101,8 +101,8 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // Verify workflow executed
     expect( actsUpdated ).toBe( 1 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
   } );
 
   /**
@@ -124,8 +124,8 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // Should skip fresh act
     expect( actsUpdated ).toBe( 0 );
-    expect( mf.musicbrainz.fetchArtist ).not.toHaveBeenCalled();
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( mf.musicbrainz.fetchAct ).not.toHaveBeenCalled();
+    expect( mf.database.cacheAct ).not.toHaveBeenCalled();
   } );
 
   /**
@@ -148,11 +148,11 @@ describe( 'Cache Updater Integration Tests', () => {
     ] );
 
     // First act fails, second succeeds
-    mf.musicbrainz.fetchArtist.
+    mf.musicbrainz.fetchAct.
       mockRejectedValueOnce( new Error( 'Fetch failed for act1' ) ).
       mockResolvedValueOnce( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Start the update
     const updatePromise = mf.cacheUpdater.runSequentialUpdate();
@@ -164,9 +164,9 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // Should process both acts
     expect( actsUpdated ).toBe( 2 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
     // But only cache the successful one
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 1 );
   } );
 
   /**
@@ -189,9 +189,9 @@ describe( 'Cache Updater Integration Tests', () => {
       }
     ] );
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Start update
     const updatePromise = mf.cacheUpdater.runSequentialUpdate();
@@ -203,8 +203,8 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // Should only process stale act
     expect( actsUpdated ).toBe( 1 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 1 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 1 );
   } );
 
   /**
@@ -229,9 +229,9 @@ describe( 'Cache Updater Integration Tests', () => {
       }
     ] );
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Start update (don't await yet)
     const updatePromise = mf.cacheUpdater.runSequentialUpdate();
@@ -243,7 +243,7 @@ describe( 'Cache Updater Integration Tests', () => {
 
     // All three should be processed
     expect( actsUpdated ).toBe( 3 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 3 );
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 3 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 3 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 3 );
   } );
 } );

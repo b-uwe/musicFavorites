@@ -19,7 +19,7 @@ require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/fetchQueue' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Upstream API Error Handling Integration Tests', () => {
@@ -34,9 +34,9 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     // Default mocks
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn();
   } );
 
@@ -51,8 +51,8 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const rateLimitError = new Error( 'MusicBrainz API error: Rate limit exceeded' );
 
     rateLimitError.statusCode = 429;
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( rateLimitError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( rateLimitError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -60,7 +60,7 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
 
     // Should return error with details
     expect( response.body.error ).toBeDefined();
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -71,14 +71,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const serviceError = new Error( 'MusicBrainz API error: Service temporarily unavailable' );
 
     serviceError.statusCode = 503;
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( serviceError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( serviceError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -86,7 +86,7 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
    * Test Bandsintown timeout during LD+JSON extraction
    */
   test( 'Bandsintown timeout is handled without crashing', async () => {
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
 
     const timeoutError = new Error( 'Request timeout after 30s' );
 
@@ -98,10 +98,10 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 35000 );
 
     // MusicBrainz fetch should succeed
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalled();
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalled();
 
     // Cache should still happen (even without Bandsintown events)
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
   } );
 
   /**
@@ -111,14 +111,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const networkError = new Error( 'MusicBrainz API error: ECONNREFUSED' );
 
     networkError.code = 'ECONNREFUSED';
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( networkError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( networkError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -129,14 +129,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const dnsError = new Error( 'MusicBrainz API error: getaddrinfo ENOTFOUND musicbrainz.org' );
 
     dnsError.code = 'ENOTFOUND';
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( dnsError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( dnsError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -147,14 +147,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const parseError = new Error( 'MusicBrainz API error: Unexpected token < in JSON at position 0' );
 
     parseError.name = 'SyntaxError';
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( parseError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( parseError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -162,7 +162,7 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
    * Test partial success: MusicBrainz succeeds, Bandsintown fails
    */
   test( 'partial success with Bandsintown failure still caches data', async () => {
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Bandsintown down' ) );
 
     mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
@@ -170,9 +170,9 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 35000 );
 
     // Should still cache with empty events
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
 
-    const [ [ cachedData ] ] = mf.database.cacheArtist.mock.calls;
+    const [ [ cachedData ] ] = mf.database.cacheAct.mock.calls;
 
     expect( cachedData._id ).toBe( fixtureTheKinks.id );
     expect( cachedData.events ).toEqual( [] );
@@ -185,7 +185,7 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const rateLimitError = new Error( 'Rate limit exceeded' );
 
     rateLimitError.statusCode = 429;
-    mf.musicbrainz.fetchArtist.mockRejectedValue( rateLimitError );
+    mf.musicbrainz.fetchAct.mockRejectedValue( rateLimitError );
 
     const actIds = [
       'act1',
@@ -198,15 +198,15 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 95000 );
 
     // All should attempt but all fail
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 3 );
-    expect( mf.database.cacheArtist ).not.toHaveBeenCalled();
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 3 );
+    expect( mf.database.cacheAct ).not.toHaveBeenCalled();
   } );
 
   /**
    * Test Bandsintown returns HTML instead of LD+JSON
    */
   test( 'Bandsintown HTML response without LD+JSON is handled', async () => {
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
 
     // Empty array means no LD+JSON found
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( [] );
@@ -216,9 +216,9 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 35000 );
 
     // Should cache with empty events
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
 
-    const [ [ cachedData ] ] = mf.database.cacheArtist.mock.calls;
+    const [ [ cachedData ] ] = mf.database.cacheAct.mock.calls;
 
     expect( cachedData.events ).toEqual( [] );
   } );
@@ -230,14 +230,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const sslError = new Error( 'MusicBrainz API error: unable to verify the first certificate' );
 
     sslError.code = 'UNABLE_TO_VERIFY_LEAF_SIGNATURE';
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( sslError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( sslError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -249,14 +249,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
 
     redirectError.code = 'ERR_TOO_MANY_REDIRECTS';
     mf.ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( redirectError );
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
 
     mf.fetchQueue.triggerBackgroundFetch( [ fixtureTheKinks.id ] );
 
     await jest.advanceTimersByTimeAsync( 35000 );
 
     // Should still cache MusicBrainz data
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
   } );
 
   /**
@@ -266,14 +266,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
     const notFoundError = new Error( 'MusicBrainz API error: Artist not found' );
 
     notFoundError.statusCode = 404;
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( notFoundError );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( notFoundError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 
@@ -281,14 +281,14 @@ describe( 'Upstream API Error Handling Integration Tests', () => {
    * Test cache miss with upstream error returns proper error to user
    */
   test( 'cache miss with upstream error returns 500 to user', async () => {
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz API error: Rate limited' ) );
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockRejectedValue( new Error( 'MusicBrainz API error: Rate limited' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
     expect( response.body.error.details ).toBeDefined();
   } );
 } );

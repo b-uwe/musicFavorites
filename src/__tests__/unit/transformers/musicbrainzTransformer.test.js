@@ -8,13 +8,13 @@ const fixtureJungleRot = require( '../../fixtures/musicbrainz-jungle-rot.json' )
 const fixtureTheKinks = require( '../../fixtures/musicbrainz-the-kinks.json' );
 
 describe( 'MusicBrainz Data Transformer', () => {
-  describe( 'transformArtistData', () => {
+  describe( 'transformActData', () => {
     let resultJungleRot;
     let resultTheKinks;
 
     beforeAll( () => {
-      resultJungleRot = mf.musicbrainzTransformer.transformArtistData( fixtureJungleRot );
-      resultTheKinks = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+      resultJungleRot = mf.musicbrainzTransformer.transformActData( fixtureJungleRot );
+      resultTheKinks = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
     } );
 
     describe( 'basic metadata', () => {
@@ -250,7 +250,7 @@ describe( 'MusicBrainz Data Transformer', () => {
           ]
         } );
 
-        const result = mf.musicbrainzTransformer.transformArtistData( dataWithNullRelation );
+        const result = mf.musicbrainzTransformer.transformActData( dataWithNullRelation );
 
         expect( result.relations ).toEqual( {} );
       } );
@@ -267,7 +267,7 @@ describe( 'MusicBrainz Data Transformer', () => {
           'life-span': null
         } );
 
-        const result = mf.musicbrainzTransformer.transformArtistData( dataWithMissingFields );
+        const result = mf.musicbrainzTransformer.transformActData( dataWithMissingFields );
 
         expect( result.country ).toBeNull();
         expect( result.region ).toBeNull();

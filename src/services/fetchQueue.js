@@ -24,8 +24,8 @@
 
   /**
    * Processes the fetch queue sequentially with 30-second delays
-   * Uses lazy require pattern to avoid circular dependency with artistService
-   * @param {Set<string>} queue - Set of MusicBrainz artist IDs to fetch
+   * Uses lazy require pattern to avoid circular dependency with actService
+   * @param {Set<string>} queue - Set of MusicBrainz act IDs to fetch
    * @returns {Promise<void>} Resolves when queue is empty
    */
   const processFetchQueue = async ( queue ) => {
@@ -33,7 +33,7 @@
      * CRITICAL: Lazy require to break circular dependency
      * This function is called after all modules are loaded, so it's safe
      */
-    require( './artistService' );
+    require( './actService' );
 
     // Process queue until empty
     while ( queue.size > 0 ) {
@@ -44,11 +44,11 @@
       queue.delete( actId );
 
       try {
-        // Fetch and enrich artist data with silent event failures
-        const dataToCache = await mf.artistService.fetchAndEnrichArtistData( actId, true );
+        // Fetch and enrich act data with silent event failures
+        const dataToCache = await mf.actService.fetchAndEnrichActData( actId, true );
 
         // Cache the result
-        await mf.database.cacheArtist( dataToCache );
+        await mf.database.cacheAct( dataToCache );
       } catch ( error ) {
         // Silent fail
       }
@@ -61,16 +61,16 @@
   };
 
   /**
-   * Triggers background sequential fetch for missing artist IDs
+   * Triggers background sequential fetch for missing act IDs
    * Adds IDs to queue and starts processor if not already running
    * Prevents reload hammering by using a Set (duplicates ignored)
-   * @param {Array<string>} artistIds - Array of MusicBrainz artist IDs to fetch
+   * @param {Array<string>} actIds - Array of MusicBrainz act IDs to fetch
    * @returns {void} Returns immediately after queueing
    */
-  const triggerBackgroundFetch = ( artistIds ) => {
+  const triggerBackgroundFetch = ( actIds ) => {
     // Add all missing IDs to the queue (Set prevents duplicates)
-    for ( const artistId of artistIds ) {
-      fetchQueue.add( artistId );
+    for ( const actId of actIds ) {
+      fetchQueue.add( actId );
     }
 
     // If processor already running, just return (IDs are queued)

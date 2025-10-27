@@ -16,10 +16,10 @@ jest.mock( '../../services/musicbrainz' );
 jest.mock( '../../services/ldJsonExtractor' );
 
 /*
- * CRITICAL: Import artistService and fetchQueue AFTER mocks are set up
+ * CRITICAL: Import actService and fetchQueue AFTER mocks are set up
  * This allows us to test real module interactions while mocking external I/O
  */
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../services/fetchQueue' );
 
 describe( 'Fetch Queue Integration Tests', () => {
@@ -31,20 +31,20 @@ describe( 'Fetch Queue Integration Tests', () => {
     mf.testing.fetchQueue.setIsRunning( false );
 
     // Mock only the database functions used in these tests
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn();
 
     // Mock musicbrainz functions
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.musicbrainz.fetchAct = jest.fn();
 
     // Mock ldJsonExtractor - CRITICAL for background fetch to work
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
   } );
 
   /**
-   * Test that triggerBackgroundFetch can call fetchAndEnrichArtistData without circular dependency errors
+   * Test that triggerBackgroundFetch can call fetchAndEnrichActData without circular dependency errors
    */
-  test( 'triggerBackgroundFetch calls fetchAndEnrichArtistData without errors', async () => {
+  test( 'triggerBackgroundFetch calls fetchAndEnrichActData without errors', async () => {
     jest.useFakeTimers();
 
     const actIds = [
@@ -52,10 +52,10 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -63,11 +63,11 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Advance through both fetches (2 acts × 30s = 60s)
     await jest.advanceTimersByTimeAsync( 60000 );
 
-    // Verify fetchAndEnrichArtistData was called (indirectly through processFetchQueue)
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    // Verify fetchAndEnrichActData was called (indirectly through processFetchQueue)
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureVulvodynia.id );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
     // Reset timers to restore normal timing
     jest.useRealTimers();
@@ -86,15 +86,15 @@ describe( 'Fetch Queue Integration Tests', () => {
     ];
 
     // All acts are missing from cache
-    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getActFromCache.mockResolvedValue( null );
 
     // Mock the background fetch behavior
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.cacheAct.mockResolvedValue();
 
     // Call fetchMultipleActs with 3 missing acts
-    const result = await mf.artistService.fetchMultipleActs( actIds );
+    const result = await mf.actService.fetchMultipleActs( actIds );
 
     // Should return error because 2+ acts are missing
     expect( result.error ).toBeDefined();
@@ -116,10 +116,10 @@ describe( 'Fetch Queue Integration Tests', () => {
    */
   test( 'modules load without circular dependency errors', () => {
     // If we got this far, the modules loaded successfully
-    expect( mf.artistService ).toBeDefined();
+    expect( mf.actService ).toBeDefined();
     expect( mf.fetchQueue ).toBeDefined();
-    expect( mf.artistService.fetchAndEnrichArtistData ).toBeDefined();
-    expect( typeof mf.artistService.fetchAndEnrichArtistData ).toBe( 'function' );
+    expect( mf.actService.fetchAndEnrichActData ).toBeDefined();
+    expect( typeof mf.actService.fetchAndEnrichActData ).toBe( 'function' );
     expect( mf.fetchQueue.triggerBackgroundFetch ).toBeDefined();
     expect( typeof mf.fetchQueue.triggerBackgroundFetch ).toBe( 'function' );
   } );
@@ -137,9 +137,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     ];
 
     // First succeeds, second fails, third succeeds
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchArtist.mockRejectedValueOnce( new Error( 'MusicBrainz fetch failed' ) );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockRejectedValueOnce( new Error( 'MusicBrainz fetch failed' ) );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -148,9 +148,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 90000 );
 
     // All 3 should be attempted
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 3 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 3 );
     // But only 2 should be cached (the successful ones)
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -166,12 +166,12 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureVulvodynia.id
     ];
 
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
 
     // First cache succeeds, second fails
-    mf.database.cacheArtist.mockResolvedValueOnce();
-    mf.database.cacheArtist.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
+    mf.database.cacheAct.mockResolvedValueOnce();
+    mf.database.cacheAct.mockRejectedValueOnce( new Error( 'Cache write failed' ) );
 
     // Trigger background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds );
@@ -180,9 +180,9 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Both should be fetched
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
     // Both cache attempts should be made (even though second fails)
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -197,8 +197,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     const actIds1 = [ fixtureTheKinks.id ];
     const actIds2 = [ fixtureVulvodynia.id ];
 
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
 
     // Start first background fetch
     mf.fetchQueue.triggerBackgroundFetch( actIds1 );
@@ -216,9 +216,9 @@ describe( 'Fetch Queue Integration Tests', () => {
      * Both should be processed by the SAME processor
      * This proves concurrent processors weren't started
      */
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureVulvodynia.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureVulvodynia.id );
 
     jest.useRealTimers();
   }, 10000 );
@@ -235,16 +235,16 @@ describe( 'Fetch Queue Integration Tests', () => {
     ];
 
     // Both acts missing from cache
-    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getActFromCache.mockResolvedValue( null );
 
     // Mock successful fetches
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-    mf.musicbrainz.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
 
     // Call fetchMultipleActs (triggers background fetch)
-    const apiResult = await mf.artistService.fetchMultipleActs( actIds );
+    const apiResult = await mf.actService.fetchMultipleActs( actIds );
 
     // API should return error (2+ acts missing)
     expect( apiResult.error ).toBeDefined();
@@ -256,8 +256,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Verify background processing occurred
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -271,8 +271,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     // Queue 10 acts at once
     const manyActIds = Array.from( { 'length': 10 }, ( _, i ) => `act-id-${i}` );
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheAct.mockResolvedValue();
 
     // Trigger background fetch with many IDs
     mf.fetchQueue.triggerBackgroundFetch( manyActIds );
@@ -281,8 +281,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 300000 );
 
     // All should be processed
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 10 );
-    expect( mf.database.cacheArtist ).toHaveBeenCalledTimes( 10 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 10 );
+    expect( mf.database.cacheAct ).toHaveBeenCalledTimes( 10 );
 
     jest.useRealTimers();
   }, 15000 );
@@ -296,13 +296,13 @@ describe( 'Fetch Queue Integration Tests', () => {
     const actIds1 = [ fixtureTheKinks.id ];
     const actIds2 = [ fixtureVulvodynia.id ];
 
-    mf.database.getArtistFromCache.mockResolvedValue( null );
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.database.getActFromCache.mockResolvedValue( null );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheAct.mockResolvedValue();
 
     // Simulate two concurrent API requests
-    const request1 = mf.artistService.fetchMultipleActs( actIds1 );
-    const request2 = mf.artistService.fetchMultipleActs( actIds2 );
+    const request1 = mf.actService.fetchMultipleActs( actIds1 );
+    const request2 = mf.actService.fetchMultipleActs( actIds2 );
 
     await Promise.all( [ request1, request2 ] );
 
@@ -310,7 +310,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Both should be added to queue and processed
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 2 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -327,8 +327,8 @@ describe( 'Fetch Queue Integration Tests', () => {
       fixtureTheKinks.id
     ];
 
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheArtist.mockResolvedValue();
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheAct.mockResolvedValue();
 
     // Trigger with duplicate IDs
     mf.fetchQueue.triggerBackgroundFetch( duplicateIds );
@@ -337,8 +337,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     await jest.advanceTimersByTimeAsync( 60000 );
 
     // Should only fetch once (queue deduplicates)
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledTimes( 1 );
-    expect( mf.musicbrainz.fetchArtist ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 1 );
+    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledWith( fixtureTheKinks.id );
 
     jest.useRealTimers();
   }, 10000 );

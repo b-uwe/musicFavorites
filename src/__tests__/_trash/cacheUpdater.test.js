@@ -24,8 +24,8 @@ describe( 'Cache Updater Service', () => {
   beforeEach( () => {
     jest.clearAllMocks();
 
-    transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
-    transformedVulvodynia = musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    transformedTheKinks = musicbrainzTransformer.transformActData( fixtureTheKinks );
+    transformedVulvodynia = musicbrainzTransformer.transformActData( fixtureVulvodynia );
   } );
 
   describe( 'updateAct', () => {
@@ -35,13 +35,13 @@ describe( 'Cache Updater Service', () => {
     test( 'fetches MusicBrainz data and replaces cache entry', async () => {
       const actId = transformedTheKinks._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       await cacheUpdater.updateAct( actId );
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actId );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( actId );
+      expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
         '_id': actId,
         'name': transformedTheKinks.name,
         'events': []
@@ -54,16 +54,16 @@ describe( 'Cache Updater Service', () => {
     test( 'fetches Bandsintown events when artist has bandsintown URL', async () => {
       const actId = transformedVulvodynia._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       await cacheUpdater.updateAct( actId );
 
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( actId );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( actId );
       expect( ldJsonExtractor.fetchAndExtractLdJson ).
         toHaveBeenCalledWith( 'https://www.bandsintown.com/a/6461184' );
-      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
         '_id': actId,
         'name': transformedVulvodynia.name,
         'events': expect.any( Array )
@@ -76,13 +76,13 @@ describe( 'Cache Updater Service', () => {
     test( 'includes Berlin timezone updatedAt timestamp in cached data', async () => {
       const actId = transformedTheKinks._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       await cacheUpdater.updateAct( actId );
 
-      expect( database.cacheArtist ).toHaveBeenCalled();
-      const cachedData = database.cacheArtist.mock.calls[ 0 ][ 0 ];
+      expect( database.cacheAct ).toHaveBeenCalled();
+      const cachedData = database.cacheAct.mock.calls[ 0 ][ 0 ];
 
       expect( cachedData ).toHaveProperty( 'updatedAt' );
       expect( typeof cachedData.updatedAt ).toBe( 'string' );
@@ -96,10 +96,10 @@ describe( 'Cache Updater Service', () => {
     test( 'skips update on MusicBrainz error without throwing', async () => {
       const actId = 'invalid-id';
 
-      musicbrainzClient.fetchArtist.mockRejectedValue( new Error( 'MusicBrainz error' ) );
+      musicbrainzClient.fetchAct.mockRejectedValue( new Error( 'MusicBrainz error' ) );
 
       await expect( cacheUpdater.updateAct( actId ) ).resolves.not.toThrow();
-      expect( database.cacheArtist ).not.toHaveBeenCalled();
+      expect( database.cacheAct ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -108,11 +108,11 @@ describe( 'Cache Updater Service', () => {
     test( 'skips update on cache write error without throwing', async () => {
       const actId = transformedTheKinks._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockRejectedValue( new Error( 'Cache write failed' ) );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockRejectedValue( new Error( 'Cache write failed' ) );
 
       await expect( cacheUpdater.updateAct( actId ) ).resolves.not.toThrow();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
     } );
 
     /**
@@ -121,14 +121,14 @@ describe( 'Cache Updater Service', () => {
     test( 'handles Bandsintown fetch error and caches with empty events', async () => {
       const actId = transformedVulvodynia._id;
 
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockRejectedValue( new Error( 'Network error' ) );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       await cacheUpdater.updateAct( actId );
 
       expect( ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( database.cacheAct ).toHaveBeenCalledWith( expect.objectContaining( {
         '_id': actId,
         'events': []
       } ) );
@@ -160,9 +160,9 @@ describe( 'Cache Updater Service', () => {
 
       database.getAllActIds.mockResolvedValue( actIds );
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       // Start dual strategy with 100ms cycle interval
       cacheUpdater.start( {
@@ -180,8 +180,8 @@ describe( 'Cache Updater Service', () => {
 
       // Verify all acts were updated
       expect( database.getAllActIds ).toHaveBeenCalled();
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 20000 );
@@ -203,8 +203,8 @@ describe( 'Cache Updater Service', () => {
 
       database.getAllActIds.mockResolvedValue( actIds );
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Start dual strategy with 50ms cycles
       cacheUpdater.start( {
@@ -222,8 +222,8 @@ describe( 'Cache Updater Service', () => {
 
       // Verify 3 cycles ran
       expect( database.getAllActIds ).toHaveBeenCalled();
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 20000 );
@@ -249,8 +249,8 @@ describe( 'Cache Updater Service', () => {
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [] );
       database.getAllActIds.mockResolvedValueOnce( [ transformedTheKinks._id ] );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Start dual strategy with 50ms cycles
       cacheUpdater.start( {
@@ -272,8 +272,8 @@ describe( 'Cache Updater Service', () => {
 
       // Verify: first cycle found empty cache, second cycle processed act
       expect( database.getAllActIds ).toHaveBeenCalled();
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 20000 );
@@ -295,8 +295,8 @@ describe( 'Cache Updater Service', () => {
       database.getAllActsWithMetadata.mockRejectedValueOnce( new Error( 'Database error' ) );
       database.getAllActIds.mockRejectedValueOnce( new Error( 'Database error' ) );
       database.getAllActIds.mockResolvedValue( [ transformedTheKinks._id ] );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Start dual strategy with 100ms cycle and 20ms retry delay
       cacheUpdater.start( {
@@ -315,8 +315,8 @@ describe( 'Cache Updater Service', () => {
 
       // Verify: cycles failed and retried, eventually succeeded
       expect( database.getAllActIds ).toHaveBeenCalled();
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 20000 );
@@ -345,8 +345,8 @@ describe( 'Cache Updater Service', () => {
 
       database.getAllActIds.mockResolvedValue( actIds );
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Start dual strategy with 200ms cycle (100ms per act with 2 acts)
       cacheUpdater.start( {
@@ -364,7 +364,7 @@ describe( 'Cache Updater Service', () => {
 
       // Verify: cycle completed and processed both acts
       expect( database.getAllActIds ).toHaveBeenCalled();
-      expect( database.cacheArtist ).toHaveBeenCalled();
+      expect( database.cacheAct ).toHaveBeenCalled();
 
       jest.useRealTimers();
     }, 20000 );
@@ -385,8 +385,8 @@ describe( 'Cache Updater Service', () => {
       // Return 1 act so it doesn't use the long sleep for empty cache
       database.getAllActIds.mockResolvedValue( [ transformedTheKinks._id ] );
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Pass undefined for cycleIntervalMs to test the ?? TWENTY_FOUR_HOURS_MS branch
       cacheUpdater.start( {
@@ -431,9 +431,9 @@ describe( 'Cache Updater Service', () => {
       ];
 
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -443,9 +443,9 @@ describe( 'Cache Updater Service', () => {
       const result = await promise;
 
       expect( result ).toBe( 1 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 1 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedVulvodynia._id );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 1 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 1 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedVulvodynia._id );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 1 );
 
       jest.useRealTimers();
     }, 10000 );
@@ -463,8 +463,8 @@ describe( 'Cache Updater Service', () => {
       ];
 
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -473,7 +473,7 @@ describe( 'Cache Updater Service', () => {
       const result = await promise;
 
       expect( result ).toBe( 1 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledWith( transformedTheKinks._id );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledWith( transformedTheKinks._id );
 
       jest.useRealTimers();
     }, 10000 );
@@ -501,7 +501,7 @@ describe( 'Cache Updater Service', () => {
       const result = await cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
-      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -522,10 +522,10 @@ describe( 'Cache Updater Service', () => {
       ];
 
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -535,8 +535,8 @@ describe( 'Cache Updater Service', () => {
       const result = await promise;
 
       expect( result ).toBe( 2 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 2 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 2 );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 10000 );
@@ -550,7 +550,7 @@ describe( 'Cache Updater Service', () => {
       const result = await cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
-      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -575,11 +575,11 @@ describe( 'Cache Updater Service', () => {
       ];
 
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureTheKinks );
-      musicbrainzClient.fetchArtist.mockRejectedValueOnce( new Error( 'MusicBrainz error' ) );
-      musicbrainzClient.fetchArtist.mockResolvedValueOnce( fixtureVulvodynia );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+      musicbrainzClient.fetchAct.mockRejectedValueOnce( new Error( 'MusicBrainz error' ) );
+      musicbrainzClient.fetchAct.mockResolvedValueOnce( fixtureVulvodynia );
       ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( fixtureBandsintownVulvodynia );
-      database.cacheArtist.mockResolvedValue();
+      database.cacheAct.mockResolvedValue();
 
       const promise = cacheUpdater.runSequentialUpdate();
 
@@ -589,8 +589,8 @@ describe( 'Cache Updater Service', () => {
       const result = await promise;
 
       expect( result ).toBe( 3 );
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalledTimes( 3 );
-      expect( database.cacheArtist ).toHaveBeenCalledTimes( 2 );
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalledTimes( 3 );
+      expect( database.cacheAct ).toHaveBeenCalledTimes( 2 );
 
       jest.useRealTimers();
     }, 10000 );
@@ -604,7 +604,7 @@ describe( 'Cache Updater Service', () => {
       const result = await cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
-      expect( musicbrainzClient.fetchArtist ).not.toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).not.toHaveBeenCalled();
     } );
   } );
 
@@ -626,8 +626,8 @@ describe( 'Cache Updater Service', () => {
 
       database.getAllActIds.mockResolvedValue( actIds );
       database.getAllActsWithMetadata.mockResolvedValue( actsWithMetadata );
-      musicbrainzClient.fetchArtist.mockResolvedValue( fixtureTheKinks );
-      database.cacheArtist.mockResolvedValue();
+      musicbrainzClient.fetchAct.mockResolvedValue( fixtureTheKinks );
+      database.cacheAct.mockResolvedValue();
 
       // Start the dual strategy
       cacheUpdater.start( {
@@ -639,9 +639,9 @@ describe( 'Cache Updater Service', () => {
       await jest.advanceTimersByTimeAsync( 30000 );
 
       expect( database.getAllActsWithMetadata ).toHaveBeenCalled();
-      expect( musicbrainzClient.fetchArtist ).toHaveBeenCalled();
+      expect( musicbrainzClient.fetchAct ).toHaveBeenCalled();
 
-      const callsAfterSequential = database.cacheArtist.mock.calls.length;
+      const callsAfterSequential = database.cacheAct.mock.calls.length;
 
       // Phase 2: 12-hour wait
       await jest.advanceTimersByTimeAsync( 12 * 60 * 60 * 1000 );
@@ -649,7 +649,7 @@ describe( 'Cache Updater Service', () => {
       // Phase 3: First cycle-based update
       await jest.advanceTimersByTimeAsync( 100 );
 
-      const callsAfterCycle = database.cacheArtist.mock.calls.length;
+      const callsAfterCycle = database.cacheAct.mock.calls.length;
 
       expect( callsAfterCycle ).toBeGreaterThan( callsAfterSequential );
 

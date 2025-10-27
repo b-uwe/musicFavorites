@@ -4,16 +4,16 @@
 
 const request = require( 'supertest' );
 const app = require( '../app' );
-const artistService = require( '../services/artistService' );
+const actService = require( '../services/actService' );
 const musicbrainzTransformer = require( '../services/musicbrainzTransformer' );
 const fixtureJungleRot = require( './fixtures/musicbrainz-jungle-rot.json' );
 const fixtureTheKinks = require( './fixtures/musicbrainz-the-kinks.json' );
 
-jest.mock( '../services/artistService' );
+jest.mock( '../services/actService' );
 
 // Transform fixtures to output format
-const transformedJungleRot = musicbrainzTransformer.transformArtistData( fixtureJungleRot );
-const transformedTheKinks = musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+const transformedJungleRot = musicbrainzTransformer.transformActData( fixtureJungleRot );
+const transformedTheKinks = musicbrainzTransformer.transformActData( fixtureTheKinks );
 
 describe( 'Error handling - JSON responses', () => {
   /**
@@ -77,7 +77,7 @@ describe( 'GET /acts/:id - Basic tests', () => {
   test( 'returns single act when given one ID', async () => {
     const actId = transformedJungleRot.musicbrainzId;
 
-    artistService.fetchMultipleActs.mockResolvedValue( {
+    actService.fetchMultipleActs.mockResolvedValue( {
       'acts': [ transformedJungleRot ]
     } );
 
@@ -90,7 +90,7 @@ describe( 'GET /acts/:id - Basic tests', () => {
   test( 'returns multiple acts when given comma-separated IDs', async () => {
     const actIds = `${transformedJungleRot.musicbrainzId},${transformedTheKinks.musicbrainzId}`;
 
-    artistService.fetchMultipleActs.mockResolvedValue( {
+    actService.fetchMultipleActs.mockResolvedValue( {
       'acts': [ transformedJungleRot, transformedTheKinks ]
     } );
 
@@ -102,7 +102,7 @@ describe( 'GET /acts/:id - Basic tests', () => {
   test( 'returns 503 error when 2+ acts not cached', async () => {
     const actIds = `${transformedJungleRot.musicbrainzId},${transformedTheKinks.musicbrainzId}`;
 
-    artistService.fetchMultipleActs.mockResolvedValue( {
+    actService.fetchMultipleActs.mockResolvedValue( {
       'error': {
         'message': '2 acts not cached. Background fetch initiated.',
         'missingCount': 2,
@@ -121,17 +121,17 @@ describe( 'GET /acts/:id - Edge cases', () => {
     const id1 = transformedJungleRot._id;
     const id2 = transformedTheKinks._id;
 
-    artistService.fetchMultipleActs.mockResolvedValue( {
+    actService.fetchMultipleActs.mockResolvedValue( {
       'acts': [ transformedJungleRot, transformedTheKinks ]
     } );
 
     await request( app ).get( `/acts/${id1}, ${id2} ` ).expect( 200 );
 
-    expect( artistService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+    expect( actService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
   } );
 
   test( 'supports ?pretty query parameter', async () => {
-    artistService.fetchMultipleActs.mockResolvedValue( {
+    actService.fetchMultipleActs.mockResolvedValue( {
       'acts': [ transformedJungleRot ]
     } );
 
@@ -141,10 +141,10 @@ describe( 'GET /acts/:id - Edge cases', () => {
   } );
 
   test( 'returns 500 error when fetchMultipleActs throws', async () => {
-    artistService.fetchMultipleActs.mockRejectedValue( new Error( 'Unexpected error' ) );
+    actService.fetchMultipleActs.mockRejectedValue( new Error( 'Unexpected error' ) );
 
     const response = await request( app ).get( `/acts/${transformedJungleRot.musicbrainzId}` ).expect( 500 );
 
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
   } );
 } );

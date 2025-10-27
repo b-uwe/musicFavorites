@@ -31,7 +31,7 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'musicbrainzTransformer output flows correctly through bandsintownTransformer', async () => {
     // Step 1: Transform MusicBrainz data
-    const mbTransformed = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const mbTransformed = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     // Verify MusicBrainz transformation
     expect( mbTransformed._id ).toBe( fixtureVulvodynia.id );
@@ -68,12 +68,12 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'country codes are expanded to full names correctly', () => {
     // South Africa
-    const vulvodyniaTransformed = mf.musicbrainzTransformer.transformArtistData( fixtureVulvodynia );
+    const vulvodyniaTransformed = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
     expect( vulvodyniaTransformed.country ).toBe( 'South Africa' );
 
     // United Kingdom
-    const kinksTransformed = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const kinksTransformed = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     expect( kinksTransformed.country ).toBe( 'United Kingdom' );
   } );
@@ -133,7 +133,7 @@ describe( 'Transformer Integration Tests', () => {
       'relations': fixtureTheKinks.relations.filter( ( rel ) => rel.type !== 'bandsintown' )
     };
 
-    const transformed = mf.musicbrainzTransformer.transformArtistData( artistWithoutBandsintown );
+    const transformed = mf.musicbrainzTransformer.transformActData( artistWithoutBandsintown );
 
     expect( transformed.relations.bandsintown ).toBeUndefined();
   } );

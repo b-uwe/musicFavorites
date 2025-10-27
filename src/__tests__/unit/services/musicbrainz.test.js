@@ -18,11 +18,11 @@ describe( 'musicbrainz', () => {
     require( '../../../services/musicbrainz' );
   } );
 
-  describe( 'fetchArtist', () => {
+  describe( 'fetchAct', () => {
     /**
      * Test successful fetch
      */
-    test( 'fetches artist data from MusicBrainz API', async () => {
+    test( 'fetches act data from MusicBrainz API', async () => {
       const mockData = {
         'id': 'test-id',
         'name': 'Test Artist',
@@ -33,7 +33,7 @@ describe( 'musicbrainz', () => {
         'data': mockData
       } );
 
-      const result = await mf.musicbrainz.fetchArtist( 'test-id' );
+      const result = await mf.musicbrainz.fetchAct( 'test-id' );
 
       expect( axios.get ).toHaveBeenCalledWith(
         'https://musicbrainz.org/ws/2/artist/test-id?inc=aliases+url-rels&fmt=json',
@@ -53,7 +53,7 @@ describe( 'musicbrainz', () => {
     test( 'throws error with MusicBrainz prefix on failure', async () => {
       axios.get.mockRejectedValue( new Error( 'Network error' ) );
 
-      await expect( mf.musicbrainz.fetchArtist( 'test-id' ) ).
+      await expect( mf.musicbrainz.fetchAct( 'test-id' ) ).
         rejects.
         toThrow( 'MusicBrainz: Network error' );
     } );
@@ -64,7 +64,7 @@ describe( 'musicbrainz', () => {
     test( 'includes User-Agent header in request', async () => {
       axios.get.mockResolvedValue( { 'data': {} } );
 
-      await mf.musicbrainz.fetchArtist( 'test-id' );
+      await mf.musicbrainz.fetchAct( 'test-id' );
 
       const [ call ] = axios.get.mock.calls;
 
@@ -78,7 +78,7 @@ describe( 'musicbrainz', () => {
     test( 'includes timeout in request', async () => {
       axios.get.mockResolvedValue( { 'data': {} } );
 
-      await mf.musicbrainz.fetchArtist( 'test-id' );
+      await mf.musicbrainz.fetchAct( 'test-id' );
 
       const [ call ] = axios.get.mock.calls;
 
@@ -92,7 +92,7 @@ describe( 'musicbrainz', () => {
     test( 'constructs correct MusicBrainz API URL', async () => {
       axios.get.mockResolvedValue( { 'data': {} } );
 
-      await mf.musicbrainz.fetchArtist( 'abc-123' );
+      await mf.musicbrainz.fetchAct( 'abc-123' );
 
       expect( axios.get ).toHaveBeenCalledWith(
         expect.stringContaining( 'https://musicbrainz.org/ws/2/artist/abc-123' ),
@@ -106,7 +106,7 @@ describe( 'musicbrainz', () => {
     test( 'includes aliases and url-rels in query parameters', async () => {
       axios.get.mockResolvedValue( { 'data': {} } );
 
-      await mf.musicbrainz.fetchArtist( 'test-id' );
+      await mf.musicbrainz.fetchAct( 'test-id' );
 
       expect( axios.get ).toHaveBeenCalledWith(
         expect.stringContaining( 'inc=aliases+url-rels' ),
@@ -120,7 +120,7 @@ describe( 'musicbrainz', () => {
     test( 'requests JSON format', async () => {
       axios.get.mockResolvedValue( { 'data': {} } );
 
-      await mf.musicbrainz.fetchArtist( 'test-id' );
+      await mf.musicbrainz.fetchAct( 'test-id' );
 
       expect( axios.get ).toHaveBeenCalledWith(
         expect.stringContaining( 'fmt=json' ),

@@ -29,7 +29,7 @@ const emptyCache = async () => {
   try {
     await client.connect();
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'artists' );
+    const collection = db.collection( 'acts' );
 
     const result = await collection.deleteMany( {} );
 

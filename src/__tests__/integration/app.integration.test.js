@@ -1,6 +1,6 @@
 /**
  * Integration tests for Express app routes
- * Tests: Express routes → artistService → database workflow
+ * Tests: Express routes → actService → database workflow
  * Mocks: Only external I/O (MongoDB, HTTP)
  * @module __tests__/integration/app.integration
  */
@@ -20,7 +20,7 @@ require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/fetchQueue' );
 require( '../../services/cacheUpdater' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Express App Integration Tests', () => {
@@ -30,11 +30,11 @@ describe( 'Express App Integration Tests', () => {
     // Mock database as healthy by default
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
 
     // Mock external HTTP calls
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
 
     // Mock fetchQueue and cacheUpdater
@@ -45,7 +45,7 @@ describe( 'Express App Integration Tests', () => {
    * Test full request → response flow for cached artist
    */
   test( 'GET /acts/:id returns cached artist through full workflow', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
     const now = new Date();
     const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
 
@@ -54,7 +54,7 @@ describe( 'Express App Integration Tests', () => {
     transformedArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
     // Mock cache hit
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -68,9 +68,9 @@ describe( 'Express App Integration Tests', () => {
     expect( response.body.acts[ 0 ].name ).toBe( fixtureTheKinks.name );
 
     // Verify workflow
-    expect( mf.database.getArtistFromCache ).toHaveBeenCalledWith( fixtureTheKinks.id );
+    expect( mf.database.getActFromCache ).toHaveBeenCalledWith( fixtureTheKinks.id );
     // Should not fetch immediately if cached with fresh data
-    expect( mf.musicbrainz.fetchArtist ).not.toHaveBeenCalled();
+    expect( mf.musicbrainz.fetchAct ).not.toHaveBeenCalled();
     // Should not trigger background refresh for fresh data
     expect( mf.fetchQueue.triggerBackgroundFetch ).not.toHaveBeenCalled();
   } );
@@ -80,10 +80,10 @@ describe( 'Express App Integration Tests', () => {
    * Test ?pretty parameter integration
    */
   test( 'GET /acts/:id?pretty formats JSON with proper spacing', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}?pretty` ).
@@ -113,12 +113,12 @@ describe( 'Express App Integration Tests', () => {
    * Test multi-act partial cache miss scenario
    */
   test( 'GET /acts/:id1,:id2,:id3 with partial cache miss returns error', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
 
     // First act cached, second and third not cached
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockResolvedValueOnce( transformedArtist ).
       mockResolvedValueOnce( null ).
       mockResolvedValueOnce( null );
@@ -146,7 +146,7 @@ describe( 'Express App Integration Tests', () => {
     const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
 
-    const freshArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const freshArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     freshArtist.events = [];
     freshArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
@@ -157,7 +157,7 @@ describe( 'Express App Integration Tests', () => {
       'updatedAt': staleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockResolvedValueOnce( freshArtist ).
       mockResolvedValueOnce( staleArtist );
 
@@ -181,7 +181,7 @@ describe( 'Express App Integration Tests', () => {
    * Test error middleware with real failure
    */
   test( 'GET /acts/:id returns 500 on unexpected error', async () => {
-    mf.database.getArtistFromCache.mockImplementation( () => {
+    mf.database.getActFromCache.mockImplementation( () => {
       throw new Error( 'Unexpected database error' );
     } );
 
@@ -190,14 +190,14 @@ describe( 'Express App Integration Tests', () => {
       expect( 500 );
 
     expect( response.body.error ).toBeDefined();
-    expect( response.body.error.message ).toBe( 'Failed to fetch artist data' );
+    expect( response.body.error.message ).toBe( 'Failed to fetch act data' );
   } );
 
   /**
    * Test cold start scenario with empty cache
    */
   test( 'GET /acts/:id with empty cache returns error and triggers background fetch', async () => {
-    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getActFromCache.mockResolvedValue( null );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` );
@@ -228,10 +228,10 @@ describe( 'Express App Integration Tests', () => {
    * Test response headers are set correctly
    */
   test( 'GET /acts/:id sets correct response headers', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` );
@@ -245,7 +245,7 @@ describe( 'Express App Integration Tests', () => {
    * Test error responses include META attribution
    */
   test( 'GET /acts/:id error responses include meta with attribution', async () => {
-    mf.database.getArtistFromCache.mockResolvedValue( null );
+    mf.database.getActFromCache.mockResolvedValue( null );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` );
@@ -265,7 +265,7 @@ describe( 'Express App Integration Tests', () => {
    */
   test( 'GET /acts/:id 503 errors include complete meta object', async () => {
     // Create scenario that returns 503
-    mf.database.getArtistFromCache.mockResolvedValueOnce( null ).mockResolvedValueOnce( null );
+    mf.database.getActFromCache.mockResolvedValueOnce( null ).mockResolvedValueOnce( null );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id},other-id` ).

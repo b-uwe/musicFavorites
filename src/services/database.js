@@ -91,21 +91,21 @@
   };
 
   /**
-   * Gets artist data from cache
-   * @param {string} artistId - The MusicBrainz artist ID
-   * @returns {Promise<object|null>} Cached artist data or null if not found
+   * Gets act data from cache
+   * @param {string} actId - The MusicBrainz act ID
+   * @returns {Promise<object|null>} Cached act data or null if not found
    * @throws {Error} When not connected to database
    */
-  const getArtistFromCache = async ( artistId ) => {
+  const getActFromCache = async ( actId ) => {
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
     }
 
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'artists' );
+    const collection = db.collection( 'acts' );
 
     const result = await collection.findOne( {
-      '_id': artistId
+      '_id': actId
     } );
 
     if ( !result ) {
@@ -113,38 +113,38 @@
     }
 
     // Map MongoDB _id to musicbrainzId for API response
-    const { _id, ...artistData } = result;
+    const { _id, ...actData } = result;
 
     return {
       'musicbrainzId': _id,
-      ...artistData
+      ...actData
     };
   };
 
   /**
-   * Caches artist data in database
-   * @param {object} artistData - Transformed artist data to cache
-   * @returns {Promise<void>} Resolves when artist is cached
-   * @throws {Error} When not connected, artistData missing _id, or write not acknowledged
+   * Caches act data in database
+   * @param {object} actData - Transformed act data to cache
+   * @returns {Promise<void>} Resolves when act is cached
+   * @throws {Error} When not connected, actData missing _id, or write not acknowledged
    */
-  const cacheArtist = async ( artistData ) => {
+  const cacheAct = async ( actData ) => {
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
     }
 
-    if ( !artistData._id ) {
+    if ( !actData._id ) {
       throw new Error( 'Invalid request. Please try again later. (Error: DB_006)' );
     }
 
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'artists' );
+    const collection = db.collection( 'acts' );
 
     const result = await collection.updateOne(
       {
-        '_id': artistData._id
+        '_id': actData._id
       },
       {
-        '$set': artistData
+        '$set': actData
       },
       {
         'upsert': true
@@ -169,7 +169,7 @@
 
     try {
       const db = client.db( 'musicfavorites' );
-      const collection = db.collection( 'artists' );
+      const collection = db.collection( 'acts' );
       const testId = '__health_check__';
 
       // Write dummy document
@@ -219,7 +219,7 @@
     }
 
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'artists' );
+    const collection = db.collection( 'acts' );
 
     const results = await collection.find( {}, {
       'projection': {
@@ -243,7 +243,7 @@
     }
 
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'artists' );
+    const collection = db.collection( 'acts' );
 
     const results = await collection.find( {}, {
       'projection': {
@@ -270,8 +270,8 @@
   globalThis.mf.database = {
     connect,
     disconnect,
-    getArtistFromCache,
-    cacheArtist,
+    getActFromCache,
+    cacheAct,
     testCacheHealth,
     getAllActIds,
     getAllActsWithMetadata

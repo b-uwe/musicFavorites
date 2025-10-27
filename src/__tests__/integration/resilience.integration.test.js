@@ -18,7 +18,7 @@ require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
-require( '../../services/artistService' );
+require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Database Connection Resilience Integration Tests', () => {
@@ -28,9 +28,9 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     // Default mocks
     mf.database.connect = jest.fn().mockResolvedValue();
     mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getArtistFromCache = jest.fn();
-    mf.database.cacheArtist = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchArtist = jest.fn();
+    mf.database.getActFromCache = jest.fn();
+    mf.database.cacheAct = jest.fn().mockResolvedValue();
+    mf.musicbrainz.fetchAct = jest.fn();
     mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
   } );
 
@@ -39,9 +39,9 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    */
   test( 'connection drops during read and recovers on retry', async () => {
     // First call fails (connection dropped), second succeeds
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockRejectedValueOnce( new Error( 'Connection lost' ) ).
-      mockResolvedValueOnce( mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks ) );
+      mockResolvedValueOnce( mf.musicbrainzTransformer.transformActData( fixtureTheKinks ) );
 
     // First request fails
     await expect( request( mf.app ).get( `/acts/${fixtureTheKinks.id}` ) ).
@@ -50,7 +50,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
       } );
 
     // Second request succeeds (connection recovered)
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
 
@@ -65,13 +65,13 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test cache write failure doesn't block read operations
    */
   test( 'cache write failures do not block read operations', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     // Write fails but read succeeds
-    mf.database.cacheArtist.mockRejectedValue( new Error( 'Write failed' ) );
+    mf.database.cacheAct.mockRejectedValue( new Error( 'Write failed' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -84,12 +84,12 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test intermittent connection failures
    */
   test( 'intermittent connection failures are handled gracefully', async () => {
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
 
     // Alternate between success and failure
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockResolvedValueOnce( transformedArtist ).
       mockRejectedValueOnce( new Error( 'Connection timeout' ) ).
       mockResolvedValueOnce( transformedArtist ).
@@ -120,7 +120,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     const poolError = new Error( 'No connections available in pool' );
 
     poolError.code = 'POOL_EXHAUSTED';
-    mf.database.getArtistFromCache.mockRejectedValue( poolError );
+    mf.database.getActFromCache.mockRejectedValue( poolError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -136,7 +136,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     const networkError = new Error( 'Network unreachable' );
 
     networkError.code = 'ENETUNREACH';
-    mf.database.getArtistFromCache.mockRejectedValue( networkError );
+    mf.database.getActFromCache.mockRejectedValue( networkError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -150,9 +150,9 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    */
   test( 'slow database responses are handled appropriately', async () => {
     // Simulate slow response by delaying
-    mf.database.getArtistFromCache.mockImplementation( () => new Promise( ( resolve ) => {
+    mf.database.getActFromCache.mockImplementation( () => new Promise( ( resolve ) => {
       setTimeout( () => {
-        const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+        const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
         transformedArtist.events = [];
         resolve( transformedArtist );
@@ -170,7 +170,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test concurrent connection failures
    */
   test( 'concurrent connection failures affect all requests', async () => {
-    mf.database.getArtistFromCache.mockRejectedValue( new Error( 'Database down' ) );
+    mf.database.getActFromCache.mockRejectedValue( new Error( 'Database down' ) );
 
     const responses = await Promise.all( [
       request( mf.app ).get( `/acts/${fixtureTheKinks.id}` ),
@@ -193,16 +193,16 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     // Cached data is old, triggers background refresh
     const now = new Date();
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
-    const staleArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     staleArtist.events = [];
     staleArtist.updatedAt = staleTimestamp.toLocaleString( 'sv-SE', {
       'timeZone': 'Europe/Berlin'
     } );
 
-    mf.database.getArtistFromCache.mockResolvedValue( staleArtist );
-    mf.musicbrainz.fetchArtist.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheArtist.mockRejectedValue( new Error( 'Write failed' ) );
+    mf.database.getActFromCache.mockResolvedValue( staleArtist );
+    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
+    mf.database.cacheAct.mockRejectedValue( new Error( 'Write failed' ) );
 
     // Request should succeed with stale data
     const response = await request( mf.app ).
@@ -214,7 +214,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     // Background update attempts but write fails
     await jest.advanceTimersByTimeAsync( 35000 );
 
-    expect( mf.database.cacheArtist ).toHaveBeenCalled();
+    expect( mf.database.cacheAct ).toHaveBeenCalled();
 
     jest.useRealTimers();
   }, 10000 );
@@ -244,7 +244,7 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    */
   test( 'system recovers after extended database outage', async () => {
     // Simulate extended outage (5 failed attempts)
-    mf.database.getArtistFromCache.
+    mf.database.getActFromCache.
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
@@ -259,10 +259,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     }
 
     // Then recovery
-    const transformedArtist = mf.musicbrainzTransformer.transformArtistData( fixtureTheKinks );
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getArtistFromCache.mockResolvedValue( transformedArtist );
+    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
