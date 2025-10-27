@@ -130,7 +130,7 @@ describe( 'Act Service Integration Tests', () => {
      * Use fixture modifier to create past events
      * normalizeDates with negative value moves dates to the past
      */
-    const pastEventsLdJson = mf.testing.fixtureModifier.normalizeDates(
+    const pastEventsLdJson = mf.testing.fixtureHelpers.normalizeDates(
       fixtureBandsintownLdJson,
       -365
     );

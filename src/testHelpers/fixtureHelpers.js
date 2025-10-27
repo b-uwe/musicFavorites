@@ -204,7 +204,4 @@
     modifyArrayItem,
     normalizeDates
   };
-
-  // Maintain backward compatibility
-  globalThis.mf.testing.fixtureModifier = globalThis.mf.testing.fixtureHelpers;
 } )();

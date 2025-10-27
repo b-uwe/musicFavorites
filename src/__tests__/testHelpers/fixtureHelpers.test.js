@@ -22,12 +22,6 @@ describe( 'Fixture Helpers', () => {
     } );
   } );
 
-  describe( 'fixtureModifier (backward compatibility)', () => {
-    test( 'old fixtureModifier namespace still works', () => {
-      expect( mf.testing.fixtureModifier ).toBe( mf.testing.fixtureHelpers );
-    } );
-  } );
-
   describe( 'modifyFixture', () => {
     /**
      * Test deep cloning to prevent original fixture mutation
@@ -43,7 +37,7 @@ describe( 'Fixture Helpers', () => {
         'name': 'Modified Event'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( original, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( original, modifications );
 
       expect( result.name ).toBe( 'Modified Event' );
       expect( original.name ).toBe( 'Test Event' );
@@ -62,7 +56,7 @@ describe( 'Fixture Helpers', () => {
         'date': '2025-12-31'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.name ).toBe( 'Original' );
       expect( result.date ).toBe( '2025-12-31' );
@@ -83,7 +77,7 @@ describe( 'Fixture Helpers', () => {
         'location.address.city': 'Paris'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.location.address.city ).toBe( 'Paris' );
     } );
@@ -106,7 +100,7 @@ describe( 'Fixture Helpers', () => {
         'events[0].name': 'Modified Event 1'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.events[ 0 ].name ).toBe( 'Modified Event 1' );
       expect( result.events[ 1 ].name ).toBe( 'Event 2' );
@@ -124,7 +118,7 @@ describe( 'Fixture Helpers', () => {
         'optional': undefined
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.name ).toBe( 'Test' );
       expect( result.optional ).toBeUndefined();
@@ -148,7 +142,7 @@ describe( 'Fixture Helpers', () => {
         'location.geo': undefined
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.location.address ).toBe( 'Street' );
       expect( result.location.geo ).toBeUndefined();
@@ -166,7 +160,7 @@ describe( 'Fixture Helpers', () => {
         'newField': 'newValue'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.name ).toBe( 'Test' );
       expect( result.newField ).toBe( 'newValue' );
@@ -183,7 +177,7 @@ describe( 'Fixture Helpers', () => {
         'location.address.city': 'London'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.name ).toBe( 'Test' );
       expect( result.location ).toBeDefined();
@@ -207,7 +201,7 @@ describe( 'Fixture Helpers', () => {
         'location.geo': null
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.location.geo ).toBeNull();
     } );
@@ -233,7 +227,7 @@ describe( 'Fixture Helpers', () => {
         'location.geo.lat': 48.8
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.name ).toBe( 'New Event' );
       expect( result.date ).toBe( '2025-12-31' );
@@ -250,7 +244,7 @@ describe( 'Fixture Helpers', () => {
       };
       const modifications = {};
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result ).toEqual( fixture );
       expect( result ).not.toBe( fixture );
@@ -267,7 +261,7 @@ describe( 'Fixture Helpers', () => {
         'name': 'Test'
       };
 
-      const result = mf.testing.fixtureModifier.modifyFixture( fixture, modifications );
+      const result = mf.testing.fixtureHelpers.modifyFixture( fixture, modifications );
 
       expect( result.items ).toEqual( [ 'a', 'b', 'c' ] );
       expect( result.name ).toBe( 'Test' );
@@ -291,7 +285,7 @@ describe( 'Fixture Helpers', () => {
         'name': 'Modified Item'
       };
 
-      const result = mf.testing.fixtureModifier.modifyArrayItem( originalArray, 0, modifications );
+      const result = mf.testing.fixtureHelpers.modifyArrayItem( originalArray, 0, modifications );
 
       expect( result[ 0 ].name ).toBe( 'Modified Item' );
       expect( result[ 1 ].name ).toBe( 'Item 2' );
@@ -317,7 +311,7 @@ describe( 'Fixture Helpers', () => {
         'date': '2025-12-31'
       };
 
-      const result = mf.testing.fixtureModifier.modifyArrayItem( originalArray, 2, modifications );
+      const result = mf.testing.fixtureHelpers.modifyArrayItem( originalArray, 2, modifications );
 
       expect( result[ 2 ].date ).toBe( '2025-12-31' );
       expect( result[ 0 ].date ).toBe( '2025-01-01' );
@@ -337,7 +331,7 @@ describe( 'Fixture Helpers', () => {
         'name': 'Modified'
       };
 
-      expect( () => mf.testing.fixtureModifier.modifyArrayItem( originalArray, 5, modifications ) ).
+      expect( () => mf.testing.fixtureHelpers.modifyArrayItem( originalArray, 5, modifications ) ).
         toThrow( 'Index 5 out of bounds for array of length 1' );
     } );
 
@@ -354,7 +348,7 @@ describe( 'Fixture Helpers', () => {
         'name': 'Modified'
       };
 
-      expect( () => mf.testing.fixtureModifier.modifyArrayItem( originalArray, -1, modifications ) ).
+      expect( () => mf.testing.fixtureHelpers.modifyArrayItem( originalArray, -1, modifications ) ).
         toThrow( 'Index must be non-negative' );
     } );
 
@@ -374,7 +368,7 @@ describe( 'Fixture Helpers', () => {
         'location.city': 'Paris'
       };
 
-      const result = mf.testing.fixtureModifier.modifyArrayItem( originalArray, 0, modifications );
+      const result = mf.testing.fixtureHelpers.modifyArrayItem( originalArray, 0, modifications );
 
       expect( result[ 0 ].location.city ).toBe( 'Paris' );
       expect( result[ 0 ].location.country ).toBe( 'UK' );
@@ -407,7 +401,7 @@ describe( 'Fixture Helpers', () => {
       };
       const expectedDate = getUtcDateInFuture( 7 );
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture );
 
       expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
     } );
@@ -423,7 +417,7 @@ describe( 'Fixture Helpers', () => {
       };
       const expectedDate = getUtcDateInFuture( 30 );
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 30 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 30 );
 
       expect( result.event.startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
     } );
@@ -441,7 +435,7 @@ describe( 'Fixture Helpers', () => {
         }
       };
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.event1.startDate ).toMatch( /T18:00:00$/u );
       expect( result.event2.startDate ).toMatch( /T23:59:59$/u );
@@ -456,7 +450,7 @@ describe( 'Fixture Helpers', () => {
       };
       const expectedDate = getUtcDateInFuture( 7 );
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture );
 
       expect( result.date ).toBe( expectedDate );
     } );
@@ -470,7 +464,7 @@ describe( 'Fixture Helpers', () => {
         'withoutZ': '2025-11-25T18:00:00'
       };
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.withZ ).toMatch( /Z$/u );
       expect( result.withoutZ ).not.toMatch( /Z$/u );
@@ -490,7 +484,7 @@ describe( 'Fixture Helpers', () => {
       ];
       const expectedDate = getUtcDateInFuture( 7 );
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result[ 0 ].startDate ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
       expect( result[ 1 ].startDate ).toMatch( new RegExp( `^${expectedDate}T17:30:00$`, 'u' ) );
@@ -514,7 +508,7 @@ describe( 'Fixture Helpers', () => {
       };
       const expectedDate = getUtcDateInFuture( 7 );
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.events[ 0 ].info.dates.start ).toMatch( new RegExp( `^${expectedDate}T18:00:00$`, 'u' ) );
       expect( result.events[ 0 ].info.dates.end ).toBe( expectedDate );
@@ -530,7 +524,7 @@ describe( 'Fixture Helpers', () => {
         'startDate': '2025-11-25T18:00:00'
       };
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.name ).toBe( 'Test Event' );
       expect( result.description ).toBe( '2025-11-25 is not a date in this context' );
@@ -545,7 +539,7 @@ describe( 'Fixture Helpers', () => {
       };
       const originalDate = fixture.startDate;
 
-      mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( fixture.startDate ).toBe( originalDate );
     } );
@@ -560,7 +554,7 @@ describe( 'Fixture Helpers', () => {
         'startDate': '2025-11-25T18:00:00'
       };
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.nullValue ).toBeNull();
       expect( result.undefinedValue ).toBeUndefined();
@@ -577,7 +571,7 @@ describe( 'Fixture Helpers', () => {
         'validDate': '2025-11-25T18:00:00'
       };
 
-      const result = mf.testing.fixtureModifier.normalizeDates( fixture, 7 );
+      const result = mf.testing.fixtureHelpers.normalizeDates( fixture, 7 );
 
       expect( result.invalidDate1 ).toBe( '11/25/2025' );
       expect( result.invalidDate2 ).toBe( '25-11-2025' );
@@ -588,8 +582,8 @@ describe( 'Fixture Helpers', () => {
      * Test handling of empty fixtures
      */
     test( 'handles empty objects and arrays', () => {
-      expect( mf.testing.fixtureModifier.normalizeDates( {}, 7 ) ).toEqual( {} );
-      expect( mf.testing.fixtureModifier.normalizeDates( [], 7 ) ).toEqual( [] );
+      expect( mf.testing.fixtureHelpers.normalizeDates( {}, 7 ) ).toEqual( {} );
+      expect( mf.testing.fixtureHelpers.normalizeDates( [], 7 ) ).toEqual( [] );
     } );
   } );
 } );

@@ -16,8 +16,6 @@ require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 
-const { loadFixture } = mf.testing.fixtureHelpers;
-
 describe( 'LD+JSON Extractor Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
@@ -27,10 +25,8 @@ describe( 'LD+JSON Extractor Integration Tests', () => {
    * Test successful LD+JSON extraction and transformation
    */
   test( 'fetchAndExtractLdJson output flows into bandsintownTransformer correctly', async () => {
-    const fixtureHtml = loadFixture( 'bandsintown-vulvodynia.html' );
-
     axios.get.mockResolvedValue( {
-      'data': fixtureHtml
+      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
     } );
 
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( 'https://www.bandsintown.com/a/6461184' );
@@ -54,10 +50,8 @@ describe( 'LD+JSON Extractor Integration Tests', () => {
    * Test empty LD+JSON response handling
    */
   test( 'empty LD+JSON array results in empty events', async () => {
-    const emptyHtml = loadFixture( 'empty.html' );
-
     axios.get.mockResolvedValue( {
-      'data': emptyHtml
+      'data': mf.testing.fixtureHelpers.loadFixture( 'empty.html' )
     } );
 
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( 'https://www.bandsintown.com/a/6461184' );
@@ -85,10 +79,8 @@ describe( 'LD+JSON Extractor Integration Tests', () => {
    * Test malformed LD+JSON handling
    */
   test( 'malformed LD+JSON with missing required fields is filtered out', async () => {
-    const malformedHtml = loadFixture( 'malformed-json.html' );
-
     axios.get.mockResolvedValue( {
-      'data': malformedHtml
+      'data': mf.testing.fixtureHelpers.loadFixture( 'malformed-json.html' )
     } );
 
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( 'https://www.bandsintown.com/a/6461184' );
@@ -118,10 +110,8 @@ describe( 'LD+JSON Extractor Integration Tests', () => {
    * Test LD+JSON with mixed valid/invalid events
    */
   test( 'mixed valid and invalid LD+JSON events filters correctly', async () => {
-    const validHtml = loadFixture( 'bandsintown-vulvodynia.html' );
-
     axios.get.mockResolvedValue( {
-      'data': validHtml
+      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
     } );
 
     const ldJson = await mf.ldJsonExtractor.fetchAndExtractLdJson( 'https://www.bandsintown.com/a/6461184' );

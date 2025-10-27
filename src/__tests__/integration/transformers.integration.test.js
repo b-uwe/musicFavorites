@@ -22,8 +22,6 @@ require( '../../services/ldJsonExtractor' );
 require( '../../services/musicbrainzTransformer' );
 require( '../../services/bandsintownTransformer' );
 
-const { loadFixture } = mf.testing.fixtureHelpers;
-
 describe( 'Transformer Integration Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
@@ -42,10 +40,8 @@ describe( 'Transformer Integration Tests', () => {
     expect( mbTransformed.country ).toBe( 'South Africa' );
 
     // Step 2: Mock axios to return HTML fixture
-    const fixtureHtml = loadFixture( 'bandsintown-vulvodynia.html' );
-
     axios.get.mockResolvedValue( {
-      'data': fixtureHtml
+      'data': mf.testing.fixtureHelpers.loadFixture( 'bandsintown-vulvodynia.html' )
     } );
 
     // Step 3: Get Bandsintown URL from transformed data
@@ -90,7 +86,7 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'events from different dates are transformed correctly', () => {
     // Transform future events
-    const futureEvents = mf.testing.fixtureModifier.normalizeDates(
+    const futureEvents = mf.testing.fixtureHelpers.normalizeDates(
       fixtureBandsintownLdJson,
       30
     );
@@ -120,7 +116,7 @@ describe( 'Transformer Integration Tests', () => {
    */
   test( 'past events are filtered out during transformation', () => {
     // Create past events (365 days ago)
-    const pastEvents = mf.testing.fixtureModifier.normalizeDates(
+    const pastEvents = mf.testing.fixtureHelpers.normalizeDates(
       fixtureBandsintownLdJson,
       -365
     );
