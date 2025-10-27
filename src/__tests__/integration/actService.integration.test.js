@@ -188,14 +188,20 @@ describe( 'Act Service Integration Tests', () => {
     // Just under 24 hours old (should be fresh)
     const barelyFreshTimestamp = new Date( now.getTime() - ( ( 24 * 60 * 60 * 1000 ) - 1000 ) );
 
-    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
+    const transformedStaleArtist = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
 
-    staleArtist.events = [];
-    staleArtist.updatedAt = exactlyStaleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+    // Transform _id to musicbrainzId to match real getActFromCache behavior
+    const { _id, ...staleArtistData } = transformedStaleArtist;
+    const staleArtist = {
+      'musicbrainzId': _id,
+      ...staleArtistData,
+      'events': [],
+      'updatedAt': exactlyStaleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
+    };
 
     const freshArtist = {
       ...staleArtist,
-      '_id': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'musicbrainzId': '664c3e0e-42d8-48c1-b209-1efca19c0325',
       'updatedAt': barelyFreshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 

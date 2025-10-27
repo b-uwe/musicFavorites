@@ -198,7 +198,7 @@
 
     const staleActIds = cachedActs.
       filter( ( act ) => mf.cacheUpdater.isActStale( act ) ).
-      map( ( act ) => act._id );
+      map( ( act ) => act.musicbrainzId );
 
     if ( staleActIds.length > 0 ) {
       mf.fetchQueue.triggerBackgroundFetch( staleActIds );

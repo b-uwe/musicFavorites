@@ -146,14 +146,20 @@ describe( 'Express App Integration Tests', () => {
     const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
 
-    const freshArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+    const transformedFreshArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
-    freshArtist.events = [];
-    freshArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+    // Transform _id to musicbrainzId to match real getActFromCache behavior
+    const { _id, ...freshArtistData } = transformedFreshArtist;
+    const freshArtist = {
+      'musicbrainzId': _id,
+      ...freshArtistData,
+      'events': [],
+      'updatedAt': freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
+    };
 
     const staleArtist = {
       ...freshArtist,
-      '_id': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'musicbrainzId': '664c3e0e-42d8-48c1-b209-1efca19c0325',
       'updatedAt': staleTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } )
     };
 
