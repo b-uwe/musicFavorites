@@ -113,6 +113,52 @@
   };
 
   /**
+   * Validates Bandsintown URL format
+   * Must be HTTPS, match whitelisted domain, have valid path pattern, and no query parameters
+   * @param {string} url - The Bandsintown URL to validate
+   * @returns {boolean} True if valid Bandsintown URL, false otherwise
+   */
+  const validateBandsintownUrl = ( url ) => {
+    if ( typeof url !== 'string' ) {
+      return false;
+    }
+
+    // Whitelist of allowed Bandsintown domains
+    const allowedDomains = [
+      'bandsintown.com',
+      'www.bandsintown.com'
+    ];
+
+    try {
+      const urlObj = new globalThis.URL( url );
+
+      // Must be HTTPS
+      if ( urlObj.protocol !== 'https:' ) {
+        return false;
+      }
+
+      // Domain must be in whitelist
+      if ( !allowedDomains.includes( urlObj.hostname ) ) {
+        return false;
+      }
+
+      // Path must start with /a/ (artist URLs)
+      if ( !urlObj.pathname.startsWith( '/a/' ) ) {
+        return false;
+      }
+
+      // Must not have query parameters
+      if ( urlObj.search && urlObj.search.length > 0 ) {
+        return false;
+      }
+
+      return true;
+    } catch ( error ) {
+      return false;
+    }
+  };
+
+  /**
    * Fetches Bandsintown events for an act
    * @param {object} actData - Transformed act data with relations
    * @param {boolean} silentFail - If true, returns empty array on error instead of throwing
@@ -124,6 +170,11 @@
     }
 
     const bandsintownUrl = actData.relations.bandsintown;
+
+    // Validate Bandsintown URL format
+    if ( !validateBandsintownUrl( bandsintownUrl ) ) {
+      return [];
+    }
 
     try {
       const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );

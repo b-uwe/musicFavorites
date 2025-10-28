@@ -4,7 +4,6 @@
  */
 
 // Mock constants to prevent it from initializing globalThis.mf
-jest.mock( '../../services/inputValidator', () => ( {} ) );
 jest.mock( '../../constants', () => ( {} ) );
 
 describe( 'ldJsonExtractor - Branch Coverage', () => {
