@@ -9,6 +9,7 @@
 jest.mock( 'axios' );
 
 // Mock constants.js WITHOUT initializing globalThis.mf
+jest.mock( '../../services/inputValidator', () => ( {} ) );
 jest.mock( '../../constants', () => ( {} ), { 'virtual': false } );
 
 describe( 'musicbrainz - Branch Coverage', () => {
