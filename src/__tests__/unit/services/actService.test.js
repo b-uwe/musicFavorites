@@ -16,10 +16,10 @@ describe( 'actService', () => {
 
   describe( 'Pure Functions (No Mocks)', () => {
     describe( 'getBerlinTimestamp', () => {
-      test( 'returns timestamp in YYYY-MM-DD HH:MM:SS format', () => {
+      test( 'returns timestamp in YYYY-MM-DD HH:MM:SS+TZ format', () => {
         const timestamp = mf.actService.getBerlinTimestamp();
 
-        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
       } );
 
       test( 'returns a string', () => {
@@ -32,9 +32,20 @@ describe( 'actService', () => {
         const timestamp1 = mf.actService.getBerlinTimestamp();
         const timestamp2 = mf.actService.getBerlinTimestamp();
 
-        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
-        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
+        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
         expect( timestamp2 >= timestamp1 ).toBe( true );
+      } );
+
+      test( 'includes Berlin timezone offset', () => {
+        const timestamp = mf.actService.getBerlinTimestamp();
+        const timezoneMatch = timestamp.match( /(?<offset>[+-]\d{2}:\d{2})$/u );
+
+        expect( timezoneMatch ).not.toBeNull();
+
+        const { offset } = timezoneMatch.groups;
+
+        expect( [ '+01:00', '+02:00' ] ).toContain( offset );
       } );
     } );
 
