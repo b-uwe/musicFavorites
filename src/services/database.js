@@ -29,7 +29,8 @@
             'version': ServerApiVersion.v1,
             'strict': true,
             'deprecationErrors': true
-          }
+          },
+          'serverSelectionTimeoutMS': 10000
         } );
 
         await client.connect();
