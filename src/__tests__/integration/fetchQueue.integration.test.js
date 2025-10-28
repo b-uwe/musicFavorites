@@ -13,7 +13,9 @@ jest.mock( 'axios' );
 jest.mock( 'mongodb' );
 
 const axios = require( 'axios' );
-const { MongoClient } = require( 'mongodb' );
+
+// Load integration test setup helper
+require( '../../testHelpers/integrationTestSetup' );
 
 // Load all real business logic modules AFTER mocks
 require( '../../services/database' );
@@ -26,42 +28,9 @@ describe( 'Fetch Queue Integration Tests', () => {
   let mockCollection;
 
   beforeEach( async () => {
-    jest.clearAllMocks();
+    const setup = await mf.testing.integrationTestSetup.setupIntegrationTest( { 'fetchQueueTestingApi': mf.testing.fetchQueue } );
 
-    // Disconnect database to force fresh connection with new mocks
-    try {
-      await mf.database.disconnect();
-    } catch ( error ) {
-      // Ignore errors if not connected
-    }
-
-    // Reset fetchQueue state between tests
-    mf.testing.fetchQueue.fetchQueue.clear();
-    mf.testing.fetchQueue.setIsRunning( false );
-
-    // Mock MongoDB driver
-    mockCollection = {
-      'findOne': jest.fn(),
-      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
-      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
-      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
-    };
-
-    MongoClient.mockImplementation( () => ( {
-      'connect': jest.fn().mockResolvedValue(),
-      'db': jest.fn().mockReturnValue( {
-        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
-        'collection': jest.fn().mockReturnValue( mockCollection )
-      } ),
-      'close': jest.fn().mockResolvedValue()
-    } ) );
-
-    // Mock axios for HTTP calls
-    axios.get = jest.fn();
-
-    // Connect database before each test
-    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
-    await mf.database.connect();
+    ( { mockCollection } = setup );
   } );
 
   /**
