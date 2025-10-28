@@ -23,9 +23,6 @@ describe( 'Fixture Helpers', () => {
   } );
 
   describe( 'modifyFixture', () => {
-    /**
-     * Test deep cloning to prevent original fixture mutation
-     */
     test( 'creates deep copy without mutating original fixture', () => {
       const original = {
         'name': 'Test Event',
@@ -372,6 +369,157 @@ describe( 'Fixture Helpers', () => {
 
       expect( result[ 0 ].location.city ).toBe( 'Paris' );
       expect( result[ 0 ].location.country ).toBe( 'UK' );
+    } );
+  } );
+
+  describe( 'transformToMongoDbDocument', () => {
+    /**
+     * Test basic transformation of musicbrainzId to _id
+     */
+    test( 'transforms musicbrainzId to _id', () => {
+      const fixture = {
+        'musicbrainzId': 'abc123',
+        'name': 'The Kinks',
+        'type': 'Group'
+      };
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result._id ).toBe( 'abc123' );
+      expect( result.musicbrainzId ).toBeUndefined();
+      expect( Object.prototype.hasOwnProperty.call( result, 'musicbrainzId' ) ).toBe( false );
+    } );
+
+    /**
+     * Test that other properties are preserved and original not mutated
+     */
+    test( 'preserves all other properties and does not mutate original', () => {
+      const fixture = {
+        'musicbrainzId': 'xyz789',
+        'name': 'Test Artist',
+        'type': 'Group',
+        'country': 'GB',
+        'events': []
+      };
+      const originalId = fixture.musicbrainzId;
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result._id ).toBe( 'xyz789' );
+      expect( result.name ).toBe( 'Test Artist' );
+      expect( result.type ).toBe( 'Group' );
+      expect( result.country ).toBe( 'GB' );
+      expect( result.events ).toEqual( [] );
+      expect( fixture.musicbrainzId ).toBe( originalId );
+      expect( result ).not.toBe( fixture );
+    } );
+
+    /**
+     * Test deep cloning of nested objects
+     */
+    test( 'deep clones nested objects', () => {
+      const fixture = {
+        'musicbrainzId': 'abc123',
+        'name': 'The Kinks',
+        'nested': {
+          'value': 42,
+          'deep': {
+            'property': 'test'
+          }
+        }
+      };
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result.nested.value ).toBe( 42 );
+      expect( result.nested.deep.property ).toBe( 'test' );
+      expect( result.nested ).not.toBe( fixture.nested );
+    } );
+
+    /**
+     * Test handling of arrays and null values
+     */
+    test( 'preserves and clones arrays and handles null values', () => {
+      const fixture = {
+        'musicbrainzId': 'abc123',
+        'disambiguation': null,
+        'events': [
+          {
+            'name': 'Event 1'
+          },
+          {
+            'name': 'Event 2'
+          }
+        ]
+      };
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result._id ).toBe( 'abc123' );
+      expect( result.disambiguation ).toBeNull();
+      expect( result.events ).toEqual( [
+        {
+          'name': 'Event 1'
+        },
+        {
+          'name': 'Event 2'
+        }
+      ] );
+      expect( result.events ).not.toBe( fixture.events );
+    } );
+
+    /**
+     * Test with complex nested structure (like real transformed artist data)
+     */
+    test( 'handles complex nested structures like real artist data', () => {
+      const fixture = {
+        'musicbrainzId': 'abc123',
+        'name': 'The Kinks',
+        'type': 'Group',
+        'country': 'GB',
+        'lifeSpan': {
+          'begin': '1963',
+          'end': null,
+          'ended': false
+        },
+        'events': [
+          {
+            'id': 'evt1',
+            'name': 'Concert',
+            'location': {
+              'city': 'London',
+              'country': 'GB'
+            }
+          }
+        ]
+      };
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result._id ).toBe( 'abc123' );
+      expect( result.musicbrainzId ).toBeUndefined();
+      expect( result.lifeSpan.begin ).toBe( '1963' );
+      expect( result.lifeSpan.ended ).toBe( false );
+      expect( result.events[ 0 ].location.city ).toBe( 'London' );
+    } );
+
+    /**
+     * Test handling of fixture without musicbrainzId
+     */
+    test( 'returns clone without transformation when musicbrainzId is missing', () => {
+      const fixture = {
+        'name': 'Test Artist',
+        'type': 'Group',
+        'country': 'GB'
+      };
+
+      const result = mf.testing.fixtureHelpers.transformToMongoDbDocument( fixture );
+
+      expect( result._id ).toBeUndefined();
+      expect( result.musicbrainzId ).toBeUndefined();
+      expect( result.name ).toBe( 'Test Artist' );
+      expect( result.type ).toBe( 'Group' );
+      expect( result ).not.toBe( fixture );
     } );
   } );
 
