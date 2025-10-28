@@ -16,6 +16,7 @@ const axios = require( 'axios' );
 const { MongoClient } = require( 'mongodb' );
 
 // Load all real business logic modules AFTER mocks
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -82,12 +83,10 @@ describe( 'Scalability Integration Tests', () => {
    */
   test( 'GET /acts with 200 cached acts returns successfully', async () => {
     // MongoDB returns cached data for all requests
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
@@ -109,12 +108,10 @@ describe( 'Scalability Integration Tests', () => {
    * Test handling 200 acts with partial cache misses
    */
   test( 'GET /acts with 200 acts where 50 are missing returns error', async () => {
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     let callCount = 0;
 
@@ -173,12 +170,10 @@ describe( 'Scalability Integration Tests', () => {
    * Test concurrent large batch requests
    */
   test( 'concurrent requests for 100 acts each are handled', async () => {
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
@@ -205,12 +200,10 @@ describe( 'Scalability Integration Tests', () => {
    * Test memory efficiency with large batches
    */
   test( 'large batch request does not cause memory issues', async () => {
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
@@ -299,12 +292,10 @@ describe( 'Scalability Integration Tests', () => {
    * Test system stability under sustained load
    */
   test( 'system remains stable with 20 sequential large requests', async () => {
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
