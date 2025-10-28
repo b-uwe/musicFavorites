@@ -16,6 +16,7 @@ const axios = require( 'axios' );
 const { MongoClient } = require( 'mongodb' );
 
 // Load all real business logic modules AFTER mocks
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -72,12 +73,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    */
   test( 'connection drops during read and recovers on retry', async () => {
     // First call fails at MongoDB driver level (connection dropped), second succeeds
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.
       mockRejectedValueOnce( new Error( 'Connection lost' ) ).
@@ -102,12 +101,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    */
   test( 'cache write failures do not block read operations', async () => {
     // MongoDB returns cached data for read
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
@@ -125,12 +122,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test intermittent connection failures
    */
   test( 'intermittent connection failures are handled gracefully', async () => {
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     // Alternate between success and failure at MongoDB driver level
     mockCollection.findOne.
@@ -198,12 +193,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     // Simulate slow MongoDB response by delaying
     mockCollection.findOne.mockImplementation( () => new Promise( ( resolve ) => {
       setTimeout( () => {
-        const cachedData = {
-          '_id': fixtureTheKinks.id,
-          'name': fixtureTheKinks.name,
-          'status': 'active',
-          'events': []
-        };
+        const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+        transformedArtist.events = [];
+        const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
         resolve( cachedData );
       }, 100 );
@@ -247,13 +240,11 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     } );
 
     // MongoDB returns stale cached data
-    const staleCachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': [],
-      'updatedAt': staleTimestampString
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    transformedArtist.updatedAt = staleTimestampString;
+    const staleCachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( staleCachedData );
 
@@ -338,12 +329,10 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     }
 
     // Then recovery - MongoDB returns cached data
-    const cachedData = {
-      '_id': fixtureTheKinks.id,
-      'name': fixtureTheKinks.name,
-      'status': 'active',
-      'events': []
-    };
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
