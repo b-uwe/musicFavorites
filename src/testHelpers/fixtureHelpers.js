@@ -153,6 +153,24 @@
   };
 
   /**
+   * Transforms fixture data to MongoDB document format
+   * Renames musicbrainzId to _id to mimic MongoDB document structure
+   * @param {object} fixture - Fixture data with musicbrainzId field
+   * @returns {object} Transformed fixture with _id instead of musicbrainzId
+   */
+  const transformToMongoDbDocument = ( fixture ) => {
+    const cloned = deepClone( fixture );
+
+    // Rename musicbrainzId to _id
+    if ( Object.prototype.hasOwnProperty.call( cloned, 'musicbrainzId' ) ) {
+      cloned._id = cloned.musicbrainzId;
+      delete cloned.musicbrainzId;
+    }
+
+    return cloned;
+  };
+
+  /**
    * Normalizes dates in fixture data to be in the future
    * Finds ISO date-time strings and replaces them with future dates
    * @param {object|Array} fixture - Fixture data to normalize
@@ -202,6 +220,7 @@
     loadFixture,
     modifyFixture,
     modifyArrayItem,
+    transformToMongoDbDocument,
     normalizeDates
   };
 } )();
