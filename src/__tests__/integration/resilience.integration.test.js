@@ -1,19 +1,22 @@
 /**
  * Integration tests for database connection resilience
  * Tests: Connection recovery, failover, transaction handling
- * Mocks: Database with simulated failures
+ * Mocks: Only external I/O (mongodb for database, axios for HTTP)
  * @module __tests__/integration/resilience.integration
  */
 
 const request = require( 'supertest' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -22,26 +25,62 @@ require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Database Connection Resilience Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
 
-    // Default mocks
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchAct = jest.fn();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
+
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls
+    axios.get = jest.fn().mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   /**
    * Test connection drops mid-request and recovers
    */
   test( 'connection drops during read and recovers on retry', async () => {
-    // First call fails (connection dropped), second succeeds
-    mf.database.getActFromCache.
+    // First call fails at MongoDB driver level (connection dropped), second succeeds
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.
       mockRejectedValueOnce( new Error( 'Connection lost' ) ).
-      mockResolvedValueOnce( mf.musicbrainzTransformer.transformActData( fixtureTheKinks ) );
+      mockResolvedValueOnce( cachedData );
 
     // First request fails
     await expect( request( mf.app ).get( `/acts/${fixtureTheKinks.id}` ) ).
@@ -50,10 +89,6 @@ describe( 'Database Connection Resilience Integration Tests', () => {
       } );
 
     // Second request succeeds (connection recovered)
-    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
-
-    transformedArtist.events = [];
-
     const response2 = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
       expect( 200 );
@@ -65,13 +100,16 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test cache write failure doesn't block read operations
    */
   test( 'cache write failures do not block read operations', async () => {
+    // MongoDB returns cached data for read
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
-    // Write fails but read succeeds
-    mf.database.cacheAct.mockRejectedValue( new Error( 'Write failed' ) );
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    // Write fails at MongoDB driver level but read succeeds
+    mockCollection.updateOne.mockRejectedValue( new Error( 'Write failed' ) );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -87,14 +125,15 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
-    // Alternate between success and failure
-    mf.database.getActFromCache.
-      mockResolvedValueOnce( transformedArtist ).
+    // Alternate between success and failure at MongoDB driver level
+    mockCollection.findOne.
+      mockResolvedValueOnce( cachedData ).
       mockRejectedValueOnce( new Error( 'Connection timeout' ) ).
-      mockResolvedValueOnce( transformedArtist ).
+      mockResolvedValueOnce( cachedData ).
       mockRejectedValueOnce( new Error( 'Connection timeout' ) ).
-      mockResolvedValueOnce( transformedArtist );
+      mockResolvedValueOnce( cachedData );
 
     // Make 5 requests
     const responses = await Promise.all( [
@@ -120,7 +159,8 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     const poolError = new Error( 'No connections available in pool' );
 
     poolError.code = 'POOL_EXHAUSTED';
-    mf.database.getActFromCache.mockRejectedValue( poolError );
+    // MongoDB driver throws pool exhaustion error
+    mockCollection.findOne.mockRejectedValue( poolError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -136,7 +176,8 @@ describe( 'Database Connection Resilience Integration Tests', () => {
     const networkError = new Error( 'Network unreachable' );
 
     networkError.code = 'ENETUNREACH';
-    mf.database.getActFromCache.mockRejectedValue( networkError );
+    // MongoDB driver throws network error
+    mockCollection.findOne.mockRejectedValue( networkError );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
@@ -149,13 +190,15 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test slow database responses (timeout simulation)
    */
   test( 'slow database responses are handled appropriately', async () => {
-    // Simulate slow response by delaying
-    mf.database.getActFromCache.mockImplementation( () => new Promise( ( resolve ) => {
+    // Simulate slow MongoDB response by delaying
+    mockCollection.findOne.mockImplementation( () => new Promise( ( resolve ) => {
       setTimeout( () => {
         const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
         transformedArtist.events = [];
-        resolve( transformedArtist );
+        const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+        resolve( cachedData );
       }, 100 );
     } ) );
 
@@ -170,7 +213,8 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test concurrent connection failures
    */
   test( 'concurrent connection failures affect all requests', async () => {
-    mf.database.getActFromCache.mockRejectedValue( new Error( 'Database down' ) );
+    // MongoDB driver throws error for all requests
+    mockCollection.findOne.mockRejectedValue( new Error( 'Database down' ) );
 
     const responses = await Promise.all( [
       request( mf.app ).get( `/acts/${fixtureTheKinks.id}` ),
@@ -188,21 +232,21 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test cache read succeeds but cache write fails
    */
   test( 'read succeeds when write fails during background update', async () => {
-    jest.useFakeTimers();
-
     // Cached data is old, triggers background refresh
     const now = new Date();
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
-    const staleArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
-
-    staleArtist.events = [];
-    staleArtist.updatedAt = staleTimestamp.toLocaleString( 'sv-SE', {
+    const staleTimestampString = staleTimestamp.toLocaleString( 'sv-SE', {
       'timeZone': 'Europe/Berlin'
     } );
 
-    mf.database.getActFromCache.mockResolvedValue( staleArtist );
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockRejectedValue( new Error( 'Write failed' ) );
+    // MongoDB returns stale cached data
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+    transformedArtist.updatedAt = staleTimestampString;
+    const staleCachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( staleCachedData );
 
     // Request should succeed with stale data
     const response = await request( mf.app ).
@@ -211,10 +255,17 @@ describe( 'Database Connection Resilience Integration Tests', () => {
 
     expect( response.body.acts ).toHaveLength( 1 );
 
+    // NOW set updateOne to fail for background update
+    mockCollection.updateOne.mockRejectedValue( new Error( 'Write failed' ) );
+
+    // Activate fake timers for background update timing
+    jest.useFakeTimers();
+
     // Background update attempts but write fails
     await jest.advanceTimersByTimeAsync( 35000 );
 
-    expect( mf.database.cacheAct ).toHaveBeenCalled();
+    // Verify MongoDB update was attempted
+    expect( mockCollection.updateOne ).toHaveBeenCalled();
 
     jest.useRealTimers();
   }, 10000 );
@@ -227,13 +278,32 @@ describe( 'Database Connection Resilience Integration Tests', () => {
 
     authError.code = 18;
 
-    // First attempt fails auth
-    mf.database.connect.
-      mockRejectedValueOnce( authError ).
-      mockResolvedValueOnce();
+    // Disconnect to allow fresh connection attempt
+    await mf.database.disconnect();
+
+    // Mock MongoClient to fail auth on first attempt, succeed on second
+    let attemptCount = 0;
+
+    MongoClient.mockImplementation( () => {
+      attemptCount += 1;
+      if ( attemptCount === 1 ) {
+        return {
+          'connect': jest.fn().mockRejectedValue( authError )
+        };
+      }
+
+      return {
+        'connect': jest.fn().mockResolvedValue(),
+        'db': jest.fn().mockReturnValue( {
+          'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+          'collection': jest.fn().mockReturnValue( mockCollection )
+        } ),
+        'close': jest.fn().mockResolvedValue()
+      };
+    } );
 
     // First connection fails
-    await expect( mf.database.connect() ).rejects.toThrow( 'Authentication failed' );
+    await expect( mf.database.connect() ).rejects.toThrow( 'DB_011' );
 
     // Retry succeeds
     await expect( mf.database.connect() ).resolves.not.toThrow();
@@ -243,8 +313,8 @@ describe( 'Database Connection Resilience Integration Tests', () => {
    * Test connection recovery after extended outage
    */
   test( 'system recovers after extended database outage', async () => {
-    // Simulate extended outage (5 failed attempts)
-    mf.database.getActFromCache.
+    // Simulate extended outage (5 failed attempts) at MongoDB driver level
+    mockCollection.findOne.
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
       mockRejectedValueOnce( new Error( 'Connection failed' ) ).
@@ -258,11 +328,13 @@ describe( 'Database Connection Resilience Integration Tests', () => {
       expect( response.status ).toBe( 500 );
     }
 
-    // Then recovery
+    // Then recovery - MongoDB returns cached data
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
