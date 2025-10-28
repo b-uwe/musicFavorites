@@ -39,6 +39,19 @@ npm start
 
 Endpoints are documented with request and response examples.
 
+### Admin Endpoint
+
+The `/admin/health` endpoint provides health and usage statistics. Authentication requires two environment variables to be set like this:
+```bash
+ADMIN_PASS="SUPERSECRET"
+ADMIN_TOTP_CONFIG='{"secret":"ZSMP26YRTHY7YNJ76KJ3ZSMP26YRTHY7","encoding":"base32","algorithm":"sha1"}'
+```
+
+Authorization header format:
+```
+Authorization: pass SUPERSECRET, bearer <totp-code>
+```
+
 ## Third-Party Data
 
 This project aggregates publicly available data from:

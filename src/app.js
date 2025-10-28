@@ -8,9 +8,14 @@
 
   const express = require( 'express' );
   const path = require( 'path' );
+  const speakeasy = require( 'speakeasy' );
   require( './services/actService' );
 
   const app = express();
+  const usageStats = {
+    'requests': 0,
+    'actsQueried': 0
+  };
 
   /**
    * Standard meta object for all API responses
@@ -24,6 +29,61 @@
     },
     'license': 'AGPL-3.0',
     'repository': 'https://github.com/b-uwe/musicFavorites'
+  };
+
+  /**
+   * Validate Authentication for the Admin route
+   * @param {object} req - Express request object
+   * @returns {object} - info about how to react to the request
+   */
+  const validateAdminAuth = ( req ) => {
+    const totpConfigJson = process.env.ADMIN_TOTP_CONFIG;
+    if ( !totpConfigJson ) {
+      return {
+        'status': 500,
+        'error': 'Admin authentication not configured'
+      };
+    }
+
+    let totpConfig;
+    try {
+      totpConfig = JSON.parse( totpConfigJson );
+    } catch ( error ) {
+      return {
+        'status': 500,
+        'error': 'Admin authentication misconfigured'
+      };
+    }
+
+    const authHeader = req.headers.authorization;
+    if ( !authHeader ) {
+      return {
+        'status': 401,
+        'error': 'Unauthorized'
+      };
+    }
+
+    const headerMatch = authHeader.match( new RegExp( `pass ${process.env.ADMIN_PASS}, bearer (?<token>.+)$`, 'ui' ) );
+    if ( !headerMatch || !headerMatch.groups ) {
+      return {
+        'status': 401,
+        'error': 'Unauthorized'
+      };
+    }
+
+    const verified = speakeasy.totp.verify( {
+      ...totpConfig,
+      'token': headerMatch.groups.token.trim()
+    } );
+
+    if ( !verified ) {
+      return {
+        'status': 401,
+        'error': 'Unauthorized'
+      };
+    }
+
+    return { 'status': 200 };
   };
 
   /**
@@ -54,6 +114,8 @@
   app.get( '/acts/:id', async ( req, res ) => {
     const { id } = req.params;
 
+    usageStats.requests++;
+
     // Enable pretty-printing if ?pretty query parameter is present
     if ( 'pretty' in req.query ) {
       app.set( 'json spaces', 2 );
@@ -65,6 +127,9 @@
 
     try {
       const actIds = id.split( ',' ).map( ( actId ) => actId.trim() );
+
+      usageStats.actsQueried += actIds.length;
+
       const result = await mf.actService.fetchMultipleActs( actIds );
 
       if ( result.error ) {
@@ -109,6 +174,62 @@
   } );
 
   /**
+   * Health Status
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {void} Returns a health Status
+   */
+  app.get( '/admin/health', async ( req, res ) => {
+    app.set( 'json spaces', 2 );
+
+    setResponseHeaders( res );
+
+    // Validate authentication first
+    const adminAuth = validateAdminAuth( req );
+    if ( adminAuth?.status !== 200 ) {
+      return res.status( adminAuth.status ).json( {
+        'error': adminAuth.error
+      } );
+    }
+
+    try {
+      const actIds = await mf.database.getAllActIds();
+      const cacheSize = actIds.length;
+
+      let lastCacheUpdate = null;
+
+      if ( cacheSize > 0 ) {
+        const actsWithMetadata = await mf.database.getAllActsWithMetadata();
+
+        lastCacheUpdate = actsWithMetadata.
+          filter( ( act ) => act.updatedAt )?.
+          reduce( ( acc, current ) => {
+            if ( !acc?.newest || current.updatedAt > acc.newest.updatedAt ) {
+              acc.newest = current;
+            }
+            if ( !acc?.oldest || current.updatedAt < acc.oldest.updatedAt ) {
+              acc.oldest = current;
+            }
+            return acc;
+          }, {} );
+      }
+
+      return res.json( {
+        'status': 'ok',
+        cacheSize,
+        lastCacheUpdate,
+        'uptime': process.uptime(),
+        usageStats
+      } );
+    } catch ( error ) {
+      return res.status( 500 ).json( {
+        'error': 'Failed to fetch health data',
+        'details': error.message
+      } );
+    }
+  } );
+
+  /**
    * Handle 404 errors with JSON response
    * @param {object} req - Express request object
    * @param {object} res - Express response object
@@ -122,4 +243,5 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.app = app;
+  globalThis.mf.usageStats = usageStats;
 } )();
