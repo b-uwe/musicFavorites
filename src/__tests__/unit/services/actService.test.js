@@ -47,6 +47,27 @@ describe( 'actService', () => {
 
         expect( [ '+01:00', '+02:00' ] ).toContain( offset );
       } );
+
+      test( 'uses fallback offset when formatToParts does not return timeZoneName', () => {
+        const originalFormatToParts = Intl.DateTimeFormat.prototype.formatToParts;
+
+        Intl.DateTimeFormat.prototype.formatToParts = jest.fn().mockReturnValue( [
+          {
+            'type': 'year',
+            'value': '2025'
+          },
+          {
+            'type': 'literal',
+            'value': '-'
+          }
+        ] );
+
+        const timestamp = mf.actService.getBerlinTimestamp();
+
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+01:00$/u );
+
+        Intl.DateTimeFormat.prototype.formatToParts = originalFormatToParts;
+      } );
     } );
 
     describe( 'determineStatus', () => {
