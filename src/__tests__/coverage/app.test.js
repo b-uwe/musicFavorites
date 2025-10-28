@@ -28,4 +28,14 @@ describe( 'app - Branch Coverage', () => {
       delete globalThis.mf.testProperty;
     } );
   } );
+
+  test( 'initializes usageStats object', () => {
+    jest.isolateModules( () => {
+      delete globalThis.mf;
+      require( '../../app' );
+      expect( globalThis.mf.usageStats ).toBeDefined();
+      expect( globalThis.mf.usageStats ).toHaveProperty( 'requests', 0 );
+      expect( globalThis.mf.usageStats ).toHaveProperty( 'actsQueried', 0 );
+    } );
+  } );
 } );

@@ -5,6 +5,7 @@
  */
 
 const request = require( 'supertest' );
+const speakeasy = require( 'speakeasy' );
 require( '../../app' );
 require( '../../services/actService' );
 
@@ -14,6 +15,15 @@ describe( 'Express App - Route Handler Unit Tests', () => {
 
     // Mock actService functions
     mf.actService.fetchMultipleActs = jest.fn();
+
+    // Mock database functions
+    mf.database = mf.database || {};
+    mf.database.getAllActIds = jest.fn();
+    mf.database.getAllActsWithMetadata = jest.fn();
+
+    // Reset usage stats
+    mf.usageStats.requests = 0;
+    mf.usageStats.actsQueried = 0;
   } );
 
   describe( 'GET /acts/:id - ID parsing logic', () => {
@@ -295,6 +305,386 @@ describe( 'Express App - Route Handler Unit Tests', () => {
 
       expect( response.headers[ 'content-type' ] ).toMatch( /application\/json/u );
       expect( response.body.status ).toBe( 404 );
+    } );
+  } );
+
+  describe( 'GET /acts/:id - Usage statistics tracking', () => {
+    /**
+     * Test that requests are counted
+     */
+    test( 'increments request counter for each request', async () => {
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      const initialRequests = mf.usageStats.requests;
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 200 );
+      expect( mf.usageStats.requests ).toBe( initialRequests + 1 );
+
+      await request( mf.app ).get( '/acts/test-id2' ).expect( 200 );
+      expect( mf.usageStats.requests ).toBe( initialRequests + 2 );
+    } );
+
+    /**
+     * Test that single act ID is counted
+     */
+    test( 'counts single act ID correctly', async () => {
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      const initialActsQueried = mf.usageStats.actsQueried;
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 200 );
+      expect( mf.usageStats.actsQueried ).toBe( initialActsQueried + 1 );
+    } );
+
+    /**
+     * Test that multiple act IDs are counted correctly
+     */
+    test( 'counts multiple act IDs correctly', async () => {
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      const initialActsQueried = mf.usageStats.actsQueried;
+
+      await request( mf.app ).get( '/acts/id1,id2,id3' ).expect( 200 );
+      expect( mf.usageStats.actsQueried ).toBe( initialActsQueried + 3 );
+    } );
+
+    /**
+     * Test that stats persist across requests
+     */
+    test( 'accumulates stats across multiple requests', async () => {
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      mf.usageStats.requests = 0;
+      mf.usageStats.actsQueried = 0;
+
+      await request( mf.app ).get( '/acts/id1' ).expect( 200 );
+      await request( mf.app ).get( '/acts/id2,id3' ).expect( 200 );
+      await request( mf.app ).get( '/acts/id4,id5,id6' ).expect( 200 );
+
+      expect( mf.usageStats.requests ).toBe( 3 );
+      expect( mf.usageStats.actsQueried ).toBe( 6 );
+    } );
+  } );
+
+  describe( 'GET /admin/health - Authentication', () => {
+    const validTotpConfig = {
+      'secret': 'TESTSECRET',
+      'encoding': 'base32',
+      'algorithm': 'sha1'
+    };
+    const validPassword = 'testpass';
+    let originalEnv;
+
+    beforeEach( () => {
+      originalEnv = {
+        'ADMIN_TOTP_CONFIG': process.env.ADMIN_TOTP_CONFIG,
+        'ADMIN_PASS': process.env.ADMIN_PASS
+      };
+
+      process.env.ADMIN_TOTP_CONFIG = JSON.stringify( validTotpConfig );
+      process.env.ADMIN_PASS = validPassword;
+
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+    } );
+
+    afterEach( () => {
+      process.env.ADMIN_TOTP_CONFIG = originalEnv.ADMIN_TOTP_CONFIG;
+      process.env.ADMIN_PASS = originalEnv.ADMIN_PASS;
+    } );
+
+    /**
+     * Test that missing ADMIN_TOTP_CONFIG returns 500
+     */
+    test( 'returns 500 when ADMIN_TOTP_CONFIG not set', async () => {
+      delete process.env.ADMIN_TOTP_CONFIG;
+
+      const response = await request( mf.app ).get( '/admin/health' ).expect( 500 );
+
+      expect( response.body.error ).toBe( 'Admin authentication not configured' );
+    } );
+
+    /**
+     * Test that invalid JSON in ADMIN_TOTP_CONFIG returns 500
+     */
+    test( 'returns 500 when ADMIN_TOTP_CONFIG has invalid JSON', async () => {
+      process.env.ADMIN_TOTP_CONFIG = 'not-valid-json';
+
+      const response = await request( mf.app ).get( '/admin/health' ).expect( 500 );
+
+      expect( response.body.error ).toBe( 'Admin authentication misconfigured' );
+    } );
+
+    /**
+     * Test that missing Authorization header returns 401
+     */
+    test( 'returns 401 when Authorization header missing', async () => {
+      const response = await request( mf.app ).get( '/admin/health' ).expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+    } );
+
+    /**
+     * Test that invalid Authorization header format returns 401
+     */
+    test( 'returns 401 when Authorization header has invalid format', async () => {
+      const response = await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', 'Bearer token' ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+    } );
+
+    /**
+     * Test that wrong password returns 401
+     */
+    test( 'returns 401 when password is incorrect', async () => {
+      const token = speakeasy.totp( validTotpConfig );
+
+      const response = await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass wrongpass, bearer ${token}` ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+    } );
+
+    /**
+     * Test that invalid TOTP token returns 401
+     */
+    test( 'returns 401 when TOTP token is invalid', async () => {
+      const response = await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass ${validPassword}, bearer 000000` ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+    } );
+
+    /**
+     * Test that valid credentials return 200
+     */
+    test( 'returns 200 with valid credentials', async () => {
+      const token = speakeasy.totp( validTotpConfig );
+
+      await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass ${validPassword}, bearer ${token}` ).
+        expect( 200 );
+    } );
+
+    /**
+     * Test that Authorization header is case-insensitive for 'pass' and 'bearer'
+     */
+    test( 'accepts case-insensitive pass and bearer keywords', async () => {
+      const token = speakeasy.totp( validTotpConfig );
+
+      await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `PASS ${validPassword}, BEARER ${token}` ).
+        expect( 200 );
+    } );
+
+    /**
+     * Test that extra whitespace in token is handled
+     */
+    test( 'trims whitespace from TOTP token', async () => {
+      const token = speakeasy.totp( validTotpConfig );
+
+      await request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass ${validPassword}, bearer  ${token}  ` ).
+        expect( 200 );
+    } );
+  } );
+
+  describe( 'GET /admin/health - Response data', () => {
+    const validTotpConfig = {
+      'secret': 'TESTSECRET',
+      'encoding': 'base32',
+      'algorithm': 'sha1'
+    };
+    const validPassword = 'testpass';
+    let originalEnv;
+
+    /**
+     * Helper to make authenticated request
+     * @returns {object} Supertest request with auth header
+     */
+    const authenticatedRequest = () => {
+      const token = speakeasy.totp( validTotpConfig );
+      return request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass ${validPassword}, bearer ${token}` );
+    };
+
+    beforeEach( () => {
+      originalEnv = {
+        'ADMIN_TOTP_CONFIG': process.env.ADMIN_TOTP_CONFIG,
+        'ADMIN_PASS': process.env.ADMIN_PASS
+      };
+
+      process.env.ADMIN_TOTP_CONFIG = JSON.stringify( validTotpConfig );
+      process.env.ADMIN_PASS = validPassword;
+    } );
+
+    afterEach( () => {
+      process.env.ADMIN_TOTP_CONFIG = originalEnv.ADMIN_TOTP_CONFIG;
+      process.env.ADMIN_PASS = originalEnv.ADMIN_PASS;
+    } );
+
+    /**
+     * Test empty cache returns null for lastCacheUpdate
+     */
+    test( 'returns null lastCacheUpdate when cache is empty', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.status ).toBe( 'ok' );
+      expect( response.body.cacheSize ).toBe( 0 );
+      expect( response.body.lastCacheUpdate ).toBeNull();
+      expect( response.body ).toHaveProperty( 'uptime' );
+      expect( response.body ).toHaveProperty( 'usageStats' );
+    } );
+
+    /**
+     * Test cache with one act
+     */
+    test( 'returns correct data with one cached act', async () => {
+      const mockAct = {
+        '_id': 'act-123',
+        'updatedAt': new Date( '2025-10-28T12:00:00Z' )
+      };
+
+      mf.database.getAllActIds.mockResolvedValue( [ 'act-123' ] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [ mockAct ] );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.status ).toBe( 'ok' );
+      expect( response.body.cacheSize ).toBe( 1 );
+      expect( response.body.lastCacheUpdate.newest._id ).toBe( 'act-123' );
+      expect( response.body.lastCacheUpdate.oldest._id ).toBe( 'act-123' );
+    } );
+
+    /**
+     * Test cache with multiple acts
+     */
+    test( 'returns correct newest and oldest with multiple acts', async () => {
+      const mockActs = [
+        {
+          '_id': 'act-old',
+          'updatedAt': new Date( '2025-10-25T12:00:00Z' )
+        },
+        {
+          '_id': 'act-new',
+          'updatedAt': new Date( '2025-10-28T12:00:00Z' )
+        },
+        {
+          '_id': 'act-mid',
+          'updatedAt': new Date( '2025-10-27T12:00:00Z' )
+        }
+      ];
+
+      mf.database.getAllActIds.mockResolvedValue( [ 'act-old', 'act-new', 'act-mid' ] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( mockActs );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.cacheSize ).toBe( 3 );
+      expect( response.body.lastCacheUpdate.newest._id ).toBe( 'act-new' );
+      expect( response.body.lastCacheUpdate.oldest._id ).toBe( 'act-old' );
+    } );
+
+    /**
+     * Test acts without updatedAt are filtered out
+     */
+    test( 'filters out acts without updatedAt', async () => {
+      const mockActs = [
+        {
+          '_id': 'act-with-date',
+          'updatedAt': new Date( '2025-10-28T12:00:00Z' )
+        },
+        {
+          '_id': 'act-no-date'
+        }
+      ];
+
+      mf.database.getAllActIds.mockResolvedValue( [ 'act-with-date', 'act-no-date' ] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( mockActs );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.cacheSize ).toBe( 2 );
+      expect( response.body.lastCacheUpdate.newest._id ).toBe( 'act-with-date' );
+      expect( response.body.lastCacheUpdate.oldest._id ).toBe( 'act-with-date' );
+    } );
+
+    /**
+     * Test uptime is a positive number
+     */
+    test( 'returns positive uptime value', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.uptime ).toBeGreaterThan( 0 );
+      expect( typeof response.body.uptime ).toBe( 'number' );
+    } );
+
+    /**
+     * Test usage stats structure
+     */
+    test( 'returns usage stats with correct structure', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+
+      mf.usageStats.requests = 42;
+      mf.usageStats.actsQueried = 123;
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.usageStats ).toEqual( {
+        'requests': 42,
+        'actsQueried': 123
+      } );
+    } );
+
+    /**
+     * Test response is pretty-printed JSON
+     */
+    test( 'returns pretty-printed JSON', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      // Pretty-printed JSON should contain newlines
+      expect( JSON.stringify( response.body, null, 2 ) ).toContain( '\n' );
+    } );
+
+    /**
+     * Test error handling when database throws
+     */
+    test( 'returns 500 when database throws error', async () => {
+      mf.database.getAllActIds.mockRejectedValue( new Error( 'DB connection failed' ) );
+
+      const response = await authenticatedRequest().expect( 500 );
+
+      expect( response.body.error ).toBe( 'Failed to fetch health data' );
+      expect( response.body.details ).toBe( 'DB connection failed' );
     } );
   } );
 } );
