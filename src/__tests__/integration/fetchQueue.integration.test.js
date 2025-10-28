@@ -134,9 +134,11 @@ describe( 'Fetch Queue Integration Tests', () => {
   test( 'processFetchQueue continues processing after individual fetch failures', async () => {
     jest.useFakeTimers();
 
+    const failingMbid = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
     const actIds = [
       fixtureTheKinks.id,
-      'failing-id',
+      failingMbid,
       fixtureVulvodynia.id
     ];
 
@@ -319,8 +321,8 @@ describe( 'Fetch Queue Integration Tests', () => {
   test( 'triggerBackgroundFetch handles many acts queued at once', async () => {
     jest.useFakeTimers();
 
-    // Queue 10 acts at once
-    const manyActIds = Array.from( { 'length': 10 }, ( _, i ) => `act-id-${i}` );
+    // Queue 10 acts at once (using valid MBID format)
+    const manyActIds = Array.from( { 'length': 10 }, ( _, i ) => `${i.toString( 16 ).padStart( 8, '0' )}-0000-0000-0000-000000000000` );
 
     // Mock axios for all fetches
     axios.get.mockImplementation( ( url ) => {

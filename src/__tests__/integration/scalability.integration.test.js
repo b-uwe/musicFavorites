@@ -27,6 +27,21 @@ require( '../../services/fetchQueue' );
 require( '../../services/actService' );
 require( '../../app' );
 
+/**
+ * Generates an array of valid test MBIDs
+ * @param {number} count - Number of MBIDs to generate
+ * @param {string} prefix - Optional prefix for uniqueness
+ * @returns {Array<string>} Array of valid MBIDs
+ */
+const generateTestMbids = ( count, prefix = '' ) => Array.from(
+  { 'length': count },
+  ( _, i ) => {
+    const hexNum = i.toString( 16 ).padStart( 8, '0' );
+
+    return `${prefix}${hexNum}-0000-0000-0000-000000000000`;
+  }
+);
+
 describe( 'Scalability Integration Tests', () => {
   let mockCollection;
 
@@ -56,9 +71,7 @@ describe( 'Scalability Integration Tests', () => {
     mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Generate 200 act IDs
-    const actIds = Array.from( {
-      'length': 200
-    }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 200 );
 
     const response = await request( mf.app ).
       get( `/acts/${actIds.join( ',' )}` ).
@@ -91,9 +104,7 @@ describe( 'Scalability Integration Tests', () => {
       return Promise.resolve( null );
     } );
 
-    const actIds = Array.from( {
-      'length': 200
-    }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 200 );
 
     const response = await request( mf.app ).
       get( `/acts/${actIds.join( ',' )}` ).
@@ -108,9 +119,7 @@ describe( 'Scalability Integration Tests', () => {
    * Test queue overflow with 500+ acts queued at once
    */
   test( 'background fetch queue handles 500 acts without crashing', async () => {
-    const actIds = Array.from( {
-      'length': 500
-    }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 500 );
 
     /*
      * Axios mocked in beforeEach to return fixtureTheKinks for MusicBrainz
@@ -142,12 +151,8 @@ describe( 'Scalability Integration Tests', () => {
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
-    const batch1 = Array.from( {
-      'length': 100
-    }, ( _, i ) => `batch1-id-${i}` );
-    const batch2 = Array.from( {
-      'length': 100
-    }, ( _, i ) => `batch2-id-${i}` );
+    const batch1 = generateTestMbids( 100, 'b1' );
+    const batch2 = generateTestMbids( 100, 'b2' );
 
     const [ response1, response2 ] = await Promise.all( [
       request( mf.app ).get( `/acts/${batch1.join( ',' )}` ),
@@ -172,9 +177,7 @@ describe( 'Scalability Integration Tests', () => {
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
-    const actIds = Array.from( {
-      'length': 300
-    }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 300 );
 
     // Measure memory before (rough approximation)
     const memBefore = process.memoryUsage().heapUsed;
@@ -197,7 +200,7 @@ describe( 'Scalability Integration Tests', () => {
     // Axios and MongoDB updateOne mocked in beforeEach
 
     // Queue 5 acts
-    const actIds = Array.from( { 'length': 5 }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 5 );
 
     mf.fetchQueue.triggerBackgroundFetch( actIds );
 
@@ -240,9 +243,7 @@ describe( 'Scalability Integration Tests', () => {
    * Test queue deduplication with massive duplicates
    */
   test( 'queue deduplicates when same 100 acts requested 10 times', () => {
-    const actIds = Array.from( {
-      'length': 100
-    }, ( _, i ) => `act-id-${i}` );
+    const actIds = generateTestMbids( 100 );
 
     // Add same 100 acts 10 times
     for ( let i = 0; i < 10; i += 1 ) {

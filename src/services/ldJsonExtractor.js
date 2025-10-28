@@ -10,6 +10,7 @@
   const axios = require( 'axios' );
   const cheerio = require( 'cheerio' );
   require( '../constants' );
+  require( './inputValidator' );
 
   /**
    * Extracts all LD+JSON blocks from HTML string
@@ -48,10 +49,14 @@
 
   /**
    * Fetches a URL and extracts LD+JSON data
-   * @param {string} url - The URL to fetch
-   * @returns {Promise<Array<object>>} Array of parsed JSON objects
+   * @param {string} url - The URL to fetch (must be valid HTTP/HTTPS URL)
+   * @returns {Promise<Array<object>>} Array of parsed JSON objects (empty array on error or invalid URL)
    */
   const fetchAndExtractLdJson = async ( url ) => {
+    if ( !mf.inputValidator.validateUrl( url ) ) {
+      return [];
+    }
+
     try {
       const response = await axios.get( url, {
         'timeout': mf.constants.HTTP_TIMEOUT,
