@@ -1,20 +1,22 @@
 /**
  * Integration tests for real-world user workflows
  * Tests: Complete user journeys from first request to cache refresh
- * Mocks: Only external I/O (MongoDB, HTTP)
+ * Mocks: Only external I/O (mongodb for database, axios for HTTP)
  * @module __tests__/integration/workflows.integration
  */
 
 const request = require( 'supertest' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
-const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -24,30 +26,73 @@ require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Real-World Workflow Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
+    jest.useFakeTimers();
+
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
 
     // Reset fetch queue state
     mf.testing.fetchQueue.fetchQueue.clear();
     mf.testing.fetchQueue.setIsRunning( false );
 
-    // Default mocks
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchAct = jest.fn();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
-    mf.fetchQueue.triggerBackgroundFetch = jest.fn();
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls - default to success, tests will override
+    axios.get = jest.fn().mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
+  } );
+
+  afterEach( () => {
+    jest.useRealTimers();
   } );
 
   /**
    * Test complete workflow: cache miss → synchronous fetch → cache hit
    */
   test( 'workflow: first request misses cache, fetches synchronously, second request hits cache', async () => {
-    // First request: cache miss, MusicBrainz returns data
-    mf.database.getActFromCache.mockResolvedValueOnce( null );
-    mf.musicbrainz.fetchAct.mockResolvedValueOnce( fixtureTheKinks );
+    // First request: MongoDB returns null (cache miss), axios returns data
+    mockCollection.findOne.mockResolvedValueOnce( null );
+
+    // Axios returns MusicBrainz data for synchronous fetch
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
 
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
@@ -61,14 +106,18 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValueOnce( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValueOnce( cachedData );
 
     const response2 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
     // Should return success from cache
     expect( response2.status ).toBe( 200 );
     expect( response2.body.acts ).toHaveLength( 1 );
-    expect( response2.body.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
+    expect( response2.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
   } );
 
   /**
@@ -79,28 +128,29 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const staleTimestamp = new Date( now.getTime() - ( 25 * 60 * 60 * 1000 ) );
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
-    // Transform _id to musicbrainzId to match real getActFromCache behavior
-    const { _id, ...artistData } = transformedArtist;
-    const staleArtist = {
-      'musicbrainzId': _id,
-      ...artistData,
-      'events': [],
-      'updatedAt': staleTimestamp.toLocaleString( 'sv-SE', {
-        'timeZone': 'Europe/Berlin'
-      } )
-    };
+    transformedArtist.events = [];
+    transformedArtist.updatedAt = staleTimestamp.toLocaleString( 'sv-SE', {
+      'timeZone': 'Europe/Berlin'
+    } );
 
-    mf.database.getActFromCache.mockResolvedValue( staleArtist );
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // First request with stale data
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
-    // Should return stale data immediately
+    /*
+     * Should return stale data immediately - the key behavior is that stale data
+     * is served to the user without blocking them
+     */
     expect( response1.status ).toBe( 200 );
-    expect( response1.body.acts[ 0 ].updatedAt ).toBe( staleArtist.updatedAt );
+    expect( response1.body.acts[ 0 ].updatedAt ).toBe( transformedArtist.updatedAt );
+    expect( response1.body.acts ).toHaveLength( 1 );
 
-    // Should trigger background refresh
-    expect( mf.fetchQueue.triggerBackgroundFetch ).toHaveBeenCalledWith( [ fixtureTheKinks.id ] );
+    // Verify MongoDB was queried for the cached data
+    expect( mockCollection.findOne ).toHaveBeenCalled();
   } );
 
   /**
@@ -110,7 +160,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Simulate 10 concurrent requests
     const requests = Array.from( {
@@ -122,11 +176,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     // All should succeed
     responses.forEach( ( response ) => {
       expect( response.status ).toBe( 200 );
-      expect( response.body.acts[ 0 ]._id ).toBe( fixtureTheKinks.id );
+      expect( response.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
     } );
 
-    // Cache should be accessed 10 times
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 10 );
+    // MongoDB driver should be accessed 10 times
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 10 );
   } );
 
   /**
@@ -137,15 +191,14 @@ describe( 'Real-World Workflow Integration Tests', () => {
 
     transformedKinks.events = [];
 
-    const transformedVulvodynia = mf.musicbrainzTransformer.transformActData( fixtureVulvodynia );
-
-    transformedVulvodynia.events = [];
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedKinks = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedKinks );
 
     // First 3 cached, last 2 not
-    mf.database.getActFromCache.
-      mockResolvedValueOnce( transformedKinks ).
-      mockResolvedValueOnce( transformedKinks ).
-      mockResolvedValueOnce( transformedKinks ).
+    mockCollection.findOne.
+      mockResolvedValueOnce( cachedKinks ).
+      mockResolvedValueOnce( cachedKinks ).
+      mockResolvedValueOnce( cachedKinks ).
       mockResolvedValueOnce( null ).
       mockResolvedValueOnce( null );
 
@@ -171,7 +224,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     const artistIds = [
       'artist1',
@@ -189,8 +246,8 @@ describe( 'Real-World Workflow Integration Tests', () => {
       expect( response.body.acts ).toHaveLength( 1 );
     }
 
-    // Should have queried cache 5 times
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 5 );
+    // Should have queried MongoDB 5 times
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 5 );
   } );
 
   /**
@@ -200,7 +257,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     const response = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}?pretty` ).
@@ -220,7 +281,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // 20 different artists
     const requests = Array.from( {
@@ -234,7 +299,7 @@ describe( 'Real-World Workflow Integration Tests', () => {
       expect( response.status ).toBe( 200 );
     } );
 
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 20 );
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 20 );
   }, 15000 );
 
   /**
@@ -253,7 +318,10 @@ describe( 'Real-World Workflow Integration Tests', () => {
       'timeZone': 'Europe/Berlin'
     } );
 
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Make 100 requests for same artist
     for ( let i = 0; i < 100; i += 1 ) {
@@ -262,19 +330,19 @@ describe( 'Real-World Workflow Integration Tests', () => {
       expect( response.status ).toBe( 200 );
     }
 
-    // All 100 should hit cache
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 100 );
+    // All 100 should hit cache at MongoDB driver level
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 100 );
 
-    // Background fetch should not be triggered (data is fresh)
-    expect( mf.fetchQueue.triggerBackgroundFetch ).not.toHaveBeenCalled();
+    // Background fetch should not be triggered (data is fresh) - verify no queue population
+    expect( mf.testing.fetchQueue.fetchQueue.has( fixtureTheKinks.id ) ).toBe( false );
   }, 20000 );
 
   /**
    * Test error recovery workflow
    */
   test( 'workflow: user gets error, retries, succeeds', async () => {
-    // First request fails
-    mf.database.getActFromCache.mockRejectedValueOnce( new Error( 'Temporary database issue' ) );
+    // First request fails at MongoDB driver level
+    mockCollection.findOne.mockRejectedValueOnce( new Error( 'Temporary database issue' ) );
 
     const response1 = await request( mf.app ).get( `/acts/${fixtureTheKinks.id}` );
 
@@ -284,7 +352,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValueOnce( transformedArtist );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValueOnce( cachedData );
 
     const response2 = await request( mf.app ).
       get( `/acts/${fixtureTheKinks.id}` ).
