@@ -125,6 +125,11 @@
 
     const bandsintownUrl = actData.relations.bandsintown;
 
+    // Validate Bandsintown URL format
+    if ( bandsintownUrl.match( /^https?:\/\/(?:www\.)?bandsintown\.com\/a\/(?:\d+)$/u )?.length !== 1 ) {
+      return [];
+    }
+
     try {
       const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
 

@@ -143,10 +143,10 @@ describe( 'LD+JSON Extractor', () => {
      * Test that network errors are caught and return empty array
      */
     test( 'returns empty array for unreachable URL (network error)', async () => {
-      const url = 'https://invalid-domain-that-does-not-exist-12345.com';
+      const url = 'https://bandsintown.com/test';
 
       // Mock axios to throw network error
-      axios.get.mockRejectedValue( new Error( 'getaddrinfo ENOTFOUND invalid-domain-that-does-not-exist-12345.com' ) );
+      axios.get.mockRejectedValue( new Error( 'getaddrinfo ENOTFOUND' ) );
 
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
@@ -163,17 +163,54 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     /**
-     * Test that invalid URLs are caught and return empty array
+     * Test that invalid URLs are rejected before making request
      */
-    test( 'returns empty array for invalid URL', async () => {
+    test( 'returns empty array for invalid URL format', async () => {
       const url = 'not-a-valid-url';
-
-      // Mock axios to throw invalid URL error
-      axios.get.mockRejectedValue( new Error( 'Invalid URL' ) );
 
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
+      expect( axios.get ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that non-HTTP protocols are rejected
+     */
+    test( 'returns empty array for non-HTTP protocol', async () => {
+      const invalidUrls = [
+        'ftp://example.com',
+        'file:///etc/passwd',
+        'javascript:alert(1)'
+      ];
+
+      for ( const url of invalidUrls ) {
+        const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+        expect( result ).toEqual( [] );
+      }
+
+      expect( axios.get ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that empty URL is rejected
+     */
+    test( 'returns empty array for empty URL', async () => {
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( '' );
+
+      expect( result ).toEqual( [] );
+      expect( axios.get ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test that non-string URLs are rejected
+     */
+    test( 'returns empty array for non-string URL', async () => {
+      const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( 123 );
+
+      expect( result ).toEqual( [] );
+      expect( axios.get ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -206,7 +243,7 @@ describe( 'LD+JSON Extractor', () => {
      * Test successful fetch and extraction
      */
     test( 'fetches URL and extracts LD+JSON successfully', async () => {
-      const url = 'https://example.com/page';
+      const url = 'https://www.bandsintown.com/a/test-artist';
       const html = '<html><head><script type="application/ld+json">{"@type":"Person","name":"Test"}</script></head></html>';
 
       axios.get.mockResolvedValue( {

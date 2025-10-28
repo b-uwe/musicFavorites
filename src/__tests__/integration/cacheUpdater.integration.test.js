@@ -64,10 +64,12 @@ describe( 'Cache Updater Integration Tests', () => {
    */
   test( 'updateAct handles errors gracefully without throwing', async () => {
     // Mock axios to reject for MusicBrainz API error
+    const validMbid = '12345678-1234-1234-1234-123456789abc';
+
     axios.get.mockRejectedValue( new Error( 'MusicBrainz API error' ) );
 
     // Should not throw
-    await expect( mf.cacheUpdater.updateAct( 'some-id' ) ).resolves.not.toThrow();
+    await expect( mf.cacheUpdater.updateAct( validMbid ) ).resolves.not.toThrow();
 
     // Should not attempt to cache when fetch fails
     expect( mockCollection.updateOne ).not.toHaveBeenCalled();
@@ -142,6 +144,8 @@ describe( 'Cache Updater Integration Tests', () => {
    * Test that errors during update don't stop the entire process
    */
   test( 'runSequentialUpdate continues after error in single act update', async () => {
+    const validMbid1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+    const validMbid2 = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
     const yesterday = new Date( Date.now() - ( ( 25 * 60 * 60 ) * 1000 ) );
     const yesterdayString = yesterday.toISOString().replace( 'T', ' ' ).substring( 0, 19 );
 
@@ -149,11 +153,11 @@ describe( 'Cache Updater Integration Tests', () => {
     mockCollection.find.mockReturnValue( {
       'toArray': jest.fn().mockResolvedValue( [
         {
-          '_id': 'act1',
+          '_id': validMbid1,
           'updatedAt': yesterdayString
         },
         {
-          '_id': 'act2',
+          '_id': validMbid2,
           'updatedAt': yesterdayString
         }
       ] )
@@ -166,7 +170,7 @@ describe( 'Cache Updater Integration Tests', () => {
       if ( url.includes( 'musicbrainz.org' ) ) {
         callCount++;
         if ( callCount === 1 ) {
-          return Promise.reject( new Error( 'Fetch failed for act1' ) );
+          return Promise.reject( new Error( `Fetch failed for ${validMbid1}` ) );
         }
 
         return Promise.resolve( { 'data': fixtureTheKinks } );
@@ -235,21 +239,24 @@ describe( 'Cache Updater Integration Tests', () => {
    * Test runSequentialUpdate respects 30s delay between updates
    */
   test( 'runSequentialUpdate waits 30 seconds between each act update', async () => {
+    const validMbid1 = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+    const validMbid2 = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+    const validMbid3 = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
     const staleTimestamp = new Date( Date.now() - ( 25 * 60 * 60 * 1000 ) ).toISOString().replace( 'T', ' ' ).substring( 0, 19 );
 
     // Mock MongoDB to return three stale acts
     mockCollection.find.mockReturnValue( {
       'toArray': jest.fn().mockResolvedValue( [
         {
-          '_id': 'act1',
+          '_id': validMbid1,
           'updatedAt': staleTimestamp
         },
         {
-          '_id': 'act2',
+          '_id': validMbid2,
           'updatedAt': staleTimestamp
         },
         {
-          '_id': 'act3',
+          '_id': validMbid3,
           'updatedAt': staleTimestamp
         }
       ] )

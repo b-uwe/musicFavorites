@@ -12,6 +12,42 @@
   require( '../constants' );
 
   /**
+   * Validates URL format for HTTP/HTTPS protocols with domain whitelist
+   * @param {string} url - The URL to validate
+   * @returns {boolean} True if valid HTTP/HTTPS URL with whitelisted domain, false otherwise
+   */
+  const validateUrl = ( url ) => {
+    if ( typeof url !== 'string' ) {
+      return false;
+    }
+
+    // Whitelist of allowed domains for fetching LD+JSON data
+    const allowedDomains = [
+      'bandsintown.com',
+      'www.bandsintown.com'
+    ];
+
+    try {
+      // Use globalThis.URL which is available in Node.js
+      const urlObj = new globalThis.URL( url );
+
+      // Only allow http and https protocols
+      if ( urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:' ) {
+        return false;
+      }
+
+      // Domain must be in whitelist
+      if ( !allowedDomains.includes( urlObj.hostname ) ) {
+        return false;
+      }
+
+      return true;
+    } catch ( error ) {
+      return false;
+    }
+  };
+
+  /**
    * Extracts all LD+JSON blocks from HTML string
    * @param {string} html - The HTML content to parse
    * @returns {Array<object>} Array of parsed JSON objects
@@ -48,10 +84,14 @@
 
   /**
    * Fetches a URL and extracts LD+JSON data
-   * @param {string} url - The URL to fetch
-   * @returns {Promise<Array<object>>} Array of parsed JSON objects
+   * @param {string} url - The URL to fetch (must be valid HTTP/HTTPS URL)
+   * @returns {Promise<Array<object>>} Array of parsed JSON objects (empty array on error or invalid URL)
    */
   const fetchAndExtractLdJson = async ( url ) => {
+    if ( !validateUrl( url ) ) {
+      return [];
+    }
+
     try {
       const response = await axios.get( url, {
         'timeout': mf.constants.HTTP_TIMEOUT,
