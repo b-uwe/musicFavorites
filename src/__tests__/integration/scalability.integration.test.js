@@ -1,19 +1,22 @@
 /**
  * Integration tests for scalability and performance under load
  * Tests: Large batch requests and queue overflow scenarios
- * Mocks: Only external I/O (MongoDB, HTTP)
+ * Mocks: Only external I/O (mongodb for database, axios for HTTP)
  * @module __tests__/integration/scalability.integration
  */
 
 const request = require( 'supertest' );
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
-// Mock external dependencies BEFORE requiring modules
-jest.mock( '../../services/database' );
-jest.mock( '../../services/musicbrainz' );
-jest.mock( '../../services/ldJsonExtractor' );
+// Mock external I/O BEFORE requiring modules
+jest.mock( 'axios' );
+jest.mock( 'mongodb' );
 
-// Load modules AFTER mocks
+const axios = require( 'axios' );
+const { MongoClient } = require( 'mongodb' );
+
+// Load all real business logic modules AFTER mocks
+require( '../../testHelpers/fixtureHelpers' );
 require( '../../services/database' );
 require( '../../services/musicbrainz' );
 require( '../../services/ldJsonExtractor' );
@@ -23,21 +26,52 @@ require( '../../services/actService' );
 require( '../../app' );
 
 describe( 'Scalability Integration Tests', () => {
-  beforeEach( () => {
+  let mockCollection;
+
+  beforeEach( async () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+
+    // Disconnect database to force fresh connection with new mocks
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore errors if not connected
+    }
 
     // Reset fetch queue state
     mf.testing.fetchQueue.fetchQueue.clear();
     mf.testing.fetchQueue.setIsRunning( false );
 
-    // Default mocks
-    mf.database.connect = jest.fn().mockResolvedValue();
-    mf.database.testCacheHealth = jest.fn().mockResolvedValue();
-    mf.database.getActFromCache = jest.fn();
-    mf.database.cacheAct = jest.fn().mockResolvedValue();
-    mf.musicbrainz.fetchAct = jest.fn();
-    mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+    // Mock MongoDB driver
+    mockCollection = {
+      'findOne': jest.fn(),
+      'updateOne': jest.fn().mockResolvedValue( { 'acknowledged': true } ),
+      'find': jest.fn().mockReturnValue( { 'toArray': jest.fn().mockResolvedValue( [] ) } ),
+      'deleteOne': jest.fn().mockResolvedValue( { 'acknowledged': true } )
+    };
+
+    MongoClient.mockImplementation( () => ( {
+      'connect': jest.fn().mockResolvedValue(),
+      'db': jest.fn().mockReturnValue( {
+        'command': jest.fn().mockResolvedValue( { 'ok': 1 } ),
+        'collection': jest.fn().mockReturnValue( mockCollection )
+      } ),
+      'close': jest.fn().mockResolvedValue()
+    } ) );
+
+    // Mock axios for HTTP calls
+    axios.get = jest.fn().mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    // Connect database before each test
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+    await mf.database.connect();
   } );
 
   afterEach( () => {
@@ -48,10 +82,13 @@ describe( 'Scalability Integration Tests', () => {
    * Test handling 200 acts in single request (all cached)
    */
   test( 'GET /acts with 200 cached acts returns successfully', async () => {
+    // MongoDB returns cached data for all requests
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Generate 200 act IDs
     const actIds = Array.from( {
@@ -64,7 +101,7 @@ describe( 'Scalability Integration Tests', () => {
 
     // Should return all 200 acts
     expect( response.body.acts ).toHaveLength( 200 );
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 200 );
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 200 );
   }, 15000 );
 
   /**
@@ -74,15 +111,16 @@ describe( 'Scalability Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
 
     let callCount = 0;
 
-    // First 150 cached, last 50 missing
-    mf.database.getActFromCache.mockImplementation( () => {
+    // First 150 cached, last 50 missing at MongoDB driver level
+    mockCollection.findOne.mockImplementation( () => {
       callCount += 1;
 
       if ( callCount <= 150 ) {
-        return Promise.resolve( transformedArtist );
+        return Promise.resolve( cachedData );
       }
 
       return Promise.resolve( null );
@@ -109,10 +147,11 @@ describe( 'Scalability Integration Tests', () => {
       'length': 500
     }, ( _, i ) => `act-id-${i}` );
 
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockResolvedValue();
-
-    // Trigger background fetch with 500 acts
+    /*
+     * Axios mocked in beforeEach to return fixtureTheKinks for MusicBrainz
+     * MongoDB updateOne mocked in beforeEach to succeed
+     * Trigger background fetch with 500 acts
+     */
     mf.fetchQueue.triggerBackgroundFetch( actIds );
 
     // Should not crash, queue size should be close to 500 (some may have started processing)
@@ -121,8 +160,10 @@ describe( 'Scalability Integration Tests', () => {
     // Advance enough time to process some (not all)
     await jest.advanceTimersByTimeAsync( 60000 );
 
-    // Should have started processing
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalled();
+    // Should have started processing via axios
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBeGreaterThan( 0 );
   }, 20000 );
 
   /**
@@ -132,7 +173,9 @@ describe( 'Scalability Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     const batch1 = Array.from( {
       'length': 100
@@ -160,7 +203,9 @@ describe( 'Scalability Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     const actIds = Array.from( {
       'length': 300
@@ -184,8 +229,7 @@ describe( 'Scalability Integration Tests', () => {
    * Test queue respects 30-second delay between fetches
    */
   test( 'queue respects 30-second delay between processing acts', async () => {
-    mf.musicbrainz.fetchAct.mockResolvedValue( fixtureTheKinks );
-    mf.database.cacheAct.mockResolvedValue();
+    // Axios and MongoDB updateOne mocked in beforeEach
 
     // Queue 5 acts
     const actIds = Array.from( { 'length': 5 }, ( _, i ) => `act-id-${i}` );
@@ -195,24 +239,30 @@ describe( 'Scalability Integration Tests', () => {
     // Allow time for first fetch to start and complete
     await jest.advanceTimersByTimeAsync( 10 );
 
-    // First act should be processed immediately
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 1 );
+    // First act should be processed immediately via axios
+    let musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 1 );
 
     // Fast-forward 15 seconds - second act should NOT be processed yet (needs 30s total)
     await jest.advanceTimersByTimeAsync( 15000 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 1 );
+    musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+    expect( musicbrainzCalls.length ).toBe( 1 );
 
     // Fast-forward another 15 seconds (total 30s + processing time) - second act should now be processed
     await jest.advanceTimersByTimeAsync( 15000 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+    expect( musicbrainzCalls.length ).toBe( 2 );
 
     // Fast-forward 15 seconds - third act should NOT be processed yet
     await jest.advanceTimersByTimeAsync( 15000 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 2 );
+    musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+    expect( musicbrainzCalls.length ).toBe( 2 );
 
     // Fast-forward another 15 seconds (total 30s) - third act should now be processed
     await jest.advanceTimersByTimeAsync( 15000 );
-    expect( mf.musicbrainz.fetchAct ).toHaveBeenCalledTimes( 3 );
+    musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+    expect( musicbrainzCalls.length ).toBe( 3 );
 
     /*
      * Verify rate: 3 fetches with ~30-second delays between them
@@ -245,7 +295,9 @@ describe( 'Scalability Integration Tests', () => {
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
     transformedArtist.events = [];
-    mf.database.getActFromCache.mockResolvedValue( transformedArtist );
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
 
     // Make 20 sequential requests of 50 acts each
     for ( let i = 0; i < 20; i += 1 ) {
@@ -259,7 +311,7 @@ describe( 'Scalability Integration Tests', () => {
       expect( response.body.acts ).toHaveLength( 50 );
     }
 
-    // All requests should have been processed
-    expect( mf.database.getActFromCache ).toHaveBeenCalledTimes( 1000 );
+    // All requests should have been processed at MongoDB driver level
+    expect( mockCollection.findOne ).toHaveBeenCalledTimes( 1000 );
   }, 30000 );
 } );
