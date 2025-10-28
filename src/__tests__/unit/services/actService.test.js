@@ -422,6 +422,8 @@ describe( 'actService', () => {
 
         expect( result ).toEqual( [] );
       } );
+
+      // URL validation tests moved to actService.urlValidation.test.js
     } );
 
     describe( 'fetchAndEnrichActData', () => {
