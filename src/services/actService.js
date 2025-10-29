@@ -53,11 +53,23 @@
   };
 
   /**
-   * Formats current timestamp in Berlin timezone
-   * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS
-   * @returns {string} Timestamp (CET/CEST handled automatically)
+   * Formats current timestamp in Berlin timezone with offset
+   * Using sv-SE locale gives format: YYYY-MM-DD HH:MM:SS+01:00 or +02:00
+   * @returns {string} Timestamp with timezone offset (CET/CEST handled automatically)
    */
-  const getBerlinTimestamp = () => new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+  const getBerlinTimestamp = () => {
+    const date = new Date();
+    const dateStr = date.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+    const formatter = new Intl.DateTimeFormat( 'sv-SE', {
+      'timeZone': 'Europe/Berlin',
+      'timeZoneName': 'longOffset'
+    } );
+    const parts = formatter.formatToParts( date );
+    const offsetPart = parts.find( ( part ) => part.type === 'timeZoneName' );
+    const offset = offsetPart ? offsetPart.value.replace( 'GMT', '' ) : '+01:00';
+
+    return `${dateStr}${offset}`;
+  };
 
   /**
    * Determines act status based on upcoming events

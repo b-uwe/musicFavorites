@@ -79,7 +79,7 @@ describe( 'Act Service Integration Tests', () => {
 
     // Verify timestamp
     expect( result.updatedAt ).toBeDefined();
-    expect( result.updatedAt ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+    expect( result.updatedAt ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
   } );
 
   /**

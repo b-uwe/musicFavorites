@@ -26,6 +26,7 @@ module.exports = [
         'global': 'readonly',
         'mf': 'readonly',
         'setTimeout': 'readonly',
+        'Intl': 'readonly',
         'describe': 'readonly',
         'test': 'readonly',
         'expect': 'readonly',

@@ -16,10 +16,10 @@ describe( 'actService', () => {
 
   describe( 'Pure Functions (No Mocks)', () => {
     describe( 'getBerlinTimestamp', () => {
-      test( 'returns timestamp in YYYY-MM-DD HH:MM:SS format', () => {
+      test( 'returns timestamp in YYYY-MM-DD HH:MM:SS+TZ format', () => {
         const timestamp = mf.actService.getBerlinTimestamp();
 
-        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
       } );
 
       test( 'returns a string', () => {
@@ -32,9 +32,41 @@ describe( 'actService', () => {
         const timestamp1 = mf.actService.getBerlinTimestamp();
         const timestamp2 = mf.actService.getBerlinTimestamp();
 
-        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
-        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u );
+        expect( timestamp1 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
+        expect( timestamp2 ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/u );
         expect( timestamp2 >= timestamp1 ).toBe( true );
+      } );
+
+      test( 'includes Berlin timezone offset', () => {
+        const timestamp = mf.actService.getBerlinTimestamp();
+        const timezoneMatch = timestamp.match( /(?<offset>[+-]\d{2}:\d{2})$/u );
+
+        expect( timezoneMatch ).not.toBeNull();
+
+        const { offset } = timezoneMatch.groups;
+
+        expect( [ '+01:00', '+02:00' ] ).toContain( offset );
+      } );
+
+      test( 'uses fallback offset when formatToParts does not return timeZoneName', () => {
+        const originalFormatToParts = Intl.DateTimeFormat.prototype.formatToParts;
+
+        Intl.DateTimeFormat.prototype.formatToParts = jest.fn().mockReturnValue( [
+          {
+            'type': 'year',
+            'value': '2025'
+          },
+          {
+            'type': 'literal',
+            'value': '-'
+          }
+        ] );
+
+        const timestamp = mf.actService.getBerlinTimestamp();
+
+        expect( timestamp ).toMatch( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+01:00$/u );
+
+        Intl.DateTimeFormat.prototype.formatToParts = originalFormatToParts;
       } );
     } );
 
