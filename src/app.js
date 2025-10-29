@@ -12,6 +12,9 @@
   require( './services/actService' );
 
   const app = express();
+
+  // Parse plain text request bodies
+  app.use( express.text() );
   const usageStats = {
     'requests': 0,
     'actsQueried': 0
@@ -105,15 +108,13 @@
   };
 
   /**
-   * Get information about one or more music acts
-   * Supports comma-separated MusicBrainz IDs for multiple acts
+   * Handle act data fetching for both GET and POST routes
+   * @param {Array} actIds - Array of act IDs to fetch
    * @param {object} req - Express request object
    * @param {object} res - Express response object
    * @returns {object} Acts information with attribution and metadata
    */
-  app.get( '/acts/:id', async ( req, res ) => {
-    const { id } = req.params;
-
+  const handleActsRequest = async ( actIds, req, res ) => {
     usageStats.requests++;
 
     // Enable pretty-printing if ?pretty query parameter is present
@@ -126,8 +127,6 @@
     setResponseHeaders( res );
 
     try {
-      const actIds = id.split( ',' ).map( ( actId ) => actId.trim() );
-
       usageStats.actsQueried += actIds.length;
 
       const result = await mf.actService.fetchMultipleActs( actIds );
@@ -155,6 +154,48 @@
         }
       } );
     }
+  };
+
+  /**
+   * Get information about one or more music acts
+   * Supports comma-separated MusicBrainz IDs for multiple acts
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {Promise<object>} Acts information with attribution and metadata
+   */
+  app.get( '/acts/:id', ( req, res ) => {
+    const { id } = req.params;
+    const actIds = id.split( ',' ).map( ( actId ) => actId.trim() );
+
+    return handleActsRequest( actIds, req, res );
+  } );
+
+  /**
+   * Post information about one or more music acts
+   * Accepts comma-separated MusicBrainz IDs as plain text in request body for handling large lists
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {Promise<object>} Acts information with attribution and metadata
+   */
+  app.post( '/acts', ( req, res ) => {
+    const ids = req.body;
+
+    // Validate request body
+    if ( !ids || typeof ids !== 'string' || ids.trim().length === 0 ) {
+      return res.status( 400 ).json( {
+        'meta': META,
+        'type': 'error',
+        'error': {
+          'message': 'Invalid request body',
+          'details': 'Request body must be a non-empty comma-separated string of act IDs'
+        }
+      } );
+    }
+
+    // Parse comma-separated IDs (same as GET route)
+    const actIds = ids.split( ',' ).map( ( actId ) => actId.trim() );
+
+    return handleActsRequest( actIds, req, res );
   } );
 
   /**

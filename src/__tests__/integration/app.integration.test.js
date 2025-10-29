@@ -359,4 +359,206 @@ describe( 'Express App Integration Tests', () => {
     expect( response.body.meta.attribution.sources ).toContain( 'Bandsintown' );
     expect( response.body.meta.license ).toBe( 'AGPL-3.0' );
   } );
+
+  /**
+   * Test POST /acts with cached artist
+   */
+  test( 'POST /acts returns cached artist through full workflow', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+    const now = new Date();
+    const freshTimestamp = new Date( now.getTime() - ( 12 * 60 * 60 * 1000 ) );
+
+    transformedArtist.events = [];
+    transformedArtist.status = 'disbanded';
+    transformedArtist.updatedAt = freshTimestamp.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( fixtureTheKinks.id ).
+      expect( 200 ).
+      expect( 'Content-Type', /json/u );
+
+    // Verify response structure
+    expect( response.body.meta ).toBeDefined();
+    expect( response.body.acts ).toHaveLength( 1 );
+    expect( response.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
+    expect( response.body.acts[ 0 ].name ).toBe( fixtureTheKinks.name );
+
+    // Verify workflow - MongoDB driver called
+    expect( mockCollection.findOne ).toHaveBeenCalledWith( { '_id': fixtureTheKinks.id } );
+    // Should not fetch immediately if cached with fresh data (no axios calls to MusicBrainz)
+    const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
+
+    expect( musicbrainzCalls.length ).toBe( 0 );
+  } );
+
+  /**
+   * Test POST /acts with multiple IDs
+   */
+  test( 'POST /acts handles multiple IDs in request body', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    const transformedArtist2 = mf.testing.fixtureHelpers.modifyFixture( transformedArtist, {
+      'musicbrainzId': '664c3e0e-42d8-48c1-b209-1efca19c0325',
+      'name': 'Test Artist 2'
+    } );
+
+    const cachedData2 = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist2 );
+
+    mockCollection.findOne.
+      mockResolvedValueOnce( cachedData ).
+      mockResolvedValueOnce( cachedData2 );
+
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( `${fixtureTheKinks.id},664c3e0e-42d8-48c1-b209-1efca19c0325` ).
+      expect( 200 );
+
+    // Verify response includes both acts
+    expect( response.body.acts ).toHaveLength( 2 );
+    expect( response.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
+    expect( response.body.acts[ 1 ].musicbrainzId ).toBe( '664c3e0e-42d8-48c1-b209-1efca19c0325' );
+  } );
+
+  /**
+   * Test POST /acts with large array of IDs
+   */
+  test( 'POST /acts handles large array of IDs', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    // Mock returns for 50 IDs
+    const largeIdArray = Array.from( { 'length': 50 }, ( _, i ) => `id-${i}` );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( largeIdArray.join( ',' ) ).
+      expect( 200 );
+
+    // Verify response
+    expect( response.body.acts ).toHaveLength( 50 );
+  } );
+
+  /**
+   * Test POST /acts with invalid request body returns 400
+   */
+  test( 'POST /acts returns 400 with invalid request body', async () => {
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      send( { 'invalid': 'body' } ).
+      expect( 400 );
+
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Invalid request body' );
+  } );
+
+  /**
+   * Test POST /acts with empty IDs array returns 400
+   */
+  test( 'POST /acts returns 400 with empty IDs array', async () => {
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( '' ).
+      expect( 400 );
+
+    expect( response.body.error ).toBeDefined();
+    expect( response.body.error.message ).toBe( 'Invalid request body' );
+  } );
+
+  /**
+   * Test POST /acts ?pretty parameter
+   */
+  test( 'POST /acts?pretty formats JSON with proper spacing', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    const response = await request( mf.app ).
+      post( '/acts?pretty' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( fixtureTheKinks.id ).
+      expect( 200 );
+
+    // Verify pretty formatting (has newlines and spaces)
+    const responseText = JSON.stringify( response.body, null, 2 );
+
+    expect( responseText ).toContain( '\n' );
+    // 2-space indentation
+    expect( responseText ).toContain( '  ' );
+  } );
+
+  /**
+   * Test POST /acts with cache miss returns error
+   */
+  test( 'POST /acts with empty cache returns error and triggers background fetch', async () => {
+    // MongoDB returns null (cache miss)
+    mockCollection.findOne.mockResolvedValue( null );
+
+    // Axios succeeds for MusicBrainz (synchronous fetch), but no events
+    axios.get.mockImplementation( ( url ) => {
+      if ( url.includes( 'musicbrainz.org' ) ) {
+        return Promise.resolve( { 'data': fixtureTheKinks } );
+      }
+
+      return Promise.resolve( { 'data': '' } );
+    } );
+
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( fixtureTheKinks.id ).
+      expect( 200 );
+
+    // Should return act data (synchronous fetch succeeded)
+    expect( response.body.acts ).toHaveLength( 1 );
+    expect( response.body.acts[ 0 ].musicbrainzId ).toBe( fixtureTheKinks.id );
+  } );
+
+  /**
+   * Test POST /acts response headers
+   */
+  test( 'POST /acts sets correct response headers', async () => {
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    const response = await request( mf.app ).
+      post( '/acts' ).
+      set( 'Content-Type', 'text/plain' ).
+      send( fixtureTheKinks.id );
+
+    // Verify cache control headers
+    expect( response.headers[ 'cache-control' ] ).toContain( 'no-store' );
+    expect( response.headers[ 'x-robots-tag' ] ).toContain( 'noindex' );
+  } );
 } );
