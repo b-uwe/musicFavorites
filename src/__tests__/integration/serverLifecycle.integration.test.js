@@ -44,9 +44,31 @@ describe( 'Server Lifecycle Integration Tests', () => {
     process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
   } );
 
-  afterEach( () => {
+  afterEach( async () => {
+    // Disconnect to ensure clean state for next test
+    try {
+      await mf.database.disconnect();
+    } catch ( error ) {
+      // Ignore disconnect errors in tests
+    }
+
     jest.useRealTimers();
     delete process.env.MONGODB_URI;
+  } );
+
+  /**
+   * Test that MongoClient is configured with 10 second timeout
+   */
+  test( 'database connection uses 10 second timeout', async () => {
+    await mf.database.connect();
+
+    // Verify MongoClient was constructed with correct timeout
+    expect( MongoClient ).toHaveBeenCalledWith(
+      'mongodb://localhost:27017/test',
+      expect.objectContaining( {
+        'serverSelectionTimeoutMS': 10000
+      } )
+    );
   } );
 
   /**
