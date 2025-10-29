@@ -13,7 +13,7 @@
    * Identifies the application to external services
    * @constant {string}
    */
-  const USER_AGENT = `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites)`;
+  const USER_AGENT = `MusicFavorites/${version} (https://github.com/b-uwe/musicFavorites // mscbrnz@tunixgut.de)`;
 
   /**
    * Default timeout for HTTP requests in milliseconds
