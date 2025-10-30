@@ -266,6 +266,38 @@
     } );
   };
 
+  /**
+   * Gets all acts without Bandsintown relation from cache
+   * @returns {Promise<Array<string>>} Sorted array of MusicBrainz IDs without Bandsintown links
+   * @throws {Error} When not connected to database
+   */
+  const getActsWithoutBandsintown = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'acts' );
+
+    const results = await collection.find(
+      {
+        '$or': [
+          { 'relations.bandsintown': { '$exists': false } },
+          { 'relations.bandsintown': null }
+        ]
+      },
+      {
+        'projection': {
+          '_id': 1
+        }
+      }
+    ).toArray();
+
+    const ids = results.map( ( doc ) => doc._id );
+
+    return ids.sort();
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.database = {
@@ -275,7 +307,8 @@
     cacheAct,
     testCacheHealth,
     getAllActIds,
-    getAllActsWithMetadata
+    getAllActsWithMetadata,
+    getActsWithoutBandsintown
   };
 
   // Expose testing utilities when running under Jest

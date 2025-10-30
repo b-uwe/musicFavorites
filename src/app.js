@@ -215,6 +215,23 @@
   } );
 
   /**
+   * Calculate last cache update stats from acts with metadata
+   * @param {Array<object>} actsWithMetadata - Array of acts with updatedAt timestamps
+   * @returns {object|null} Object with newest and oldest update info, or null if empty
+   */
+  const calculateLastCacheUpdate = ( actsWithMetadata ) => actsWithMetadata.
+    filter( ( act ) => act.updatedAt )?.
+    reduce( ( acc, current ) => {
+      if ( !acc?.newest || current.updatedAt > acc.newest.updatedAt ) {
+        acc.newest = current;
+      }
+      if ( !acc?.oldest || current.updatedAt < acc.oldest.updatedAt ) {
+        acc.oldest = current;
+      }
+      return acc;
+    }, {} );
+
+  /**
    * Health Status
    * @param {object} req - Express request object
    * @param {object} res - Express response object
@@ -242,23 +259,16 @@
       if ( cacheSize > 0 ) {
         const actsWithMetadata = await mf.database.getAllActsWithMetadata();
 
-        lastCacheUpdate = actsWithMetadata.
-          filter( ( act ) => act.updatedAt )?.
-          reduce( ( acc, current ) => {
-            if ( !acc?.newest || current.updatedAt > acc.newest.updatedAt ) {
-              acc.newest = current;
-            }
-            if ( !acc?.oldest || current.updatedAt < acc.oldest.updatedAt ) {
-              acc.oldest = current;
-            }
-            return acc;
-          }, {} );
+        lastCacheUpdate = calculateLastCacheUpdate( actsWithMetadata );
       }
+
+      const artistsWithoutBandsintown = await mf.database.getActsWithoutBandsintown();
 
       return res.json( {
         'status': 'ok',
         cacheSize,
         lastCacheUpdate,
+        artistsWithoutBandsintown,
         'uptime': process.uptime(),
         usageStats
       } );

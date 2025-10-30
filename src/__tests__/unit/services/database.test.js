@@ -622,4 +622,111 @@ describe( 'database - Unit Tests', () => {
       expect( result ).toEqual( [] );
     } );
   } );
+
+  describe( 'getActsWithoutBandsintown', () => {
+    /**
+     * Test throws DB_015 error when not connected
+     */
+    test( 'throws DB_015 error when not connected', async () => {
+      await expect( mf.database.getActsWithoutBandsintown() ).
+        rejects.
+        toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
+    } );
+
+    /**
+     * Test returns acts without bandsintown relation
+     */
+    test( 'returns only MBIDs for acts without bandsintown relation', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          {
+            '_id': 'mbid-1'
+          },
+          {
+            '_id': 'mbid-2'
+          }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getActsWithoutBandsintown();
+
+      expect( mockCollection.find ).toHaveBeenCalledWith(
+        {
+          '$or': [
+            { 'relations.bandsintown': { '$exists': false } },
+            { 'relations.bandsintown': null }
+          ]
+        },
+        {
+          'projection': {
+            '_id': 1
+          }
+        }
+      );
+      expect( result ).toEqual( [ 'mbid-1', 'mbid-2' ] );
+    } );
+
+    /**
+     * Test returns sorted array of MBIDs
+     */
+    test( 'returns sorted array of MBIDs', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [
+          { '_id': 'zebra-mbid' },
+          { '_id': 'alpha-mbid' },
+          { '_id': 'beta-mbid' }
+        ] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getActsWithoutBandsintown();
+
+      expect( result ).toEqual( [ 'alpha-mbid', 'beta-mbid', 'zebra-mbid' ] );
+    } );
+
+    /**
+     * Test returns empty array when all acts have bandsintown
+     */
+    test( 'returns empty array when all acts have bandsintown', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getActsWithoutBandsintown();
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test returns empty array when cache is empty
+     */
+    test( 'returns empty array when cache is empty', async () => {
+      mockDb.command.mockResolvedValue( { 'ok': 1 } );
+      await mf.database.connect();
+
+      const mockCursor = {
+        'toArray': jest.fn().mockResolvedValue( [] )
+      };
+
+      mockCollection.find.mockReturnValue( mockCursor );
+
+      const result = await mf.database.getActsWithoutBandsintown();
+
+      expect( result ).toEqual( [] );
+    } );
+  } );
 } );
