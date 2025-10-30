@@ -138,23 +138,26 @@
     }
 
     const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'acts' );
+    const actsCollection = db.collection( 'acts' );
+    const metadataCollection = db.collection( 'actMetadata' );
 
-    const result = await collection.updateOne(
-      {
-        '_id': actData._id
-      },
-      {
-        '$set': actData
-      },
-      {
-        'upsert': true
-      }
+    // Store public act data
+    const result = await actsCollection.updateOne(
+      { '_id': actData._id },
+      { '$set': actData },
+      { 'upsert': true }
     );
 
     if ( !result.acknowledged ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
     }
+
+    // Update internal tracking metadata in separate collection
+    await metadataCollection.updateOne(
+      { '_id': actData._id },
+      { '$inc': { 'updatesSinceLastRequest': 1 } },
+      { 'upsert': true }
+    );
   };
 
   /**
@@ -405,6 +408,66 @@
     }
   };
 
+  /**
+   * Updates lastRequestedAt and resets updatesSinceLastRequest for requested acts
+   * @param {Array<string>} actIds - Array of MusicBrainz act IDs
+   * @returns {Promise<void>} Resolves when all acts are updated
+   * @throws {Error} When not connected, actIds invalid, or update not acknowledged
+   */
+  const updateLastRequestedAt = async ( actIds ) => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
+    }
+    if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
+      throw new Error( 'Invalid request. Please try again later. (Error: DB_024)' );
+    }
+    require( './actService' );
+    const db = client.db( 'musicfavorites' );
+    const metadataCollection = db.collection( 'actMetadata' );
+    const timestamp = mf.actService.getBerlinTimestamp();
+    for ( const actId of actIds ) {
+      const result = await metadataCollection.updateOne(
+        { '_id': actId },
+        {
+          '$set': {
+            'lastRequestedAt': timestamp,
+            'updatesSinceLastRequest': 0
+          }
+        },
+        { 'upsert': true }
+      );
+      if ( !result.acknowledged ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_025)' );
+      }
+    }
+  };
+
+  /**
+   * Removes acts that have not been requested for 14 or more updates
+   * @returns {Promise<object>} Object with deletedCount property
+   * @throws {Error} When not connected or delete not acknowledged
+   */
+  const removeActsNotRequestedFor14Updates = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_026)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const staleMetadata = await db.collection( 'actMetadata' ).find( {
+      'updatesSinceLastRequest': { '$gte': 14 }
+    } ).toArray();
+    if ( staleMetadata.length === 0 ) {
+      return { 'deletedCount': 0 };
+    }
+    const idsToRemove = staleMetadata.map( ( doc ) => doc._id );
+    const actsResult = await db.collection( 'acts' ).deleteMany( { '_id': { '$in': idsToRemove } } );
+    if ( !actsResult.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_027)' );
+    }
+    await db.collection( 'actMetadata' ).deleteMany( { '_id': { '$in': idsToRemove } } );
+    return { 'deletedCount': actsResult.deletedCount };
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.database = {
@@ -419,7 +482,9 @@
     logUpdateError,
     getRecentUpdateErrors,
     ensureErrorCollectionIndexes,
-    clearCache
+    clearCache,
+    updateLastRequestedAt,
+    removeActsNotRequestedFor14Updates
   };
 
   // Expose testing utilities when running under Jest

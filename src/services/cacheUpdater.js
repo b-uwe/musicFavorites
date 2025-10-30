@@ -155,6 +155,13 @@
         return 0;
       }
 
+      // Remove acts not requested for 14 updates before processing updates
+      try {
+        await mf.database.removeActsNotRequestedFor14Updates();
+      } catch {
+        // Silent fail - don't block updates if removal fails
+      }
+
       // Update each stale act with fixed 30s pause
       for ( const act of staleActs ) {
         await updateAct( act._id );

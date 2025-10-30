@@ -192,8 +192,8 @@ describe( 'Cache Updater Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 2 );
-    // But only cache the successful one
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 1 );
+    // But only cache the successful one (1 act × 2 collections = 2 calls)
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
   } );
 
   /**
@@ -275,6 +275,6 @@ describe( 'Cache Updater Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 3 );
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 3 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 6 );
   } );
 } );

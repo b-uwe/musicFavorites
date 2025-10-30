@@ -139,6 +139,11 @@
         } );
       }
 
+      // Track request timestamp and reset update counter (non-blocking)
+      mf.database.updateLastRequestedAt( actIds ).catch( () => {
+        // Silent fail - don't block response
+      } );
+
       return res.json( {
         'meta': META,
         'type': 'acts',
