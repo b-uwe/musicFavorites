@@ -10,6 +10,21 @@ require( '../../app' );
 require( '../../services/actService' );
 
 describe( 'Express App - /admin/health Route Tests', () => {
+  /**
+   * Helper to generate a timestamp in Berlin format that's always recent
+   * @param {number} daysAgo - How many days ago (default 1)
+   * @returns {string} Berlin timestamp string
+   */
+  const getRecentBerlinTimestamp = ( daysAgo = 1 ) => {
+    const date = new Date();
+
+    date.setDate( date.getDate() - daysAgo );
+
+    const dateStr = date.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    return `${dateStr.replace( ' ', ' ' )}+01:00`;
+  };
+
   beforeEach( () => {
     jest.clearAllMocks();
 
@@ -541,13 +556,13 @@ describe( 'Express App - /admin/health Route Tests', () => {
     test( 'returns array of error objects from last 7 days', async () => {
       const mockErrors = [
         {
-          'timestamp': '2025-10-30 12:00:00+01:00',
+          'timestamp': getRecentBerlinTimestamp( 1 ),
           'actId': 'mbid-1',
           'errorMessage': 'MusicBrainz timeout',
           'errorSource': 'musicbrainz'
         },
         {
-          'timestamp': '2025-10-29 15:30:00+01:00',
+          'timestamp': getRecentBerlinTimestamp( 2 ),
           'actId': 'mbid-2',
           'errorMessage': 'Bandsintown not found',
           'errorSource': 'bandsintown'

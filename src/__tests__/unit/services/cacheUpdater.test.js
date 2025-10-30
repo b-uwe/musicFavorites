@@ -118,14 +118,18 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'MusicBrainz API error' ) );
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
       expect( mf.database.logUpdateError ).toHaveBeenCalledWith( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': expect.stringMatching( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+0[12]:00$/u ),
         'actId': 'test-id',
         'errorMessage': 'MusicBrainz API error',
         'errorSource': 'musicbrainz'
@@ -141,7 +145,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'MB_001 error' ) );
 
@@ -161,7 +169,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Bandsintown fetch failed' ) );
 
@@ -181,7 +193,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
       mf.database.cacheAct.mockRejectedValue( new Error( 'DB_005 cache error' ) );
@@ -202,7 +218,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Unknown error' ) );
 
@@ -222,7 +242,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
       jest.spyOn( mf.database, 'logUpdateError' ).mockRejectedValue( new Error( 'Logging failed' ) );
-      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
+        const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+        return `${dateStr.replace( ' ', ' ' )}+01:00`;
+      } );
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Some error' ) );
 

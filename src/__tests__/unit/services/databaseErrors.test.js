@@ -13,6 +13,21 @@ describe( 'database - Error Logging Tests', () => {
   let mockCollection;
   let MongoClient;
 
+  /**
+   * Helper to generate a timestamp in Berlin format that's always recent
+   * @param {number} daysAgo - How many days ago (default 1)
+   * @returns {string} Berlin timestamp string
+   */
+  const getRecentBerlinTimestamp = ( daysAgo = 1 ) => {
+    const date = new Date();
+
+    date.setDate( date.getDate() - daysAgo );
+
+    const dateStr = date.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    return `${dateStr.replace( ' ', ' ' )}+01:00`;
+  };
+
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
@@ -63,7 +78,7 @@ describe( 'database - Error Logging Tests', () => {
      */
     test( 'throws DB_016 error when client is null', async () => {
       await expect( mf.database.logUpdateError( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
@@ -96,7 +111,7 @@ describe( 'database - Error Logging Tests', () => {
       await mf.database.connect();
 
       await expect( mf.database.logUpdateError( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
       } ) ).
@@ -112,7 +127,7 @@ describe( 'database - Error Logging Tests', () => {
       await mf.database.connect();
 
       await expect( mf.database.logUpdateError( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorSource': 'musicbrainz'
       } ) ).
@@ -128,7 +143,7 @@ describe( 'database - Error Logging Tests', () => {
       await mf.database.connect();
 
       await expect( mf.database.logUpdateError( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error'
       } ) ).
@@ -146,7 +161,7 @@ describe( 'database - Error Logging Tests', () => {
       mockCollection.insertOne = jest.fn().mockResolvedValue( { 'acknowledged': true } );
 
       const errorData = {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
@@ -156,7 +171,7 @@ describe( 'database - Error Logging Tests', () => {
 
       expect( mockDb.collection ).toHaveBeenCalledWith( 'dataUpdateErrors' );
       expect( mockCollection.insertOne ).toHaveBeenCalledWith( expect.objectContaining( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz',
@@ -174,7 +189,7 @@ describe( 'database - Error Logging Tests', () => {
       mockCollection.insertOne = jest.fn().mockResolvedValue( { 'acknowledged': false } );
 
       await expect( mf.database.logUpdateError( {
-        'timestamp': '2025-10-30 12:00:00+01:00',
+        'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
@@ -205,13 +220,13 @@ describe( 'database - Error Logging Tests', () => {
         'sort': jest.fn().mockReturnThis(),
         'toArray': jest.fn().mockResolvedValue( [
           {
-            'timestamp': '2025-10-30 12:00:00+01:00',
+            'timestamp': getRecentBerlinTimestamp( 1 ),
             'actId': 'id1',
             'errorMessage': 'Error 1',
             'errorSource': 'musicbrainz'
           },
           {
-            'timestamp': '2025-10-29 12:00:00+01:00',
+            'timestamp': getRecentBerlinTimestamp( 2 ),
             'actId': 'id2',
             'errorMessage': 'Error 2',
             'errorSource': 'bandsintown'
