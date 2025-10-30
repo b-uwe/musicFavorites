@@ -283,6 +283,40 @@
   } );
 
   /**
+   * Clear Cache
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {void} Returns cache flush confirmation
+   */
+  app.delete( '/admin/health/cache', async ( req, res ) => {
+    app.set( 'json spaces', 2 );
+
+    setResponseHeaders( res );
+
+    // Validate authentication first
+    const adminAuth = validateAdminAuth( req );
+    if ( adminAuth?.status !== 200 ) {
+      return res.status( adminAuth.status ).json( {
+        'error': adminAuth.error
+      } );
+    }
+
+    try {
+      await mf.database.clearCache();
+
+      return res.json( {
+        'status': 'ok',
+        'message': 'Cache cleared successfully'
+      } );
+    } catch ( error ) {
+      return res.status( 500 ).json( {
+        'error': 'Failed to clear cache',
+        'details': error.message
+      } );
+    }
+  } );
+
+  /**
    * Handle 404 errors with JSON response
    * @param {object} req - Express request object
    * @param {object} res - Express response object
