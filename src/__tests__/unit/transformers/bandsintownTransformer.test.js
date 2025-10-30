@@ -395,7 +395,7 @@ describe( 'Bandsintown Transformer', () => {
     /**
      * Test handling of null event name
      */
-    test( 'handles events with null name gracefully', () => {
+    test( 'filters out events with null name', () => {
       const eventWithNullName = [
         mf.testing.fixtureHelpers.modifyArrayItem( fixtureVulvodynia, 0, {
           'name': null
@@ -404,8 +404,37 @@ describe( 'Bandsintown Transformer', () => {
 
       const result = mf.bandsintownTransformer.transformEvents( eventWithNullName );
 
-      expect( result[ 0 ].name ).toBe( '' );
-      expect( result[ 0 ].date ).toMatch( /^\d{4}-\d{2}-\d{2}$/u );
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of undefined event name
+     */
+    test( 'filters out events with undefined name', () => {
+      const eventWithUndefinedName = [
+        mf.testing.fixtureHelpers.modifyArrayItem( fixtureVulvodynia, 0, {
+          'name': undefined
+        } )[ 0 ]
+      ];
+
+      const result = mf.bandsintownTransformer.transformEvents( eventWithUndefinedName );
+
+      expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test handling of empty string event name
+     */
+    test( 'filters out events with empty string name', () => {
+      const eventWithEmptyName = [
+        mf.testing.fixtureHelpers.modifyArrayItem( fixtureVulvodynia, 0, {
+          'name': ''
+        } )[ 0 ]
+      ];
+
+      const result = mf.bandsintownTransformer.transformEvents( eventWithEmptyName );
+
+      expect( result ).toEqual( [] );
     } );
   } );
 

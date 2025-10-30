@@ -85,7 +85,7 @@
    * @returns {object} Transformed event object
    */
   const transformEvent = ( event ) => ( {
-    'name': event.name || '',
+    'name': event.name,
     'date': extractDate( event.startDate ),
     'localTime': extractLocalTime( event.startDate ),
     'location': {
@@ -126,6 +126,7 @@
    * Transforms array of LD+JSON objects to event schema
    * Filters to include only MusicEvent type objects
    * Filters out events older than 2 calendar days (UTC)
+   * Filters out events without a name
    * @param {Array<object>} ldJsonData - Array of LD+JSON objects
    * @returns {Array<object>} Array of transformed event objects
    */
@@ -137,6 +138,7 @@
     return ldJsonData.
       filter( ( item ) => item[ '@type' ] === 'MusicEvent' ).
       filter( ( item ) => isEventWithinRange( item.startDate ) ).
+      filter( ( item ) => item.name ).
       map( transformEvent );
   };
 
