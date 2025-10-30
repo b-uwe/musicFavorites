@@ -8,22 +8,10 @@ const request = require( 'supertest' );
 const speakeasy = require( 'speakeasy' );
 require( '../../app' );
 require( '../../services/actService' );
+require( '../../testHelpers/integrationTestSetup' );
 
 describe( 'Express App - /admin/health Route Tests', () => {
-  /**
-   * Helper to generate a timestamp in Berlin format that's always recent
-   * @param {number} daysAgo - How many days ago (default 1)
-   * @returns {string} Berlin timestamp string
-   */
-  const getRecentBerlinTimestamp = ( daysAgo = 1 ) => {
-    const date = new Date();
-
-    date.setDate( date.getDate() - daysAgo );
-
-    const dateStr = date.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
-
-    return `${dateStr.replace( ' ', ' ' )}+01:00`;
-  };
+  const { getRecentBerlinTimestamp } = mf.testing.integrationTestSetup;
 
   beforeEach( () => {
     jest.clearAllMocks();

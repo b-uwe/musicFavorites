@@ -70,6 +70,22 @@
   };
 
   /**
+   * Generates a timestamp in Berlin format that's always recent
+   * Useful for tests that need dynamic dates within a specific time window
+   * @param {number} daysAgo - How many days ago (default 1)
+   * @returns {string} Berlin timestamp string in format YYYY-MM-DD HH:MM:SS+01:00
+   */
+  const getRecentBerlinTimestamp = ( daysAgo = 1 ) => {
+    const date = new Date();
+
+    date.setDate( date.getDate() - daysAgo );
+
+    const dateStr = date.toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
+
+    return `${dateStr.replace( ' ', ' ' )}+01:00`;
+  };
+
+  /**
    * Resets fetch queue state to initial conditions
    * @param {object} fetchQueueTestingApi - The mf.testing.fetchQueue object
    * @returns {void}
@@ -120,6 +136,7 @@
     setupAxiosMocks,
     setupTestDatabase,
     setupIntegrationTest,
-    resetFetchQueueState
+    resetFetchQueueState,
+    getRecentBerlinTimestamp
   };
 } )();
