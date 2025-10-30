@@ -155,6 +155,18 @@
         return 0;
       }
 
+      // Remove acts not requested for 14 updates before processing updates
+      try {
+        const result = await mf.database.removeActsNotRequestedFor14Updates();
+
+        if ( result.deletedCount > 0 ) {
+          console.log( `Removed ${result.deletedCount} acts not requested for 14 updates` );
+        }
+      } catch ( removalError ) {
+        // Log but don't block updates if removal fails
+        console.error( 'Failed to remove stale acts:', removalError.message );
+      }
+
       // Update each stale act with fixed 30s pause
       for ( const act of staleActs ) {
         await updateAct( act._id );

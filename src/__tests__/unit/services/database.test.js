@@ -338,7 +338,10 @@ describe( 'database - Unit Tests', () => {
 
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         { '_id': 'test-id' },
-        { '$set': artistData },
+        {
+          '$set': artistData,
+          '$inc': { 'updatesSinceLastRequest': 1 }
+        },
         { 'upsert': true }
       );
     } );

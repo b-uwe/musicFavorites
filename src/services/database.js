@@ -145,7 +145,8 @@
         '_id': actData._id
       },
       {
-        '$set': actData
+        '$set': actData,
+        '$inc': { 'updatesSinceLastRequest': 1 }
       },
       {
         'upsert': true
@@ -405,6 +406,69 @@
     }
   };
 
+  /**
+   * Updates lastRequestedAt and resets updatesSinceLastRequest for requested acts
+   * @param {Array<string>} actIds - Array of MusicBrainz act IDs that were requested
+   * @returns {Promise<void>} Resolves when all acts are updated
+   * @throws {Error} When not connected, actIds invalid, or update not acknowledged
+   */
+  const updateLastRequestedAt = async ( actIds ) => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
+    }
+
+    if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
+      throw new Error( 'Invalid request. Please try again later. (Error: DB_024)' );
+    }
+
+    // Lazy require to break circular dependency with actService
+    require( './actService' );
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'acts' );
+    const timestamp = mf.actService.getBerlinTimestamp();
+
+    for ( const actId of actIds ) {
+      const result = await collection.updateOne(
+        { '_id': actId },
+        {
+          '$set': {
+            'lastRequestedAt': timestamp,
+            'updatesSinceLastRequest': 0
+          }
+        }
+      );
+
+      if ( !result.acknowledged ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_025)' );
+      }
+    }
+  };
+
+  /**
+   * Removes acts that have not been requested for 14 or more updates
+   * @returns {Promise<object>} Object with deletedCount property
+   * @throws {Error} When not connected to database or delete not acknowledged
+   */
+  const removeActsNotRequestedFor14Updates = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_026)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'acts' );
+
+    const result = await collection.deleteMany( {
+      'updatesSinceLastRequest': { '$gte': 14 }
+    } );
+
+    if ( !result.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_027)' );
+    }
+
+    return { 'deletedCount': result.deletedCount };
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.database = {
@@ -419,7 +483,9 @@
     logUpdateError,
     getRecentUpdateErrors,
     ensureErrorCollectionIndexes,
-    clearCache
+    clearCache,
+    updateLastRequestedAt,
+    removeActsNotRequestedFor14Updates
   };
 
   // Expose testing utilities when running under Jest

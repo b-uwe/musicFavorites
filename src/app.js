@@ -139,6 +139,12 @@
         } );
       }
 
+      // Track request timestamp and reset update counter (non-blocking)
+      mf.database.updateLastRequestedAt( actIds ).catch( ( error ) => {
+        // Log error but don't block response
+        console.error( 'Failed to update lastRequestedAt:', error.message );
+      } );
+
       return res.json( {
         'meta': META,
         'type': 'acts',
