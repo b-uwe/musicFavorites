@@ -66,8 +66,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     expect( axios.get ).toHaveBeenCalled();
     expect( axios.get.mock.calls.some( ( call ) => call[ 0 ].includes( fixtureTheKinks.id ) ) ).toBe( true );
     expect( axios.get.mock.calls.some( ( call ) => call[ 0 ].includes( fixtureVulvodynia.id ) ) ).toBe( true );
-    // Verify MongoDB cache writes occurred
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
+    // Verify MongoDB cache writes occurred (2 acts × 2 collections = 4 calls)
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 4 );
 
     // Reset timers to restore normal timing
     jest.useRealTimers();
@@ -171,8 +171,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 3 );
-    // But only 2 should be cached (the successful ones)
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
+    // But only 2 should be cached (the successful ones) × 2 collections = 4 calls
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 4 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -215,8 +215,8 @@ describe( 'Fetch Queue Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 2 );
-    // Both cache attempts should be made (even though second fails)
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
+    // First act: 2 calls (acts succeeds, metadata fails). Second act: 2 calls (both succeed) = 4 total
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 4 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -310,7 +310,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 2 );
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 2 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 4 );
 
     jest.useRealTimers();
   }, 10000 );
@@ -343,7 +343,7 @@ describe( 'Fetch Queue Integration Tests', () => {
     const musicbrainzCalls = axios.get.mock.calls.filter( ( call ) => call[ 0 ].includes( 'musicbrainz.org' ) );
 
     expect( musicbrainzCalls.length ).toBe( 10 );
-    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 10 );
+    expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 20 );
 
     jest.useRealTimers();
   }, 15000 );
