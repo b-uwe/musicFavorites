@@ -596,4 +596,155 @@ describe( 'Express App - /admin/health Route Tests', () => {
       expect( response.body.details ).toBe( 'Error query failed' );
     } );
   } );
+
+  describe( 'DELETE /admin/health/cache - Cache Flush', () => {
+    const validTotpConfig = {
+      'secret': 'TESTSECRET',
+      'encoding': 'base32',
+      'algorithm': 'sha1'
+    };
+    const validPassword = 'testpass';
+    let originalEnv;
+
+    /**
+     * Helper to make authenticated request
+     * @returns {object} Supertest request with auth header
+     */
+    const authenticatedRequest = () => {
+      const token = speakeasy.totp( validTotpConfig );
+      return request( mf.app ).
+        delete( '/admin/health/cache' ).
+        set( 'Authorization', `pass ${validPassword}, bearer ${token}` );
+    };
+
+    beforeEach( () => {
+      originalEnv = {
+        'ADMIN_TOTP_CONFIG': process.env.ADMIN_TOTP_CONFIG,
+        'ADMIN_PASS': process.env.ADMIN_PASS
+      };
+
+      process.env.ADMIN_TOTP_CONFIG = JSON.stringify( validTotpConfig );
+      process.env.ADMIN_PASS = validPassword;
+
+      mf.database.clearCache = jest.fn();
+    } );
+
+    afterEach( () => {
+      process.env.ADMIN_TOTP_CONFIG = originalEnv.ADMIN_TOTP_CONFIG;
+      process.env.ADMIN_PASS = originalEnv.ADMIN_PASS;
+    } );
+
+    /**
+     * Test authentication - missing ADMIN_TOTP_CONFIG
+     */
+    test( 'returns 500 when ADMIN_TOTP_CONFIG not set', async () => {
+      delete process.env.ADMIN_TOTP_CONFIG;
+
+      const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 500 );
+
+      expect( response.body.error ).toBe( 'Admin authentication not configured' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test authentication - invalid JSON in ADMIN_TOTP_CONFIG
+     */
+    test( 'returns 500 when ADMIN_TOTP_CONFIG has invalid JSON', async () => {
+      process.env.ADMIN_TOTP_CONFIG = 'not-valid-json';
+
+      const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 500 );
+
+      expect( response.body.error ).toBe( 'Admin authentication misconfigured' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test authentication - missing Authorization header
+     */
+    test( 'returns 401 when Authorization header missing', async () => {
+      const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test authentication - invalid Authorization format
+     */
+    test( 'returns 401 when Authorization header has invalid format', async () => {
+      const response = await request( mf.app ).
+        delete( '/admin/health/cache' ).
+        set( 'Authorization', 'Bearer token' ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test authentication - wrong password
+     */
+    test( 'returns 401 when password is incorrect', async () => {
+      const token = speakeasy.totp( validTotpConfig );
+
+      const response = await request( mf.app ).
+        delete( '/admin/health/cache' ).
+        set( 'Authorization', `pass wrongpass, bearer ${token}` ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test authentication - invalid TOTP token
+     */
+    test( 'returns 401 when TOTP token is invalid', async () => {
+      const response = await request( mf.app ).
+        delete( '/admin/health/cache' ).
+        set( 'Authorization', `pass ${validPassword}, bearer 000000` ).
+        expect( 401 );
+
+      expect( response.body.error ).toBe( 'Unauthorized' );
+      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+    } );
+
+    /**
+     * Test successful cache flush
+     */
+    test( 'returns 200 and clears cache with valid credentials', async () => {
+      mf.database.clearCache.mockResolvedValue();
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.status ).toBe( 'ok' );
+      expect( response.body.message ).toBe( 'Cache cleared successfully' );
+      expect( mf.database.clearCache ).toHaveBeenCalledTimes( 1 );
+    } );
+
+    /**
+     * Test error handling when clearCache fails
+     */
+    test( 'returns 500 when clearCache throws error', async () => {
+      mf.database.clearCache.mockRejectedValue( new Error( 'Database connection failed' ) );
+
+      const response = await authenticatedRequest().expect( 500 );
+
+      expect( response.body.error ).toBe( 'Failed to clear cache' );
+      expect( response.body.details ).toBe( 'Database connection failed' );
+      expect( mf.database.clearCache ).toHaveBeenCalledTimes( 1 );
+    } );
+
+    /**
+     * Test response is pretty-printed JSON
+     */
+    test( 'returns pretty-printed JSON', async () => {
+      mf.database.clearCache.mockResolvedValue();
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      // Pretty-printed JSON should contain newlines
+      expect( JSON.stringify( response.body, null, 2 ) ).toContain( '\n' );
+    } );
+  } );
 } );

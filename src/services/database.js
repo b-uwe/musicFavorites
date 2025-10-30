@@ -385,6 +385,26 @@
     );
   };
 
+  /**
+   * Clears all cached act data from the database
+   * @returns {Promise<void>} Resolves when cache is cleared
+   * @throws {Error} When not connected to database or delete not acknowledged
+   */
+  const clearCache = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_021)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'acts' );
+
+    const result = await collection.deleteMany( {} );
+
+    if ( !result.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_022)' );
+    }
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.database = {
@@ -398,7 +418,8 @@
     getActsWithoutBandsintown,
     logUpdateError,
     getRecentUpdateErrors,
-    ensureErrorCollectionIndexes
+    ensureErrorCollectionIndexes,
+    clearCache
   };
 
   // Expose testing utilities when running under Jest
