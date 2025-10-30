@@ -101,6 +101,86 @@ describe( 'Express App - POST /acts Route Tests', () => {
     } );
 
     /**
+     * Test that duplicate IDs in same request are deduplicated
+     */
+    test( 'deduplicates repeated IDs in comma-separated list', async () => {
+      const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
+      const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( `${id1},${id2},${id1}` ).
+        expect( 200 );
+
+      expect( mf.actService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+    } );
+
+    /**
+     * Test that multiple duplicate IDs are deduplicated
+     */
+    test( 'deduplicates multiple occurrences of same ID', async () => {
+      const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
+      const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( `${id1},${id2},${id1},${id2},${id1}` ).
+        expect( 200 );
+
+      expect( mf.actService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2 ] );
+    } );
+
+    /**
+     * Test that deduplication preserves order of first occurrence
+     */
+    test( 'preserves order of first occurrence when deduplicating', async () => {
+      const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
+      const id2 = '53689c08-f234-4c47-9256-58c8568f06d1';
+      const id3 = '664c3e0e-42d8-48c1-b209-1efca19c0325';
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( `${id1},${id2},${id3},${id2},${id1}` ).
+        expect( 200 );
+
+      expect( mf.actService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1, id2, id3 ] );
+    } );
+
+    /**
+     * Test that single duplicate ID becomes single ID
+     */
+    test( 'handles single ID duplicated multiple times', async () => {
+      const id1 = 'ab81255c-7a4f-4528-bb77-4a3fbd8e8317';
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( `${id1},${id1},${id1}` ).
+        expect( 200 );
+
+      expect( mf.actService.fetchMultipleActs ).toHaveBeenCalledWith( [ id1 ] );
+    } );
+
+    /**
      * Test that missing ids field returns 400
      */
     test( 'returns 400 when ids field is missing', async () => {
@@ -383,6 +463,24 @@ describe( 'Express App - POST /acts Route Tests', () => {
         send( 'id1,id2,id3' ).
         expect( 200 );
       expect( mf.usageStats.actsQueried ).toBe( initialActsQueried + 3 );
+    } );
+
+    /**
+     * Test that duplicate IDs are only counted once in stats
+     */
+    test( 'counts unique act IDs only when duplicates present', async () => {
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      const initialActsQueried = mf.usageStats.actsQueried;
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( 'id1,id2,id1,id2' ).
+        expect( 200 );
+      expect( mf.usageStats.actsQueried ).toBe( initialActsQueried + 2 );
     } );
 
     /**
