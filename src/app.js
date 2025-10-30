@@ -108,6 +108,13 @@
   };
 
   /**
+   * Deduplicate an array of act IDs while preserving order of first occurrence
+   * @param {Array<string>} actIds - Array of act IDs that may contain duplicates
+   * @returns {Array<string>} Array of unique act IDs in order of first occurrence
+   */
+  const deduplicateActIds = ( actIds ) => [ ...new Set( actIds ) ];
+
+  /**
    * Handle act data fetching for both GET and POST routes
    * @param {Array} actIds - Array of act IDs to fetch
    * @param {object} req - Express request object
@@ -170,7 +177,7 @@
    */
   app.get( '/acts/:id', ( req, res ) => {
     const { id } = req.params;
-    const actIds = id.split( ',' ).map( ( actId ) => actId.trim() );
+    const actIds = deduplicateActIds( id.split( ',' ).map( ( actId ) => actId.trim() ) );
 
     return handleActsRequest( actIds, req, res );
   } );
@@ -197,8 +204,8 @@
       } );
     }
 
-    // Parse comma-separated IDs (same as GET route)
-    const actIds = ids.split( ',' ).map( ( actId ) => actId.trim() );
+    // Parse comma-separated IDs and deduplicate
+    const actIds = deduplicateActIds( ids.split( ',' ).map( ( actId ) => actId.trim() ) );
 
     return handleActsRequest( actIds, req, res );
   } );
