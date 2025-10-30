@@ -263,12 +263,14 @@
       }
 
       const artistsWithoutBandsintown = await mf.database.getActsWithoutBandsintown();
+      const dataUpdateErrors = await mf.database.getRecentUpdateErrors();
 
       return res.json( {
         'status': 'ok',
         cacheSize,
         lastCacheUpdate,
         artistsWithoutBandsintown,
+        dataUpdateErrors,
         'uptime': process.uptime(),
         usageStats
       } );

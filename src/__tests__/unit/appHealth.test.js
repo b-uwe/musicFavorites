@@ -8,8 +8,11 @@ const request = require( 'supertest' );
 const speakeasy = require( 'speakeasy' );
 require( '../../app' );
 require( '../../services/actService' );
+require( '../../testHelpers/integrationTestSetup' );
 
 describe( 'Express App - /admin/health Route Tests', () => {
+  const { getRecentBerlinTimestamp } = mf.testing.integrationTestSetup;
+
   beforeEach( () => {
     jest.clearAllMocks();
 
@@ -21,6 +24,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
     mf.database.getAllActIds = jest.fn();
     mf.database.getAllActsWithMetadata = jest.fn();
     mf.database.getActsWithoutBandsintown = jest.fn();
+    mf.database.getRecentUpdateErrors = jest.fn();
 
     // Reset usage stats
     mf.usageStats.requests = 0;
@@ -48,6 +52,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
     } );
 
     afterEach( () => {
@@ -381,6 +386,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds = jest.fn();
       mf.database.getAllActsWithMetadata = jest.fn();
       mf.database.getActsWithoutBandsintown = jest.fn();
+      mf.database.getRecentUpdateErrors = jest.fn();
     } );
 
     afterEach( () => {
@@ -460,6 +466,134 @@ describe( 'Express App - /admin/health Route Tests', () => {
 
       expect( response.body.error ).toBe( 'Failed to fetch health data' );
       expect( response.body.details ).toBe( 'Query failed' );
+    } );
+  } );
+
+  describe( 'GET /admin/health - Data Update Errors', () => {
+    const validTotpConfig = {
+      'secret': 'TESTSECRET',
+      'encoding': 'base32',
+      'algorithm': 'sha1'
+    };
+    const validPassword = 'testpass';
+    let originalEnv;
+
+    /**
+     * Helper to make authenticated request
+     * @returns {object} Supertest request with auth header
+     */
+    const authenticatedRequest = () => {
+      const token = speakeasy.totp( validTotpConfig );
+      return request( mf.app ).
+        get( '/admin/health' ).
+        set( 'Authorization', `pass ${validPassword}, bearer ${token}` );
+    };
+
+    beforeEach( () => {
+      originalEnv = {
+        'ADMIN_TOTP_CONFIG': process.env.ADMIN_TOTP_CONFIG,
+        'ADMIN_PASS': process.env.ADMIN_PASS
+      };
+
+      process.env.ADMIN_TOTP_CONFIG = JSON.stringify( validTotpConfig );
+      process.env.ADMIN_PASS = validPassword;
+
+      mf.database.getAllActIds = jest.fn();
+      mf.database.getAllActsWithMetadata = jest.fn();
+      mf.database.getActsWithoutBandsintown = jest.fn();
+      mf.database.getRecentUpdateErrors = jest.fn();
+    } );
+
+    afterEach( () => {
+      process.env.ADMIN_TOTP_CONFIG = originalEnv.ADMIN_TOTP_CONFIG;
+      process.env.ADMIN_PASS = originalEnv.ADMIN_PASS;
+    } );
+
+    /**
+     * Test includes dataUpdateErrors field in response
+     */
+    test( 'includes dataUpdateErrors field in response', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body ).toHaveProperty( 'dataUpdateErrors' );
+      expect( Array.isArray( response.body.dataUpdateErrors ) ).toBe( true );
+    } );
+
+    /**
+     * Test returns empty array when no errors
+     */
+    test( 'returns empty array when no update errors exist', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+
+      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.dataUpdateErrors ).toEqual( [] );
+    } );
+
+    /**
+     * Test returns array of error objects
+     */
+    test( 'returns array of error objects from last 7 days', async () => {
+      const mockErrors = [
+        {
+          'timestamp': getRecentBerlinTimestamp( 1 ),
+          'actId': 'mbid-1',
+          'errorMessage': 'MusicBrainz timeout',
+          'errorSource': 'musicbrainz'
+        },
+        {
+          'timestamp': getRecentBerlinTimestamp( 2 ),
+          'actId': 'mbid-2',
+          'errorMessage': 'Bandsintown not found',
+          'errorSource': 'bandsintown'
+        }
+      ];
+
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+      mf.database.getRecentUpdateErrors.mockResolvedValue( mockErrors );
+
+      const response = await authenticatedRequest().expect( 200 );
+
+      expect( response.body.dataUpdateErrors ).toEqual( mockErrors );
+      expect( response.body.dataUpdateErrors ).toHaveLength( 2 );
+    } );
+
+    /**
+     * Test calls getRecentUpdateErrors function
+     */
+    test( 'calls getRecentUpdateErrors to fetch error data', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+
+      await authenticatedRequest().expect( 200 );
+
+      expect( mf.database.getRecentUpdateErrors ).toHaveBeenCalled();
+    } );
+
+    /**
+     * Test handles errors from getRecentUpdateErrors
+     */
+    test( 'returns 500 when getRecentUpdateErrors throws error', async () => {
+      mf.database.getAllActIds.mockResolvedValue( [] );
+      mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
+      mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
+      mf.database.getRecentUpdateErrors.mockRejectedValue( new Error( 'Error query failed' ) );
+
+      const response = await authenticatedRequest().expect( 500 );
+
+      expect( response.body.error ).toBe( 'Failed to fetch health data' );
+      expect( response.body.details ).toBe( 'Error query failed' );
     } );
   } );
 } );

@@ -298,6 +298,93 @@
     return ids.sort();
   };
 
+  /**
+   * Logs a data update error to the database
+   * @param {object} errorData - Error information
+   * @returns {Promise<void>} Resolves when error is logged
+   * @throws {Error} When not connected, missing required fields, or write not acknowledged
+   */
+  const logUpdateError = async ( errorData ) => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_016)' );
+    }
+
+    if ( !errorData.timestamp || !errorData.actId || !errorData.errorMessage || !errorData.errorSource ) {
+      throw new Error( 'Invalid request. Please try again later. (Error: DB_017)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'dataUpdateErrors' );
+
+    const result = await collection.insertOne( {
+      'timestamp': errorData.timestamp,
+      'actId': errorData.actId,
+      'errorMessage': errorData.errorMessage,
+      'errorSource': errorData.errorSource,
+      'createdAt': new Date()
+    } );
+
+    if ( !result.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_018)' );
+    }
+  };
+
+  /**
+   * Gets all data update errors from the last 7 days
+   * @returns {Promise<Array<object>>} Array of error objects sorted by timestamp descending
+   * @throws {Error} When not connected to database
+   */
+  const getRecentUpdateErrors = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_019)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'dataUpdateErrors' );
+
+    const sevenDaysAgo = new Date();
+
+    sevenDaysAgo.setDate( sevenDaysAgo.getDate() - 7 );
+
+    const results = await collection.find(
+      {
+        'createdAt': { '$gte': sevenDaysAgo }
+      },
+      {
+        'projection': {
+          '_id': 0,
+          'timestamp': 1,
+          'actId': 1,
+          'errorMessage': 1,
+          'errorSource': 1
+        }
+      }
+    ).sort( {
+      'createdAt': -1
+    } ).toArray();
+
+    return results;
+  };
+
+  /**
+   * Ensures TTL index exists on dataUpdateErrors collection
+   * @returns {Promise<void>} Resolves when index is created or already exists
+   * @throws {Error} When not connected to database
+   */
+  const ensureErrorCollectionIndexes = async () => {
+    if ( !client ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_020)' );
+    }
+
+    const db = client.db( 'musicfavorites' );
+    const collection = db.collection( 'dataUpdateErrors' );
+
+    await collection.createIndex(
+      { 'createdAt': 1 },
+      { 'expireAfterSeconds': 604800 }
+    );
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.database = {
@@ -308,7 +395,10 @@
     testCacheHealth,
     getAllActIds,
     getAllActsWithMetadata,
-    getActsWithoutBandsintown
+    getActsWithoutBandsintown,
+    logUpdateError,
+    getRecentUpdateErrors,
+    ensureErrorCollectionIndexes
   };
 
   // Expose testing utilities when running under Jest
