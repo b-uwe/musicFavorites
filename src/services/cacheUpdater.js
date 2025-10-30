@@ -24,6 +24,29 @@
   } );
 
   /**
+   * Determines error source from error message patterns
+   * @param {Error} error - The error object
+   * @returns {string} Error source: 'musicbrainz', 'bandsintown', or 'cache'
+   */
+  const determineErrorSource = ( error ) => {
+    const message = error.message.toLowerCase();
+
+    if ( message.includes( 'musicbrainz' ) || message.includes( 'mb_' ) ) {
+      return 'musicbrainz';
+    }
+
+    if ( message.includes( 'bandsintown' ) ) {
+      return 'bandsintown';
+    }
+
+    if ( message.includes( 'db_' ) || message.includes( 'database' ) || message.includes( 'cache' ) ) {
+      return 'cache';
+    }
+
+    return 'unknown';
+  };
+
+  /**
    * Updates a single act by fetching fresh data and replacing cache
    * Skips update on error without throwing
    * Uses lazy require to avoid circular dependency with actService
@@ -45,6 +68,19 @@
       await mf.database.cacheAct( dataToCache );
     } catch ( error ) {
       console.error( `Failed to update act ${actId}:`, error.message );
+
+      // Log error to database
+      try {
+        await mf.database.logUpdateError( {
+          'timestamp': mf.actService.getBerlinTimestamp(),
+          actId,
+          'errorMessage': error.message,
+          'errorSource': determineErrorSource( error )
+        } );
+      } catch ( logError ) {
+        // Silent fail on logging error to prevent cascading failures
+        console.error( `Failed to log error for act ${actId}:`, logError.message );
+      }
     }
   };
 

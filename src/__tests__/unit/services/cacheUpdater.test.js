@@ -110,6 +110,131 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       consoleErrorSpy.mockRestore();
     } );
+
+    /**
+     * Test that updateAct logs errors to database on failure
+     */
+    test( 'logs error to database when fetchAndEnrichActData fails', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'MusicBrainz API error' ) );
+
+      await mf.cacheUpdater.updateAct( 'test-id' );
+
+      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( {
+        'timestamp': '2025-10-30 12:00:00+01:00',
+        'actId': 'test-id',
+        'errorMessage': 'MusicBrainz API error',
+        'errorSource': 'musicbrainz'
+      } );
+
+      consoleErrorSpy.mockRestore();
+    } );
+
+    /**
+     * Test error source detection for musicbrainz errors
+     */
+    test( 'detects musicbrainz error source correctly', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'MB_001 error' ) );
+
+      await mf.cacheUpdater.updateAct( 'test-id' );
+
+      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+        'errorSource': 'musicbrainz'
+      } ) );
+
+      consoleErrorSpy.mockRestore();
+    } );
+
+    /**
+     * Test error source detection for bandsintown errors
+     */
+    test( 'detects bandsintown error source correctly', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Bandsintown fetch failed' ) );
+
+      await mf.cacheUpdater.updateAct( 'test-id' );
+
+      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+        'errorSource': 'bandsintown'
+      } ) );
+
+      consoleErrorSpy.mockRestore();
+    } );
+
+    /**
+     * Test error source detection for cache errors
+     */
+    test( 'detects cache error source correctly', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
+      mf.database.cacheAct.mockRejectedValue( new Error( 'DB_005 cache error' ) );
+
+      await mf.cacheUpdater.updateAct( 'test-id' );
+
+      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+        'errorSource': 'cache'
+      } ) );
+
+      consoleErrorSpy.mockRestore();
+    } );
+
+    /**
+     * Test error source defaults to unknown for unrecognized errors
+     */
+    test( 'defaults to unknown error source for unrecognized errors', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Unknown error' ) );
+
+      await mf.cacheUpdater.updateAct( 'test-id' );
+
+      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+        'errorSource': 'unknown'
+      } ) );
+
+      consoleErrorSpy.mockRestore();
+    } );
+
+    /**
+     * Test handles error logging failures gracefully
+     */
+    test( 'handles error logging failures gracefully without throwing', async () => {
+      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+
+      jest.spyOn( mf.database, 'logUpdateError' ).mockRejectedValue( new Error( 'Logging failed' ) );
+      jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockReturnValue( '2025-10-30 12:00:00+01:00' );
+
+      mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Some error' ) );
+
+      await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
+
+      expect( consoleErrorSpy ).toHaveBeenCalledWith(
+        expect.stringContaining( 'Failed to log error for act test-id' ),
+        expect.any( String )
+      );
+
+      consoleErrorSpy.mockRestore();
+    } );
   } );
 
   describe( 'runSequentialUpdate', () => {
