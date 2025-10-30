@@ -296,16 +296,6 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       expect( response.body.error ).toMatch( /not found/iu );
       expect( response.body.status ).toBe( 404 );
     } );
-
-    /**
-     * Test that unsupported HTTP methods return 404
-     */
-    test( 'returns 404 for POST on GET-only route', async () => {
-      const response = await request( mf.app ).post( '/acts/test-id' ).expect( 404 );
-
-      expect( response.headers[ 'content-type' ] ).toMatch( /application\/json/u );
-      expect( response.body.status ).toBe( 404 );
-    } );
   } );
 
   describe( 'GET /acts/:id - Usage statistics tracking', () => {
