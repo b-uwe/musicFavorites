@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: music-favorites-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
+      - key: ADMIN_TOTP_CONFIG
+        sync: false
