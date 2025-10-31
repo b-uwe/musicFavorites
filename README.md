@@ -29,6 +29,20 @@ cd music-favorites-api
 npm install
 ```
 
+### Configuration
+
+The application requires the following environment variables:
+
+#### Required
+
+- `MONGODB_URI` - MongoDB connection string (e.g., `mongodb+srv://username:password@cluster.example.mongodb.net/?retryWrites=true&w=majority`)
+- `ADMIN_PASS` - Password for admin endpoint authentication (e.g., `my-secret-password`)
+- `ADMIN_TOTP_CONFIG` - TOTP configuration as JSON string (e.g., `{"secret":"YOUR32CHARBASE32SECRETHERE","encoding":"base32","algorithm":"sha1"}`)
+
+#### Optional
+
+- `PORT` - Server port (defaults to 3000)
+
 ### Running the API
 
 ```bash
