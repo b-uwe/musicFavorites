@@ -227,6 +227,33 @@
   } );
 
   /**
+   * Simple health check endpoint for load balancers and monitoring
+   * @param {object} req - Express request object
+   * @param {object} res - Express response object
+   * @returns {object} Health status JSON response
+   */
+  app.get( '/health', ( req, res ) => {
+    res.setHeader( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
+
+    // Check if database connection is established
+    const isDatabaseConnected = Boolean( mf.database?.client?.topology?.isConnected() );
+
+    if ( isDatabaseConnected ) {
+      return res.status( 200 ).json( {
+        'status': 'healthy',
+        'timestamp': new Date().toISOString(),
+        'uptime': process.uptime()
+      } );
+    }
+
+    return res.status( 503 ).json( {
+      'status': 'unhealthy',
+      'reason': 'database_unavailable',
+      'timestamp': new Date().toISOString()
+    } );
+  } );
+
+  /**
    * Calculate last cache update stats from acts with metadata
    * @param {Array<object>} actsWithMetadata - Array of acts with updatedAt timestamps
    * @returns {object|null} Object with newest and oldest update info, or null if empty
