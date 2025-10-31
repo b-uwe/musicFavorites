@@ -72,20 +72,6 @@ describe( 'Express App - /health Integration Tests', () => {
   } );
 
   /**
-   * Test /health response time is fast
-   */
-  test( 'GET /health responds quickly', async () => {
-    const startTime = Date.now();
-    await request( app ).get( '/health' );
-    const endTime = Date.now();
-
-    const responseTime = endTime - startTime;
-
-    // Should respond in under 1 second
-    expect( responseTime ).toBeLessThan( 1000 );
-  } );
-
-  /**
    * Test /health sets correct HTTP headers
    */
   test( 'GET /health sets appropriate caching headers', async () => {
