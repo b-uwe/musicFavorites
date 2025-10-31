@@ -20,8 +20,16 @@
    */
   const startServer = async () => {
     // Start Express server first (always succeeds)
-    mf.app.listen( PORT, () => {
+    const server = mf.app.listen( PORT, () => {
       console.log( `Music Favorites API running on port ${PORT}` );
+    } );
+
+    // Register graceful shutdown handlers
+    process.on( 'SIGTERM', () => {
+      mf.gracefulShutdown( server );
+    } );
+    process.on( 'SIGINT', () => {
+      mf.gracefulShutdown( server );
     } );
 
     // Attempt MongoDB connection (non-blocking)
