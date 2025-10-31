@@ -366,8 +366,29 @@
     'status': 404
   } ) );
 
+  /**
+   * Graceful shutdown handler
+   * Closes HTTP server, disconnects database, and exits process
+   * @param {object} server - HTTP server instance to close
+   * @returns {void}
+   */
+  const gracefulShutdown = ( server ) => {
+    server.close( () => {
+      mf.database.disconnect().then( () => {
+        process.exit( 0 );
+      } ).catch( () => {
+        /*
+         * Exit even if database disconnect fails
+         * Server is already closed, nothing left to clean up
+         */
+        process.exit( 0 );
+      } );
+    } );
+  };
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.app = app;
   globalThis.mf.usageStats = usageStats;
+  globalThis.mf.gracefulShutdown = gracefulShutdown;
 } )();
