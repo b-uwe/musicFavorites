@@ -230,27 +230,27 @@
    * Simple health check endpoint for load balancers and monitoring
    * @param {object} req - Express request object
    * @param {object} res - Express response object
-   * @returns {object} Health status JSON response
+   * @returns {Promise<object>} Health status JSON response
    */
-  app.get( '/health', ( req, res ) => {
+  app.get( '/health', async ( req, res ) => {
     res.setHeader( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
 
-    // Check if database connection is established
-    const isDatabaseConnected = Boolean( mf.database?.client?.topology?.isConnected() );
+    try {
+      // Quick database health check
+      await mf.database.testCacheHealth();
 
-    if ( isDatabaseConnected ) {
       return res.status( 200 ).json( {
         'status': 'healthy',
         'timestamp': new Date().toISOString(),
         'uptime': process.uptime()
       } );
+    } catch ( error ) {
+      return res.status( 503 ).json( {
+        'status': 'unhealthy',
+        'reason': 'database_unavailable',
+        'timestamp': new Date().toISOString()
+      } );
     }
-
-    return res.status( 503 ).json( {
-      'status': 'unhealthy',
-      'reason': 'database_unavailable',
-      'timestamp': new Date().toISOString()
-    } );
   } );
 
   /**

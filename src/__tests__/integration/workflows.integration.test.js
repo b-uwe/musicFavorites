@@ -252,10 +252,11 @@ describe( 'Real-World Workflow Integration Tests', () => {
 
     mockCollection.findOne.mockResolvedValue( cachedData );
 
-    // 20 different artists
-    const requests = Array.from( {
-      'length': 20
-    }, ( _, i ) => request( mf.app ).get( `/acts/artist-${i}` ) );
+    // 20 different artists - truly concurrent to test real-world scenario
+    const requests = [];
+    for ( let i = 0; i < 20; i += 1 ) {
+      requests.push( request( mf.app ).get( `/acts/artist-${i}` ) );
+    }
 
     const responses = await Promise.all( requests );
 
