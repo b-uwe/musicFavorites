@@ -9,6 +9,7 @@
 
   const axios = require( 'axios' );
   const cheerio = require( 'cheerio' );
+  require( '../logger' );
   require( '../constants' );
 
   /**
@@ -92,6 +93,14 @@
       return [];
     }
 
+    // Log before request
+    mf.logger.debug(
+      { url },
+      'Fetching Bandsintown HTML'
+    );
+
+    const start = Date.now();
+
     try {
       const response = await axios.get( url, {
         'timeout': mf.constants.HTTP_TIMEOUT,
@@ -100,8 +109,31 @@
         }
       } );
 
-      return extractLdJson( response.data );
+      const events = extractLdJson( response.data );
+      const duration = Date.now() - start;
+      const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
+
+      // Log successful parsing
+      mf.logger[ logLevel ](
+        {
+          url,
+          'eventCount': events.length,
+          duration
+        },
+        'Parsed Bandsintown events'
+      );
+
+      return events;
     } catch ( error ) {
+      // Log warning on error
+      mf.logger.warn(
+        {
+          url,
+          'error': error.message
+        },
+        'Failed to extract LD+JSON'
+      );
+
       // Fail silently for any errors (network, timeout, 404, etc.)
       return [];
     }

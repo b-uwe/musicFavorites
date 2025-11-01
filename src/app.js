@@ -8,30 +8,9 @@
 
   const express = require( 'express' );
   const path = require( 'path' );
-  const pino = require( 'pino' );
   const speakeasy = require( 'speakeasy' );
+  require( './logger' );
   require( './services/actService' );
-
-  /**
-   * Get appropriate log level based on NODE_ENV
-   * @returns {string} Log level (silent, info, or debug)
-   */
-  const getLogLevel = () => {
-    if ( process.env.NODE_ENV === 'test' ) {
-      return 'silent';
-    }
-    if ( process.env.NODE_ENV === 'production' ) {
-      return 'info';
-    }
-    return 'debug';
-  };
-
-  /**
-   * Application logger instance
-   * Configured based on NODE_ENV: silent for tests, debug for dev, info for production
-   * @type {import('pino').Logger}
-   */
-  const logger = pino( { 'level': getLogLevel() } );
 
   const app = express();
 
@@ -43,7 +22,7 @@
       const duration = Date.now() - start;
       const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
 
-      logger[ logLevel ]( {
+      mf.logger[ logLevel ]( {
         'method': req.method,
         'path': req.path,
         'statusCode': res.statusCode,
@@ -414,18 +393,18 @@
    * @returns {void}
    */
   const gracefulShutdown = ( server ) => {
-    logger.info( 'Initiating graceful shutdown' );
+    mf.logger.info( 'Initiating graceful shutdown' );
 
     server.close( () => {
       mf.database.disconnect().then( () => {
-        logger.info( 'Database disconnected successfully' );
+        mf.logger.info( 'Database disconnected successfully' );
         process.exit( 0 );
       } ).catch( ( error ) => {
         /*
          * Exit even if database disconnect fails
          * Server is already closed, nothing left to clean up
          */
-        logger.error( {
+        mf.logger.error( {
           'error': error.message
         }, 'Database disconnect failed during shutdown' );
         process.exit( 0 );
@@ -433,10 +412,8 @@
     } );
   };
 
-  // Initialize global namespace
-  globalThis.mf = globalThis.mf || {};
+  // Add app exports to global namespace (already initialized by logger.js)
   globalThis.mf.app = app;
-  globalThis.mf.logger = logger;
   globalThis.mf.usageStats = usageStats;
   globalThis.mf.gracefulShutdown = gracefulShutdown;
 } )();

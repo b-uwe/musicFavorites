@@ -9,6 +9,7 @@ const path = require( 'path' );
 jest.mock( 'axios' );
 
 const axios = require( 'axios' );
+
 require( '../../../services/ldJsonExtractor' );
 
 /**
@@ -23,6 +24,39 @@ const loadFixture = ( filename ) => {
 };
 
 describe( 'LD+JSON Extractor', () => {
+  let debugSpy;
+  let errorSpy;
+  let warnSpy;
+
+  beforeEach( () => {
+    jest.clearAllMocks();
+
+    // Spy on logger methods
+    if ( mf.logger ) {
+      debugSpy = jest.spyOn( mf.logger, 'debug' ).mockImplementation( () => {
+        // Mock implementation
+      } );
+      errorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation( () => {
+        // Mock implementation
+      } );
+      warnSpy = jest.spyOn( mf.logger, 'warn' ).mockImplementation( () => {
+        // Mock implementation
+      } );
+    }
+  } );
+
+  afterEach( () => {
+    if ( debugSpy ) {
+      debugSpy.mockRestore();
+    }
+    if ( errorSpy ) {
+      errorSpy.mockRestore();
+    }
+    if ( warnSpy ) {
+      warnSpy.mockRestore();
+    }
+  } );
+
   describe( 'extractLdJson', () => {
     test( 'extracts single LD+JSON block from HTML', () => {
       const html = loadFixture( 'single-block.html' );
@@ -285,6 +319,98 @@ describe( 'LD+JSON Extractor', () => {
       const result = await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
       expect( result ).toEqual( [] );
+    } );
+
+    /**
+     * Test logs debug message before fetching URL
+     */
+    test( 'logs debug message before fetching HTML', async () => {
+      const url = 'https://www.bandsintown.com/a/test-artist';
+      const html = '<html></html>';
+
+      axios.get.mockResolvedValue( {
+        'data': html,
+        'status': 200
+      } );
+
+      await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( debugSpy ).toHaveBeenCalledWith(
+        { url },
+        'Fetching Bandsintown HTML'
+      );
+    } );
+
+    /**
+     * Test logs error level after successful parsing in test environment
+     */
+    test( 'logs at error level after successful parsing in test environment', async () => {
+      const url = 'https://www.bandsintown.com/a/test-artist';
+      const html = '<html><head><script type="application/ld+json">{"@type":"Person"}</script></head></html>';
+
+      axios.get.mockResolvedValue( {
+        'data': html,
+        'status': 200
+      } );
+
+      await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          url,
+          'eventCount': 1
+        } ),
+        'Parsed Bandsintown events'
+      );
+    } );
+
+    /**
+     * Test logs warning on fetch error
+     */
+    test( 'logs warning when fetch fails', async () => {
+      const url = 'https://www.bandsintown.com/a/test-artist';
+      const error = new Error( 'Network error' );
+
+      axios.get.mockRejectedValue( error );
+
+      await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( warnSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          url,
+          'error': 'Network error'
+        } ),
+        'Failed to extract LD+JSON'
+      );
+    } );
+
+    /**
+     * Test logs at info level in non-test environment
+     */
+    test( 'logs at info level when NODE_ENV is not test', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      jest.clearAllMocks();
+
+      require( '../../../logger' );
+
+      const freshInfoSpy = jest.spyOn( mf.logger, 'info' );
+
+      const url = 'https://www.bandsintown.com/a/test-artist';
+      const html = '<html></html>';
+
+      axios.get.mockResolvedValue( {
+        'data': html,
+        'status': 200
+      } );
+
+      await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
+
+      expect( freshInfoSpy ).toHaveBeenCalled();
+
+      freshInfoSpy.mockRestore();
+      process.env.NODE_ENV = originalEnv;
     } );
   } );
 } );

@@ -11,6 +11,21 @@ describe( 'app - Branch Coverage', () => {
     jest.isolateModules( () => {
       const originalMf = globalThis.mf;
       delete globalThis.mf;
+
+      // Mock logger to create globalThis.mf.logger but not globalThis.mf itself
+      jest.doMock( '../../logger', () => {
+        // Create globalThis.mf if it doesn't exist (app.js should do this first)
+        globalThis.mf = globalThis.mf || {};
+        globalThis.mf.logger = {
+          'info': jest.fn(),
+          'error': jest.fn(),
+          'warn': jest.fn(),
+          'debug': jest.fn(),
+          'level': 'silent'
+        };
+        return {};
+      } );
+
       require( '../../app' );
       expect( globalThis.mf ).toBeDefined();
       expect( globalThis.mf.app ).toBeDefined();
@@ -56,6 +71,13 @@ describe( 'app - Branch Coverage', () => {
       };
 
       jest.mock( 'pino', () => jest.fn( () => mockLogger ) );
+
+      // Mock logger module to initialize globalThis.mf with mockLogger
+      jest.doMock( '../../logger', () => {
+        globalThis.mf = globalThis.mf || {};
+        globalThis.mf.logger = mockLogger;
+        return {};
+      } );
 
       const request = require( 'supertest' );
 

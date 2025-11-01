@@ -6,6 +6,9 @@
 // Mock constants to prevent it from initializing globalThis.mf
 jest.mock( '../../constants', () => ( {} ) );
 
+// Mock logger to prevent it from initializing globalThis.mf
+jest.mock( '../../logger', () => ( {} ) );
+
 describe( 'ldJsonExtractor - Branch Coverage', () => {
   test( 'initializes globalThis.mf when it does not exist', () => {
     jest.isolateModules( () => {
