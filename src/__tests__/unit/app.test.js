@@ -440,4 +440,58 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       expect( mf.usageStats.actsQueried ).toBe( 6 );
     } );
   } );
+
+  describe( 'Logger initialization', () => {
+    /**
+     * Test that logger is initialized and accessible
+     */
+    test( 'initializes logger in globalThis.mf', () => {
+      expect( mf.logger ).toBeDefined();
+      expect( typeof mf.logger.info ).toBe( 'function' );
+      expect( typeof mf.logger.error ).toBe( 'function' );
+      expect( typeof mf.logger.warn ).toBe( 'function' );
+      expect( typeof mf.logger.debug ).toBe( 'function' );
+    } );
+
+    /**
+     * Test that logger is silent in test environment
+     */
+    test( 'logger is silent in test environment', () => {
+      /*
+       * In test mode, logger should be silent (level: 'silent')
+       * This means it won't output anything
+       */
+      expect( mf.logger.level ).toBe( 'silent' );
+    } );
+
+    /**
+     * Test that logger uses info level when NODE_ENV is production
+     */
+    test( 'logger uses info level when NODE_ENV is production', () => {
+      jest.isolateModules( () => {
+        const originalEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'production';
+        delete globalThis.mf;
+        require( '../../app' );
+        expect( globalThis.mf.logger ).toBeDefined();
+        expect( globalThis.mf.logger.level ).toBe( 'info' );
+        process.env.NODE_ENV = originalEnv;
+      } );
+    } );
+
+    /**
+     * Test that logger uses debug level when NODE_ENV is development
+     */
+    test( 'logger uses debug level when NODE_ENV is development', () => {
+      jest.isolateModules( () => {
+        const originalEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'development';
+        delete globalThis.mf;
+        require( '../../app' );
+        expect( globalThis.mf.logger ).toBeDefined();
+        expect( globalThis.mf.logger.level ).toBe( 'debug' );
+        process.env.NODE_ENV = originalEnv;
+      } );
+    } );
+  } );
 } );
