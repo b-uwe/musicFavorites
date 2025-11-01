@@ -7,6 +7,10 @@
 // This prevents accidentally making real HTTP requests in tests
 jest.mock( 'axios' );
 
+// Mock mongodb globally for all tests
+// This prevents accidentally connecting to real MongoDB in tests
+jest.mock( 'mongodb' );
+
 // Install nock as safety net to block any real HTTP requests at network level
 // This catches anything that slips through the axios mock
 const nock = require( 'nock' );
