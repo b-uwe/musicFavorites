@@ -10,6 +10,8 @@ describe( 'App - Graceful Shutdown Function', () => {
   let mockServer;
   let originalProcessExit;
   let originalDatabaseDisconnect;
+  let loggerInfoSpy;
+  let loggerErrorSpy;
 
   beforeEach( () => {
     jest.clearAllMocks();
@@ -30,12 +32,22 @@ describe( 'App - Graceful Shutdown Function', () => {
 
     // Mock database disconnect
     mf.database.disconnect = jest.fn().mockResolvedValue();
+
+    // Spy on logger methods
+    loggerInfoSpy = jest.spyOn( mf.logger, 'info' ).mockImplementation( () => {
+      // Mock implementation
+    } );
+    loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation( () => {
+      // Mock implementation
+    } );
   } );
 
   afterEach( () => {
     // Restore original methods
     process.exit = originalProcessExit;
     mf.database.disconnect = originalDatabaseDisconnect;
+    loggerInfoSpy.mockRestore();
+    loggerErrorSpy.mockRestore();
   } );
 
   /**
@@ -189,6 +201,51 @@ describe( 'App - Graceful Shutdown Function', () => {
         expect( callbackIndex ).toBeLessThan( disconnectIndex );
         resolve();
       }, 20 );
+    } );
+  } );
+
+  /**
+   * Test that gracefulShutdown logs shutdown initiation
+   */
+  test( 'logs graceful shutdown initiation', () => {
+    mf.gracefulShutdown( mockServer );
+
+    expect( loggerInfoSpy ).toHaveBeenCalledWith( 'Initiating graceful shutdown' );
+  } );
+
+  /**
+   * Test that gracefulShutdown logs successful database disconnect
+   */
+  test( 'logs successful database disconnect', () => {
+    mf.gracefulShutdown( mockServer );
+
+    return new Promise( ( resolve ) => {
+      setTimeout( () => {
+        expect( loggerInfoSpy ).toHaveBeenCalledWith( 'Database disconnected successfully' );
+        resolve();
+      }, 10 );
+    } );
+  } );
+
+  /**
+   * Test that gracefulShutdown logs database disconnect errors
+   */
+  test( 'logs database disconnect errors', () => {
+    const disconnectError = new Error( 'DB disconnect failed' );
+    mf.database.disconnect.mockRejectedValue( disconnectError );
+
+    mf.gracefulShutdown( mockServer );
+
+    return new Promise( ( resolve ) => {
+      setTimeout( () => {
+        expect( loggerErrorSpy ).toHaveBeenCalledWith(
+          {
+            'error': 'DB disconnect failed'
+          },
+          'Database disconnect failed during shutdown'
+        );
+        resolve();
+      }, 10 );
     } );
   } );
 } );

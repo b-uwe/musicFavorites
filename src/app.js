@@ -395,14 +395,20 @@
    * @returns {void}
    */
   const gracefulShutdown = ( server ) => {
+    logger.info( 'Initiating graceful shutdown' );
+
     server.close( () => {
       mf.database.disconnect().then( () => {
+        logger.info( 'Database disconnected successfully' );
         process.exit( 0 );
-      } ).catch( () => {
+      } ).catch( ( error ) => {
         /*
          * Exit even if database disconnect fails
          * Server is already closed, nothing left to clean up
          */
+        logger.error( {
+          'error': error.message
+        }, 'Database disconnect failed during shutdown' );
         process.exit( 0 );
       } );
     } );

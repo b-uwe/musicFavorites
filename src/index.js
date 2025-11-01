@@ -21,29 +21,42 @@
   const startServer = async () => {
     // Start Express server first (always succeeds)
     const server = mf.app.listen( PORT, () => {
-      console.log( `Music Favorites API running on port ${PORT}` );
+      mf.logger.info( {
+        'port': PORT,
+        'env': process.env.NODE_ENV
+      }, 'Server started' );
     } );
 
     // Register graceful shutdown handlers
     process.on( 'SIGTERM', () => {
+      mf.logger.info( {
+        'signal': 'SIGTERM'
+      }, 'Received shutdown signal' );
       mf.gracefulShutdown( server );
     } );
     process.on( 'SIGINT', () => {
+      mf.logger.info( {
+        'signal': 'SIGINT'
+      }, 'Received shutdown signal' );
       mf.gracefulShutdown( server );
     } );
 
     // Attempt MongoDB connection (non-blocking)
     try {
       await mf.database.connect();
-      console.log( 'Connected to MongoDB successfully' );
+      mf.logger.info( 'Connected to MongoDB successfully' );
 
       // Start background cache update cycle (fire-and-forget)
       mf.cacheUpdater.start().catch( ( error ) => {
-        console.error( 'Cache updater crashed:', error.message );
+        mf.logger.error( {
+          'error': error.message
+        }, 'Cache updater crashed' );
       } );
     } catch ( error ) {
-      console.error( 'MongoDB connection failed:', error.message );
-      console.error( 'Server running but database unavailable. API will return errors.' );
+      mf.logger.error( {
+        'error': error.message
+      }, 'MongoDB connection failed' );
+      mf.logger.warn( 'Server running but database unavailable' );
     }
   };
 
