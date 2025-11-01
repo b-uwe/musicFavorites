@@ -30,8 +30,7 @@ nock.emitter.on( 'no match', ( req ) => {
   console.error( '\n' );
 } );
 
-// Disable all real HTTP requests
+// Disable all real HTTP requests except localhost
+// Use host matcher function for more reliable localhost detection
 nock.disableNetConnect();
-
-// Allow localhost connections for supertest (Express app testing)
-nock.enableNetConnect( '127.0.0.1' );
+nock.enableNetConnect( ( host ) => host.includes( '127.0.0.1' ) || host.includes( 'localhost' ) );
