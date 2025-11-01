@@ -6,7 +6,6 @@
  */
 
 // Mock axios for HTTP calls (not business logic)
-jest.mock( 'axios' );
 
 const axios = require( 'axios' );
 

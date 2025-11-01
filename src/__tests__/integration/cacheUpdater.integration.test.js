@@ -8,8 +8,6 @@
 const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 
 // Mock external I/O BEFORE requiring modules
-jest.mock( 'axios' );
-jest.mock( 'mongodb' );
 
 const axios = require( 'axios' );
 

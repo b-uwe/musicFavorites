@@ -5,7 +5,6 @@
  */
 
 // Mock axios before requiring musicbrainz
-jest.mock( 'axios' );
 
 describe( 'musicbrainz', () => {
   let axios;

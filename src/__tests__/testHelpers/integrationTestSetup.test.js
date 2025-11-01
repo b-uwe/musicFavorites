@@ -4,8 +4,6 @@
  */
 
 // Mock external I/O BEFORE requiring modules
-jest.mock( 'axios' );
-jest.mock( 'mongodb' );
 
 const axios = require( 'axios' );
 const { MongoClient } = require( 'mongodb' );

@@ -6,7 +6,6 @@ const fs = require( 'fs' );
 const path = require( 'path' );
 
 // Mock axios before requiring ldJsonExtractor
-jest.mock( 'axios' );
 
 const axios = require( 'axios' );
 

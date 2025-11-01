@@ -6,7 +6,6 @@
  */
 
 // Mock MongoDB client (not business logic)
-jest.mock( 'mongodb' );
 
 const { MongoClient } = require( 'mongodb' );
 

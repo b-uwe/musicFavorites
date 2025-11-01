@@ -7,7 +7,6 @@
 const request = require( 'supertest' );
 
 // Mock external I/O BEFORE requiring modules
-jest.mock( 'mongodb' );
 
 const { MongoClient } = require( 'mongodb' );
 

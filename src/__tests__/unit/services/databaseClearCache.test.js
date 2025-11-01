@@ -5,7 +5,6 @@
  */
 
 // Mock mongodb before requiring database
-jest.mock( 'mongodb' );
 
 describe( 'database.clearCache - Unit Tests', () => {
   let mockClient;

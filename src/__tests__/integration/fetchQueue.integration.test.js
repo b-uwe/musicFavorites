@@ -9,8 +9,6 @@ const fixtureTheKinks = require( '../fixtures/musicbrainz-the-kinks.json' );
 const fixtureVulvodynia = require( '../fixtures/musicbrainz-vulvodynia.json' );
 
 // Mock external I/O BEFORE requiring modules
-jest.mock( 'axios' );
-jest.mock( 'mongodb' );
 
 const axios = require( 'axios' );
 

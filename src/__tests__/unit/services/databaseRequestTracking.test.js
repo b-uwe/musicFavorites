@@ -5,7 +5,6 @@
 
 const { MongoClient } = require( 'mongodb' );
 
-jest.mock( 'mongodb' );
 
 describe( 'database - Request Tracking Tests', () => {
   let mockCollection;
