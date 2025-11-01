@@ -111,10 +111,9 @@
 
       const events = extractLdJson( response.data );
       const duration = Date.now() - start;
-      const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
 
       // Log successful parsing
-      mf.logger[ logLevel ](
+      mf.logger.info(
         {
           url,
           'eventCount': events.length,

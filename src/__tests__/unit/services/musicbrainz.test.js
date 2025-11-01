@@ -5,7 +5,6 @@
  */
 
 // Mock axios before requiring musicbrainz
-jest.mock( 'axios' );
 
 describe( 'musicbrainz', () => {
   let axios;
@@ -242,9 +241,9 @@ describe( 'musicbrainz', () => {
     } );
 
     /**
-     * Test logs error level in test environment after successful fetch
+     * Test logs at info level after successful fetch
      */
-    test( 'logs at error level after successful fetch in test environment', async () => {
+    test( 'logs at info level after successful fetch', async () => {
       const validMbid = '53689c08-f234-4c47-9256-58c8568f06d1';
       const mockData = {
         'id': validMbid,
@@ -258,7 +257,7 @@ describe( 'musicbrainz', () => {
 
       await mf.musicbrainz.fetchAct( validMbid );
 
-      expect( errorSpy ).toHaveBeenCalledWith(
+      expect( infoSpy ).toHaveBeenCalledWith(
         expect.objectContaining( {
           'actId': validMbid,
           'status': 200

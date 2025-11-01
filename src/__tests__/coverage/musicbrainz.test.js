@@ -6,7 +6,6 @@
  */
 
 // Mock axios to prevent actual HTTP calls
-jest.mock( 'axios' );
 
 // Mock constants.js WITHOUT initializing globalThis.mf
 jest.mock( '../../constants', () => ( {} ), { 'virtual': false } );

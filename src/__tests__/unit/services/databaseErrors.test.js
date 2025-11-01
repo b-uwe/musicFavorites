@@ -5,7 +5,6 @@
  */
 
 // Mock mongodb before requiring database
-jest.mock( 'mongodb' );
 
 // Load test helpers
 require( '../../../testHelpers/integrationTestSetup' );

@@ -33,6 +33,9 @@ module.exports = {
   // Clear mocks between tests
   'clearMocks': true,
 
+  // Setup files to run after Jest environment is initialized
+  'setupFilesAfterEnv': [ '<rootDir>/jest.setup.js' ],
+
   // Verbose output
   'verbose': true
 };

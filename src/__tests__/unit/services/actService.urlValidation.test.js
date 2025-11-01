@@ -4,8 +4,6 @@
  */
 
 // Mock external I/O
-jest.mock( 'axios' );
-jest.mock( 'mongodb' );
 
 describe( 'actService - Bandsintown URL Validation', () => {
   beforeEach( () => {

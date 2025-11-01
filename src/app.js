@@ -20,9 +20,8 @@
 
     res.on( 'finish', () => {
       const duration = Date.now() - start;
-      const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
 
-      mf.logger[ logLevel ]( {
+      mf.logger.info( {
         'method': req.method,
         'path': req.path,
         'statusCode': res.statusCode,

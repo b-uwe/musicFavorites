@@ -12,8 +12,6 @@ require( '../../testHelpers/fixtureHelpers' );
 require( '../../testHelpers/integrationTestSetup' );
 
 // Mock external I/O BEFORE requiring modules
-jest.mock( 'axios' );
-jest.mock( 'mongodb' );
 
 const axios = require( 'axios' );
 
