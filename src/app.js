@@ -8,8 +8,30 @@
 
   const express = require( 'express' );
   const path = require( 'path' );
+  const pino = require( 'pino' );
   const speakeasy = require( 'speakeasy' );
   require( './services/actService' );
+
+  /**
+   * Get appropriate log level based on NODE_ENV
+   * @returns {string} Log level (silent, info, or debug)
+   */
+  const getLogLevel = () => {
+    if ( process.env.NODE_ENV === 'test' ) {
+      return 'silent';
+    }
+    if ( process.env.NODE_ENV === 'production' ) {
+      return 'info';
+    }
+    return 'debug';
+  };
+
+  /**
+   * Application logger instance
+   * Configured based on NODE_ENV: silent for tests, debug for dev, info for production
+   * @type {import('pino').Logger}
+   */
+  const logger = pino( { 'level': getLogLevel() } );
 
   const app = express();
 
@@ -389,6 +411,7 @@
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.app = app;
+  globalThis.mf.logger = logger;
   globalThis.mf.usageStats = usageStats;
   globalThis.mf.gracefulShutdown = gracefulShutdown;
 } )();
