@@ -38,4 +38,50 @@ describe( 'app - Branch Coverage', () => {
       expect( globalThis.mf.usageStats ).toHaveProperty( 'actsQueried', 0 );
     } );
   } );
+
+  test( 'HTTP logging middleware uses info level in production', () => {
+    jest.isolateModules( () => {
+      const originalEnv = process.env.NODE_ENV;
+
+      process.env.NODE_ENV = 'production';
+      delete globalThis.mf;
+
+      // Mock pino to spy on logger calls
+      const mockLogger = {
+        'info': jest.fn(),
+        'error': jest.fn(),
+        'warn': jest.fn(),
+        'debug': jest.fn(),
+        'level': 'info'
+      };
+
+      jest.mock( 'pino', () => jest.fn( () => mockLogger ) );
+
+      const request = require( 'supertest' );
+
+      require( '../../app' );
+
+      // Mock database for /health endpoint
+      globalThis.mf.database = {
+        'testCacheHealth': jest.fn().mockRejectedValue( new Error( 'Test' ) )
+      };
+
+      // Make a request to trigger the middleware
+      return request( globalThis.mf.app ).get( '/health' ).then( () => {
+        // In production, middleware should log at INFO level
+        const logCalls = mockLogger.info.mock.calls.filter( ( call ) => call[ 1 ] === 'HTTP request' );
+
+        expect( logCalls.length ).toBeGreaterThan( 0 );
+        expect( logCalls[ 0 ][ 0 ] ).toMatchObject( {
+          'method': 'GET',
+          'path': '/health',
+          'statusCode': expect.any( Number ),
+          'duration': expect.any( Number )
+        } );
+
+        process.env.NODE_ENV = originalEnv;
+        jest.unmock( 'pino' );
+      } );
+    } );
+  } );
 } );

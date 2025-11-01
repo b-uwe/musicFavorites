@@ -561,4 +561,37 @@ describe( 'Express App Integration Tests', () => {
     expect( response.headers[ 'cache-control' ] ).toContain( 'no-store' );
     expect( response.headers[ 'x-robots-tag' ] ).toContain( 'noindex' );
   } );
+
+  /**
+   * Test HTTP request logging middleware integration
+   */
+  test( 'HTTP request logging middleware logs all requests', async () => {
+    const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+    const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
+
+    transformedArtist.events = [];
+
+    // MongoDB returns transformed data with _id (not musicbrainzId)
+    const cachedData = mf.testing.fixtureHelpers.transformToMongoDbDocument( transformedArtist );
+
+    mockCollection.findOne.mockResolvedValue( cachedData );
+
+    await request( mf.app ).
+      get( `/acts/${fixtureTheKinks.id}` ).
+      expect( 200 );
+
+    // Verify logging occurred with correct context
+    expect( errorSpy ).toHaveBeenCalledWith(
+      expect.objectContaining( {
+        'method': 'GET',
+        'path': `/acts/${fixtureTheKinks.id}`,
+        'statusCode': 200,
+        'duration': expect.any( Number )
+      } ),
+      'HTTP request'
+    );
+
+    errorSpy.mockRestore();
+  } );
 } );
