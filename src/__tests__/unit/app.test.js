@@ -463,5 +463,35 @@ describe( 'Express App - Route Handler Unit Tests', () => {
        */
       expect( mf.logger.level ).toBe( 'silent' );
     } );
+
+    /**
+     * Test that logger uses info level when NODE_ENV is production
+     */
+    test( 'logger uses info level when NODE_ENV is production', () => {
+      jest.isolateModules( () => {
+        const originalEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'production';
+        delete globalThis.mf;
+        require( '../../app' );
+        expect( globalThis.mf.logger ).toBeDefined();
+        expect( globalThis.mf.logger.level ).toBe( 'info' );
+        process.env.NODE_ENV = originalEnv;
+      } );
+    } );
+
+    /**
+     * Test that logger uses debug level when NODE_ENV is development
+     */
+    test( 'logger uses debug level when NODE_ENV is development', () => {
+      jest.isolateModules( () => {
+        const originalEnv = process.env.NODE_ENV;
+        process.env.NODE_ENV = 'development';
+        delete globalThis.mf;
+        require( '../../app' );
+        expect( globalThis.mf.logger ).toBeDefined();
+        expect( globalThis.mf.logger.level ).toBe( 'debug' );
+        process.env.NODE_ENV = originalEnv;
+      } );
+    } );
   } );
 } );
