@@ -11,6 +11,25 @@ jest.mock( 'axios' );
 // This catches anything that slips through the axios mock
 const nock = require( 'nock' );
 
+// Add event listener to catch and alert on disallowed network connections
+nock.emitter.on( 'no match', ( req ) => {
+  // Ignore localhost/127.0.0.1 (allowed for supertest)
+  if ( req.host.includes( '127.0.0.1' ) || req.host.includes( 'localhost' ) ) {
+    return;
+  }
+
+  console.error( '\n' );
+  console.error( '============================================' );
+  console.error( '🚨 UNMOCKED HTTP REQUEST DETECTED! 🚨' );
+  console.error( '============================================' );
+  console.error( `Method: ${req.method}` );
+  console.error( `URL: ${req.protocol}//${req.host}${req.path}` );
+  console.error( 'This request was blocked by nock.' );
+  console.error( 'Please mock this HTTP call in your test!' );
+  console.error( '============================================' );
+  console.error( '\n' );
+} );
+
 // Disable all real HTTP requests
 nock.disableNetConnect();
 
