@@ -25,6 +25,7 @@ const loadFixture = ( filename ) => {
 
 describe( 'LD+JSON Extractor', () => {
   let debugSpy;
+  let infoSpy;
   let errorSpy;
   let warnSpy;
 
@@ -34,6 +35,9 @@ describe( 'LD+JSON Extractor', () => {
     // Spy on logger methods
     if ( mf.logger ) {
       debugSpy = jest.spyOn( mf.logger, 'debug' ).mockImplementation( () => {
+        // Mock implementation
+      } );
+      infoSpy = jest.spyOn( mf.logger, 'info' ).mockImplementation( () => {
         // Mock implementation
       } );
       errorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation( () => {
@@ -48,6 +52,9 @@ describe( 'LD+JSON Extractor', () => {
   afterEach( () => {
     if ( debugSpy ) {
       debugSpy.mockRestore();
+    }
+    if ( infoSpy ) {
+      infoSpy.mockRestore();
     }
     if ( errorSpy ) {
       errorSpy.mockRestore();
@@ -342,9 +349,9 @@ describe( 'LD+JSON Extractor', () => {
     } );
 
     /**
-     * Test logs error level after successful parsing in test environment
+     * Test logs at info level after successful parsing
      */
-    test( 'logs at error level after successful parsing in test environment', async () => {
+    test( 'logs at info level after successful parsing', async () => {
       const url = 'https://www.bandsintown.com/a/test-artist';
       const html = '<html><head><script type="application/ld+json">{"@type":"Person"}</script></head></html>';
 
@@ -355,7 +362,7 @@ describe( 'LD+JSON Extractor', () => {
 
       await mf.ldJsonExtractor.fetchAndExtractLdJson( url );
 
-      expect( errorSpy ).toHaveBeenCalledWith(
+      expect( infoSpy ).toHaveBeenCalledWith(
         expect.objectContaining( {
           url,
           'eventCount': 1

@@ -566,7 +566,9 @@ describe( 'Express App Integration Tests', () => {
    * Test HTTP request logging middleware integration
    */
   test( 'HTTP request logging middleware logs all requests', async () => {
-    const errorSpy = jest.spyOn( mf.logger, 'error' );
+    const infoSpy = jest.spyOn( mf.logger, 'info' ).mockImplementation( () => {
+      // Mock implementation to prevent actual logging
+    } );
 
     const transformedArtist = mf.musicbrainzTransformer.transformActData( fixtureTheKinks );
 
@@ -582,7 +584,7 @@ describe( 'Express App Integration Tests', () => {
       expect( 200 );
 
     // Verify logging occurred with correct context
-    expect( errorSpy ).toHaveBeenCalledWith(
+    expect( infoSpy ).toHaveBeenCalledWith(
       expect.objectContaining( {
         'method': 'GET',
         'path': `/acts/${fixtureTheKinks.id}`,
@@ -592,6 +594,6 @@ describe( 'Express App Integration Tests', () => {
       'HTTP request'
     );
 
-    errorSpy.mockRestore();
+    infoSpy.mockRestore();
   } );
 } );

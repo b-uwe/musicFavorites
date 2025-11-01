@@ -36,9 +36,7 @@
    * @returns {void}
    */
   const logSuccess = ( actId, response, duration ) => {
-    const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
-
-    mf.logger[ logLevel ](
+    mf.logger.info(
       {
         actId,
         'status': response.status,
