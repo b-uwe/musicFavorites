@@ -35,6 +35,25 @@
 
   const app = express();
 
+  // HTTP request/response logging middleware
+  app.use( ( req, res, next ) => {
+    const start = Date.now();
+
+    res.on( 'finish', () => {
+      const duration = Date.now() - start;
+      const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
+
+      logger[ logLevel ]( {
+        'method': req.method,
+        'path': req.path,
+        'statusCode': res.statusCode,
+        duration
+      }, 'HTTP request' );
+    } );
+
+    next();
+  } );
+
   // Parse plain text request bodies
   app.use( express.text() );
   const usageStats = {

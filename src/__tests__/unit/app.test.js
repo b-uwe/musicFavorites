@@ -494,4 +494,241 @@ describe( 'Express App - Route Handler Unit Tests', () => {
       } );
     } );
   } );
+
+  describe( 'HTTP request/response logging middleware', () => {
+    /**
+     * Test that middleware logs successful requests
+     */
+    test( 'logs successful HTTP requests with error level in tests', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 200 );
+
+      /*
+       * In test environment, HTTP middleware should log at ERROR level
+       * to catch missing mocks
+       */
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/acts/test-id',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs error responses
+     */
+    test( 'logs failed HTTP requests with error status codes', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'error': {
+          'message': 'Test error'
+        }
+      } );
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 503 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/acts/test-id',
+          'statusCode': 503,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware includes duration in milliseconds
+     */
+    test( 'includes request duration in log', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 200 );
+
+      const logCall = errorSpy.mock.calls.find( ( call ) => call[ 1 ] === 'HTTP request' );
+
+      expect( logCall ).toBeDefined();
+      expect( logCall[ 0 ].duration ).toBeGreaterThanOrEqual( 0 );
+      expect( typeof logCall[ 0 ].duration ).toBe( 'number' );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs POST requests
+     */
+    test( 'logs POST requests correctly', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).
+        post( '/acts' ).
+        set( 'Content-Type', 'text/plain' ).
+        send( 'test-id' ).
+        expect( 200 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'POST',
+          'path': '/acts',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs 404 responses
+     */
+    test( 'logs 404 responses for invalid routes', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      await request( mf.app ).get( '/invalid/path' ).expect( 404 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/invalid/path',
+          'statusCode': 404,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs ?pretty parameter
+     */
+    test( 'logs requests with query parameters', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).get( '/acts/test-id?pretty' ).expect( 200 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/acts/test-id',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs /health endpoint
+     */
+    test( 'logs /health endpoint requests', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      mf.database.testCacheHealth = jest.fn().mockResolvedValue();
+
+      await request( mf.app ).get( '/health' ).expect( 200 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/health',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware logs /robots.txt requests
+     */
+    test( 'logs /robots.txt endpoint requests', async () => {
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      await request( mf.app ).get( '/robots.txt' ).expect( 200 );
+
+      expect( errorSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/robots.txt',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      errorSpy.mockRestore();
+    } );
+
+    /**
+     * Test that middleware uses info level in non-test environment
+     */
+    test( 'logs with info level when NODE_ENV is development', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      const infoSpy = jest.spyOn( mf.logger, 'info' );
+      const errorSpy = jest.spyOn( mf.logger, 'error' );
+
+      // Change NODE_ENV to development
+      process.env.NODE_ENV = 'development';
+
+      mf.actService.fetchMultipleActs.mockResolvedValue( {
+        'acts': []
+      } );
+
+      await request( mf.app ).get( '/acts/test-id' ).expect( 200 );
+
+      // Should log at INFO level, not ERROR level
+      expect( infoSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'method': 'GET',
+          'path': '/acts/test-id',
+          'statusCode': 200,
+          'duration': expect.any( Number )
+        } ),
+        'HTTP request'
+      );
+
+      expect( errorSpy ).not.toHaveBeenCalledWith(
+        expect.objectContaining( { 'msg': 'HTTP request' } ),
+        'HTTP request'
+      );
+
+      // Restore
+      process.env.NODE_ENV = originalEnv;
+      infoSpy.mockRestore();
+      errorSpy.mockRestore();
+    } );
+  } );
 } );
