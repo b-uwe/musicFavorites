@@ -7,6 +7,7 @@
    */
 
   const axios = require( 'axios' );
+  require( '../logger' );
   require( '../constants' );
 
   const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
@@ -28,6 +29,44 @@
   };
 
   /**
+   * Logs successful MusicBrainz API response
+   * @param {string} actId - The MusicBrainz act ID
+   * @param {object} response - Axios response object
+   * @param {number} duration - Request duration in milliseconds
+   * @returns {void}
+   */
+  const logSuccess = ( actId, response, duration ) => {
+    const logLevel = process.env.NODE_ENV === 'test' ? 'error' : 'info';
+
+    mf.logger[ logLevel ](
+      {
+        actId,
+        'status': response.status,
+        duration,
+        'dataSize': JSON.stringify( response.data ).length
+      },
+      'MusicBrainz fetch completed'
+    );
+  };
+
+  /**
+   * Logs MusicBrainz API error
+   * @param {string} actId - The MusicBrainz act ID
+   * @param {Error} error - Error object
+   * @returns {void}
+   */
+  const logError = ( actId, error ) => {
+    mf.logger.error(
+      {
+        actId,
+        'error': error.message,
+        'status': error.response?.status
+      },
+      'MusicBrainz API error'
+    );
+  };
+
+  /**
    * Fetches act data from MusicBrainz API
    * @param {string} actId - The MusicBrainz act ID (must be a valid UUID)
    * @returns {Promise<object>} Act data from MusicBrainz
@@ -40,6 +79,16 @@
 
     const url = `${MUSICBRAINZ_BASE_URL}/artist/${actId}?inc=aliases+url-rels&fmt=json`;
 
+    mf.logger.debug(
+      {
+        actId,
+        url
+      },
+      'Fetching from MusicBrainz'
+    );
+
+    const start = Date.now();
+
     try {
       const response = await axios.get( url, {
         'headers': {
@@ -48,8 +97,11 @@
         'timeout': mf.constants.HTTP_TIMEOUT
       } );
 
+      logSuccess( actId, response, Date.now() - start );
+
       return response.data;
     } catch ( error ) {
+      logError( actId, error );
       throw new Error( `MusicBrainz: ${error.message}` );
     }
   };
