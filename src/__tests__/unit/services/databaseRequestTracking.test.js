@@ -14,9 +14,6 @@ describe( 'database - Request Tracking Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
 
-    // Load constants first
-    require( '../../../constants' );
-
     // Setup MongoDB mocks
     mockCollection = {
       'updateOne': jest.fn(),

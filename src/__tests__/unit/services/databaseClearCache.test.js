@@ -16,9 +16,6 @@ describe( 'databaseAdmin.clearCache - Unit Tests', () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Load constants first
-    require( '../../../constants' );
-
     // Set MONGODB_URI for tests
     process.env.MONGODB_URI = 'mongodb://test:27017';
 
