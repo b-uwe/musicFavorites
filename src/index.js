@@ -44,7 +44,6 @@
     // Attempt MongoDB connection (non-blocking)
     try {
       await mf.database.connect();
-      mf.logger.info( 'Connected to MongoDB successfully' );
 
       // Start background cache update cycle (fire-and-forget)
       mf.cacheUpdater.start().catch( ( error ) => {
