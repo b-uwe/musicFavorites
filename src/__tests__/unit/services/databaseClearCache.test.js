@@ -1,12 +1,12 @@
 /**
- * Unit tests for database clearCache function
+ * Unit tests for databaseAdmin clearCache function
  * Tests business logic by mocking MongoDB client
  * @module __tests__/unit/services/databaseClearCache
  */
 
 // Mock mongodb before requiring database
 
-describe( 'database.clearCache - Unit Tests', () => {
+describe( 'databaseAdmin.clearCache - Unit Tests', () => {
   let mockClient;
   let mockDb;
   let mockCollection;
@@ -56,7 +56,7 @@ describe( 'database.clearCache - Unit Tests', () => {
      * Test throws DB_021 when not connected
      */
     test( 'throws DB_021 error when client is null', async () => {
-      await expect( mf.database.clearCache() ).
+      await expect( mf.databaseAdmin.clearCache() ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_021)' );
     } );
@@ -73,7 +73,7 @@ describe( 'database.clearCache - Unit Tests', () => {
         'deletedCount': 42
       } );
 
-      await mf.database.clearCache();
+      await mf.databaseAdmin.clearCache();
 
       expect( mockCollection.deleteMany ).toHaveBeenCalledWith( {} );
       expect( mockDb.collection ).toHaveBeenCalledWith( 'acts' );
@@ -88,7 +88,7 @@ describe( 'database.clearCache - Unit Tests', () => {
 
       mockCollection.deleteMany.mockResolvedValue( { 'acknowledged': false } );
 
-      await expect( mf.database.clearCache() ).
+      await expect( mf.databaseAdmin.clearCache() ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_022)' );
     } );
@@ -105,7 +105,7 @@ describe( 'database.clearCache - Unit Tests', () => {
         'deletedCount': 0
       } );
 
-      await mf.database.clearCache();
+      await mf.databaseAdmin.clearCache();
 
       expect( mockCollection.deleteMany ).toHaveBeenCalledWith( {} );
     } );

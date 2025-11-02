@@ -178,7 +178,7 @@
       }
 
       // Track request timestamp and reset update counter (non-blocking)
-      mf.database.updateLastRequestedAt( actIds ).catch( () => {
+      mf.databaseAdmin.updateLastRequestedAt( actIds ).catch( () => {
         // Silent fail - don't block response
       } );
 
@@ -333,7 +333,7 @@
       }
 
       const artistsWithoutBandsintown = await mf.database.getActsWithoutBandsintown();
-      const dataUpdateErrors = await mf.database.getRecentUpdateErrors();
+      const dataUpdateErrors = await mf.databaseAdmin.getRecentUpdateErrors();
 
       return res.json( {
         'status': 'ok',
@@ -372,7 +372,7 @@
     }
 
     try {
-      await mf.database.clearCache();
+      await mf.databaseAdmin.clearCache();
 
       return res.json( {
         'status': 'ok',

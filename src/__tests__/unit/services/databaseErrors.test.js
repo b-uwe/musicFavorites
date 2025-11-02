@@ -66,7 +66,7 @@ describe( 'database - Error Logging Tests', () => {
      * Test throws DB_016 error when not connected
      */
     test( 'throws DB_016 error when client is null', async () => {
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
@@ -83,7 +83,7 @@ describe( 'database - Error Logging Tests', () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'actId': 'test-id',
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
@@ -99,7 +99,7 @@ describe( 'database - Error Logging Tests', () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'timestamp': getRecentBerlinTimestamp(),
         'errorMessage': 'Test error',
         'errorSource': 'musicbrainz'
@@ -115,7 +115,7 @@ describe( 'database - Error Logging Tests', () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorSource': 'musicbrainz'
@@ -131,7 +131,7 @@ describe( 'database - Error Logging Tests', () => {
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
       await mf.database.connect();
 
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error'
@@ -156,7 +156,7 @@ describe( 'database - Error Logging Tests', () => {
         'errorSource': 'musicbrainz'
       };
 
-      await mf.database.logUpdateError( errorData );
+      await mf.databaseAdmin.logUpdateError( errorData );
 
       expect( mockDb.collection ).toHaveBeenCalledWith( 'dataUpdateErrors' );
       expect( mockCollection.insertOne ).toHaveBeenCalledWith( expect.objectContaining( {
@@ -177,7 +177,7 @@ describe( 'database - Error Logging Tests', () => {
 
       mockCollection.insertOne = jest.fn().mockResolvedValue( { 'acknowledged': false } );
 
-      await expect( mf.database.logUpdateError( {
+      await expect( mf.databaseAdmin.logUpdateError( {
         'timestamp': getRecentBerlinTimestamp(),
         'actId': 'test-id',
         'errorMessage': 'Test error',
@@ -193,7 +193,7 @@ describe( 'database - Error Logging Tests', () => {
      * Test throws DB_019 error when not connected
      */
     test( 'throws DB_019 error when client is null', async () => {
-      await expect( mf.database.getRecentUpdateErrors() ).
+      await expect( mf.databaseAdmin.getRecentUpdateErrors() ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_019)' );
     } );
@@ -225,7 +225,7 @@ describe( 'database - Error Logging Tests', () => {
 
       mockCollection.find.mockReturnValue( mockCursor );
 
-      const result = await mf.database.getRecentUpdateErrors();
+      const result = await mf.databaseAdmin.getRecentUpdateErrors();
 
       expect( mockCollection.find ).toHaveBeenCalledWith(
         {
@@ -259,7 +259,7 @@ describe( 'database - Error Logging Tests', () => {
 
       mockCollection.find.mockReturnValue( mockCursor );
 
-      const result = await mf.database.getRecentUpdateErrors();
+      const result = await mf.databaseAdmin.getRecentUpdateErrors();
 
       expect( result ).toEqual( [] );
     } );
@@ -270,7 +270,7 @@ describe( 'database - Error Logging Tests', () => {
      * Test throws DB_020 error when not connected
      */
     test( 'throws DB_020 error when client is null', async () => {
-      await expect( mf.database.ensureErrorCollectionIndexes() ).
+      await expect( mf.databaseAdmin.ensureErrorCollectionIndexes() ).
         rejects.
         toThrow( 'Service temporarily unavailable. Please try again later. (Error: DB_020)' );
     } );
@@ -284,7 +284,7 @@ describe( 'database - Error Logging Tests', () => {
 
       mockCollection.createIndex = jest.fn().mockResolvedValue( 'createdAt_1' );
 
-      await mf.database.ensureErrorCollectionIndexes();
+      await mf.databaseAdmin.ensureErrorCollectionIndexes();
 
       expect( mockDb.collection ).toHaveBeenCalledWith( 'dataUpdateErrors' );
       expect( mockCollection.createIndex ).toHaveBeenCalledWith(

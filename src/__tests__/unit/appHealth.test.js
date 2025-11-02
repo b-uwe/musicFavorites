@@ -24,7 +24,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
     mf.database.getAllActIds = jest.fn();
     mf.database.getAllActsWithMetadata = jest.fn();
     mf.database.getActsWithoutBandsintown = jest.fn();
-    mf.database.getRecentUpdateErrors = jest.fn();
+    mf.databaseAdmin.getRecentUpdateErrors = jest.fn();
 
     // Reset usage stats
     mf.usageStats.requests = 0;
@@ -52,7 +52,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
-      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
+      mf.databaseAdmin.getRecentUpdateErrors.mockResolvedValue( [] );
     } );
 
     afterEach( () => {
@@ -386,7 +386,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds = jest.fn();
       mf.database.getAllActsWithMetadata = jest.fn();
       mf.database.getActsWithoutBandsintown = jest.fn();
-      mf.database.getRecentUpdateErrors = jest.fn();
+      mf.databaseAdmin.getRecentUpdateErrors = jest.fn();
     } );
 
     afterEach( () => {
@@ -501,7 +501,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds = jest.fn();
       mf.database.getAllActsWithMetadata = jest.fn();
       mf.database.getActsWithoutBandsintown = jest.fn();
-      mf.database.getRecentUpdateErrors = jest.fn();
+      mf.databaseAdmin.getRecentUpdateErrors = jest.fn();
     } );
 
     afterEach( () => {
@@ -516,7 +516,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
-      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
+      mf.databaseAdmin.getRecentUpdateErrors.mockResolvedValue( [] );
 
       const response = await authenticatedRequest().expect( 200 );
 
@@ -532,7 +532,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
 
-      mf.database.getRecentUpdateErrors.mockResolvedValue( [] );
+      mf.databaseAdmin.getRecentUpdateErrors.mockResolvedValue( [] );
       const response = await authenticatedRequest().expect( 200 );
 
       expect( response.body.dataUpdateErrors ).toEqual( [] );
@@ -560,7 +560,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
-      mf.database.getRecentUpdateErrors.mockResolvedValue( mockErrors );
+      mf.databaseAdmin.getRecentUpdateErrors.mockResolvedValue( mockErrors );
 
       const response = await authenticatedRequest().expect( 200 );
 
@@ -578,7 +578,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
 
       await authenticatedRequest().expect( 200 );
 
-      expect( mf.database.getRecentUpdateErrors ).toHaveBeenCalled();
+      expect( mf.databaseAdmin.getRecentUpdateErrors ).toHaveBeenCalled();
     } );
 
     /**
@@ -588,7 +588,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       mf.database.getAllActIds.mockResolvedValue( [] );
       mf.database.getAllActsWithMetadata.mockResolvedValue( [] );
       mf.database.getActsWithoutBandsintown.mockResolvedValue( [] );
-      mf.database.getRecentUpdateErrors.mockRejectedValue( new Error( 'Error query failed' ) );
+      mf.databaseAdmin.getRecentUpdateErrors.mockRejectedValue( new Error( 'Error query failed' ) );
 
       const response = await authenticatedRequest().expect( 500 );
 
@@ -626,7 +626,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       process.env.ADMIN_TOTP_CONFIG = JSON.stringify( validTotpConfig );
       process.env.ADMIN_PASS = validPassword;
 
-      mf.database.clearCache = jest.fn();
+      mf.databaseAdmin.clearCache = jest.fn();
     } );
 
     afterEach( () => {
@@ -643,7 +643,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 500 );
 
       expect( response.body.error ).toBe( 'Admin authentication not configured' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -655,7 +655,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 500 );
 
       expect( response.body.error ).toBe( 'Admin authentication misconfigured' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -665,7 +665,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
       const response = await request( mf.app ).delete( '/admin/health/cache' ).expect( 401 );
 
       expect( response.body.error ).toBe( 'Unauthorized' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -678,7 +678,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
         expect( 401 );
 
       expect( response.body.error ).toBe( 'Unauthorized' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -693,7 +693,7 @@ describe( 'Express App - /admin/health Route Tests', () => {
         expect( 401 );
 
       expect( response.body.error ).toBe( 'Unauthorized' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
@@ -706,40 +706,40 @@ describe( 'Express App - /admin/health Route Tests', () => {
         expect( 401 );
 
       expect( response.body.error ).toBe( 'Unauthorized' );
-      expect( mf.database.clearCache ).not.toHaveBeenCalled();
+      expect( mf.databaseAdmin.clearCache ).not.toHaveBeenCalled();
     } );
 
     /**
      * Test successful cache flush
      */
     test( 'returns 200 and clears cache with valid credentials', async () => {
-      mf.database.clearCache.mockResolvedValue();
+      mf.databaseAdmin.clearCache.mockResolvedValue();
 
       const response = await authenticatedRequest().expect( 200 );
 
       expect( response.body.status ).toBe( 'ok' );
       expect( response.body.message ).toBe( 'Cache cleared successfully' );
-      expect( mf.database.clearCache ).toHaveBeenCalledTimes( 1 );
+      expect( mf.databaseAdmin.clearCache ).toHaveBeenCalledTimes( 1 );
     } );
 
     /**
      * Test error handling when clearCache fails
      */
     test( 'returns 500 when clearCache throws error', async () => {
-      mf.database.clearCache.mockRejectedValue( new Error( 'Database connection failed' ) );
+      mf.databaseAdmin.clearCache.mockRejectedValue( new Error( 'Database connection failed' ) );
 
       const response = await authenticatedRequest().expect( 500 );
 
       expect( response.body.error ).toBe( 'Failed to clear cache' );
       expect( response.body.details ).toBe( 'Database connection failed' );
-      expect( mf.database.clearCache ).toHaveBeenCalledTimes( 1 );
+      expect( mf.databaseAdmin.clearCache ).toHaveBeenCalledTimes( 1 );
     } );
 
     /**
      * Test response is pretty-printed JSON
      */
     test( 'returns pretty-printed JSON', async () => {
-      mf.database.clearCache.mockResolvedValue();
+      mf.databaseAdmin.clearCache.mockResolvedValue();
 
       const response = await authenticatedRequest().expect( 200 );
 
