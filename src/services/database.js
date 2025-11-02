@@ -8,7 +8,8 @@
 
   const { MongoClient, ServerApiVersion } = require( 'mongodb' );
 
-  // Load constants module
+  // Load logger and constants modules
+  require( '../logger' );
   require( '../constants' );
 
   let client = null;

@@ -9,10 +9,6 @@
 
 const { MongoClient } = require( 'mongodb' );
 
-// Load logger and constants first
-require( '../../logger' );
-require( '../../constants' );
-
 // Load real business logic modules AFTER mocks
 require( '../../services/database' );
 

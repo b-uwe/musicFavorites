@@ -13,8 +13,7 @@ describe( 'database - Helper Functions', () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Load logger and constants first
-    require( '../../../logger' );
+    // Load constants first
     require( '../../../constants' );
 
     // Set MONGODB_URI for tests

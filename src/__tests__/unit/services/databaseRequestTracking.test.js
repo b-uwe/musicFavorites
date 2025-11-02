@@ -14,8 +14,7 @@ describe( 'database - Request Tracking Tests', () => {
   beforeEach( () => {
     jest.clearAllMocks();
 
-    // Load logger and constants first
-    require( '../../../logger' );
+    // Load constants first
     require( '../../../constants' );
 
     // Setup MongoDB mocks

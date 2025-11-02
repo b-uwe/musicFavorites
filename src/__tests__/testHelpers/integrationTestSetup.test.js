@@ -8,10 +8,6 @@
 const axios = require( 'axios' );
 const { MongoClient } = require( 'mongodb' );
 
-// Load logger and constants first
-require( '../../logger' );
-require( '../../constants' );
-
 // Load real modules
 require( '../../services/database' );
 require( '../../testHelpers/integrationTestSetup' );
