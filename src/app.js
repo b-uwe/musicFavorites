@@ -12,6 +12,14 @@
   require( './logger' );
   require( './services/actService' );
 
+  // Initialize global namespace
+  globalThis.mf = globalThis.mf || {};
+
+  // Return early if app already initialized (singleton pattern)
+  if ( globalThis.mf.app ) {
+    return;
+  }
+
   const app = express();
 
   // HTTP request/response logging middleware

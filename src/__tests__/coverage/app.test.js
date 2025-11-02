@@ -54,6 +54,27 @@ describe( 'app - Branch Coverage', () => {
     } );
   } );
 
+  test( 'covers right side of globalThis.mf || {} when mf is undefined', () => {
+    jest.isolateModules( () => {
+      // Ensure globalThis.mf is completely undefined before requiring app
+      delete globalThis.mf;
+
+      // Mock logger to NOT initialize globalThis.mf
+      jest.doMock( '../../logger', () =>
+        // Do nothing - let app.js initialize globalThis.mf
+        ( {} ) );
+
+      // Mock actService
+      jest.doMock( '../../services/actService', () => ( {} ) );
+
+      require( '../../app' );
+
+      // App should have created globalThis.mf via the || {} branch
+      expect( globalThis.mf ).toBeDefined();
+      expect( globalThis.mf.app ).toBeDefined();
+    } );
+  } );
+
   test( 'HTTP logging middleware uses info level in production', () => {
     jest.isolateModules( () => {
       const originalEnv = process.env.NODE_ENV;
