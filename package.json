@@ -4,6 +4,7 @@
   "description": "The Music Favorites API aggregates publicly available music event data from different sources into a unified REST API",
   "main": "src/index.js",
   "scripts": {
+    "prestart": "node scripts/check-coverage.js",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "jest",
