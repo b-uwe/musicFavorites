@@ -12,40 +12,6 @@
   // Constants are already loaded by database.js, but we reference them here too
 
   /**
-   * Gets logger instance with appropriate log level
-   * @param {string} defaultLevel - Default log level ('debug' or 'info')
-   * @returns {object} Logger instance or no-op fallback
-   */
-  const getLogger = ( defaultLevel = 'debug' ) => {
-    const { 'NODE_ENV': nodeEnv } = process.env;
-    const logLevel = nodeEnv === 'test' ? 'error' : defaultLevel;
-
-    const noOpLogger = {
-      /** No-op debug fallback @returns {void} */
-      'debug': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op info fallback @returns {void} */
-      'info': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op warn fallback @returns {void} */
-      'warn': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op error fallback @returns {void} */
-      'error': () => {
-        /* Intentionally empty - no-op fallback */
-      }
-    };
-
-    return {
-      'logger': mf.logger || noOpLogger,
-      logLevel
-    };
-  };
-
-  /**
    * Logs slow database operation warning
    * @param {object} logger - Logger instance
    * @param {string} operation - Operation name
@@ -70,8 +36,6 @@
    * @throws {Error} When not connected, missing required fields, or write not acknowledged
    */
   const logUpdateError = async ( errorData ) => {
-    const { logger, logLevel } = getLogger();
-
     if ( !errorData.timestamp || !errorData.actId || !errorData.errorMessage || !errorData.errorSource ) {
       throw new Error( 'Invalid request. Please try again later. (Error: DB_017)' );
     }
@@ -84,7 +48,7 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_016)' );
     }
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'actId': errorData.actId,
       'errorSource': errorData.errorSource
     }, 'Logging update error' );
@@ -110,8 +74,6 @@
    * @throws {Error} When not connected to database
    */
   const getRecentUpdateErrors = async () => {
-    const { logger, logLevel } = getLogger();
-
     let db;
 
     try {
@@ -146,12 +108,12 @@
 
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': results.length,
       duration
     }, 'Retrieved recent update errors' );
 
-    logSlowOperation( logger, 'getRecentUpdateErrors', duration, {
+    logSlowOperation( mf.logger, 'getRecentUpdateErrors', duration, {
       'count': results.length
     } );
 
@@ -164,8 +126,6 @@
    * @throws {Error} When not connected to database
    */
   const ensureErrorCollectionIndexes = async () => {
-    const { logger, logLevel } = getLogger();
-
     let db;
 
     try {
@@ -174,7 +134,7 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_020)' );
     }
 
-    logger[ logLevel ]( 'Ensuring error collection indexes' );
+    mf.logger.debug( 'Ensuring error collection indexes' );
 
     const collection = db.collection( 'dataUpdateErrors' );
 
@@ -190,8 +150,6 @@
    * @throws {Error} When not connected to database or delete not acknowledged
    */
   const clearCache = async () => {
-    const { logger, logLevel } = getLogger( 'info' );
-
     let db;
 
     try {
@@ -200,7 +158,7 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_021)' );
     }
 
-    logger[ logLevel ]( 'Clearing all cached acts' );
+    mf.logger.debug( 'Clearing all cached acts' );
 
     const collection = db.collection( 'acts' );
 
@@ -210,7 +168,7 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_022)' );
     }
 
-    logger[ logLevel ]( { 'deletedCount': result.deletedCount }, 'Cache cleared' );
+    mf.logger.debug( { 'deletedCount': result.deletedCount }, 'Cache cleared' );
   };
 
   /**
@@ -245,8 +203,6 @@
    * @throws {Error} When not connected, actIds invalid, or update not acknowledged
    */
   const updateLastRequestedAt = async ( actIds ) => {
-    const { logger, logLevel } = getLogger();
-
     if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
       throw new Error( 'Invalid request. Please try again later. (Error: DB_024)' );
     }
@@ -261,7 +217,7 @@
 
     const startTime = Date.now();
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': actIds.length
     }, 'Updating lastRequestedAt for acts' );
 
@@ -275,12 +231,12 @@
 
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': actIds.length,
       duration
     }, 'Updated lastRequestedAt' );
 
-    logSlowOperation( logger, 'updateLastRequestedAt', duration, {
+    logSlowOperation( mf.logger, 'updateLastRequestedAt', duration, {
       'count': actIds.length
     } );
   };
@@ -291,8 +247,6 @@
    * @throws {Error} When not connected or delete not acknowledged
    */
   const removeActsNotRequestedFor14Updates = async () => {
-    const { logger, logLevel } = getLogger();
-
     let db;
 
     try {
@@ -303,14 +257,14 @@
 
     const startTime = Date.now();
 
-    logger[ logLevel ]( 'Removing acts not requested for 14+ updates' );
+    mf.logger.debug( 'Removing acts not requested for 14+ updates' );
 
     const staleMetadata = await db.collection( 'actMetadata' ).find( {
       'updatesSinceLastRequest': { '$gte': 14 }
     } ).toArray();
 
     if ( staleMetadata.length === 0 ) {
-      logger[ logLevel ]( { 'deletedCount': 0 }, 'No stale acts found' );
+      mf.logger.debug( { 'deletedCount': 0 }, 'No stale acts found' );
 
       return { 'deletedCount': 0 };
     }
@@ -324,12 +278,12 @@
 
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'deletedCount': actsResult.deletedCount,
       duration
     }, 'Removed stale acts' );
 
-    logSlowOperation( logger, 'removeActsNotRequestedFor14Updates', duration, {
+    logSlowOperation( mf.logger, 'removeActsNotRequestedFor14Updates', duration, {
       'deletedCount': actsResult.deletedCount
     } );
 
@@ -350,7 +304,6 @@
   if ( process.env.JEST_WORKER_ID ) {
     globalThis.mf.testing = globalThis.mf.testing || {};
     globalThis.mf.testing.databaseAdmin = {
-      getLogger,
       logSlowOperation,
       updateActMetadata
     };

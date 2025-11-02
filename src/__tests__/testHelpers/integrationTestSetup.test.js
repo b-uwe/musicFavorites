@@ -8,6 +8,16 @@
 const axios = require( 'axios' );
 const { MongoClient } = require( 'mongodb' );
 
+// Set up mf.logger before loading modules
+require( '../../constants' );
+globalThis.mf = globalThis.mf || {};
+globalThis.mf.logger = {
+  'debug': jest.fn(),
+  'info': jest.fn(),
+  'warn': jest.fn(),
+  'error': jest.fn()
+};
+
 // Load real modules
 require( '../../services/database' );
 require( '../../testHelpers/integrationTestSetup' );

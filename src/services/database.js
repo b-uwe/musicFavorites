@@ -14,40 +14,6 @@
   let client = null;
 
   /**
-   * Gets logger instance with appropriate log level
-   * @param {string} defaultLevel - Default log level ('debug' or 'info')
-   * @returns {object} Logger instance or no-op fallback
-   */
-  const getLogger = ( defaultLevel = 'debug' ) => {
-    const { 'NODE_ENV': nodeEnv } = process.env;
-    const logLevel = nodeEnv === 'test' ? 'error' : defaultLevel;
-
-    const noOpLogger = {
-      /** No-op debug fallback @returns {void} */
-      'debug': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op info fallback @returns {void} */
-      'info': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op warn fallback @returns {void} */
-      'warn': () => {
-        /* Intentionally empty - no-op fallback */
-      },
-      /** No-op error fallback @returns {void} */
-      'error': () => {
-        /* Intentionally empty - no-op fallback */
-      }
-    };
-
-    return {
-      'logger': mf.logger || noOpLogger,
-      logLevel
-    };
-  };
-
-  /**
    * Verifies MongoDB connection with ping command
    * @returns {Promise<void>} Resolves if ping successful
    * @throws {Error} When ping fails
@@ -69,7 +35,6 @@
    */
   const connect = async () => {
     const { 'MONGODB_URI': uri } = process.env;
-    const { logger, logLevel } = getLogger( 'info' );
 
     if ( !uri ) {
       throw new Error( 'Service misconfigured. Please try again later. (Error: DB_001)' );
@@ -78,7 +43,7 @@
     // Sanitize URI for logging
     const sanitizedUri = uri.replace( /\/\/.*@/u, '//***@' );
 
-    logger[ logLevel ]( {
+    mf.logger.info( {
       'uri': sanitizedUri
     }, 'Connecting to MongoDB' );
 
@@ -98,7 +63,7 @@
 
       await verifyConnection();
 
-      logger[ logLevel ]( 'MongoDB connected successfully' );
+      mf.logger.info( 'MongoDB connected successfully' );
     } catch ( error ) {
       // Reset client on any failure to allow retry
       client = null;
@@ -117,13 +82,11 @@
    * @throws {Error} When disconnection fails
    */
   const disconnect = async () => {
-    const { logger, logLevel } = getLogger( 'info' );
-
     if ( !client ) {
       return;
     }
 
-    logger[ logLevel ]( 'Disconnecting from MongoDB' );
+    mf.logger.info( 'Disconnecting from MongoDB' );
 
     try {
       await client.close();
@@ -174,15 +137,13 @@
    * @throws {Error} When not connected to database
    */
   const getActFromCache = async ( actId ) => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
     }
 
     const startTime = Date.now();
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       actId
     }, 'Cache lookup' );
 
@@ -195,7 +156,7 @@
     const duration = Date.now() - startTime;
 
     if ( !result ) {
-      logger[ logLevel ]( {
+      mf.logger.debug( {
         actId,
         'hit': false,
         duration
@@ -204,13 +165,13 @@
       return null;
     }
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       actId,
       'hit': true,
       duration
     }, 'Cache hit' );
 
-    logSlowOperation( logger, 'getActFromCache', duration, {
+    logSlowOperation( mf.logger, 'getActFromCache', duration, {
       actId
     } );
 
@@ -230,8 +191,6 @@
    * @throws {Error} When not connected, actData missing _id, or write not acknowledged
    */
   const cacheAct = async ( actData ) => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
     }
@@ -243,7 +202,7 @@
     const actId = actData._id;
     const startTime = Date.now();
 
-    logger[ logLevel ]( { actId }, 'Caching act data' );
+    mf.logger.debug( { actId }, 'Caching act data' );
 
     const db = client.db( 'musicfavorites' );
     const actsCollection = db.collection( 'acts' );
@@ -269,7 +228,7 @@
 
     const duration = Date.now() - startTime;
 
-    logSlowOperation( logger, 'cacheAct', duration, {
+    logSlowOperation( mf.logger, 'cacheAct', duration, {
       actId
     } );
   };
@@ -281,13 +240,11 @@
    * @throws {Error} When cache is unavailable or operations not acknowledged
    */
   const testCacheHealth = async () => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_008)' );
     }
 
-    logger[ logLevel ]( 'Testing cache health' );
+    mf.logger.debug( 'Testing cache health' );
 
     try {
       const db = client.db( 'musicfavorites' );
@@ -324,7 +281,7 @@
         throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
       }
     } catch ( error ) {
-      logger.warn( 'Cache health check failed' );
+      mf.logger.warn( 'Cache health check failed' );
       // If health check fails, reset client to allow reconnection on next attempt
       client = null;
       throw error;
@@ -337,8 +294,6 @@
    * @throws {Error} When not connected to database
    */
   const getAllActIds = async () => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
     }
@@ -357,12 +312,12 @@
     const ids = results.map( ( doc ) => doc._id );
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': ids.length,
       duration
     }, 'Retrieved all act IDs' );
 
-    logSlowOperation( logger, 'getAllActIds', duration, {
+    logSlowOperation( mf.logger, 'getAllActIds', duration, {
       'count': ids.length
     } );
 
@@ -375,8 +330,6 @@
    * @throws {Error} When not connected to database
    */
   const getAllActsWithMetadata = async () => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
     }
@@ -395,12 +348,12 @@
 
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': results.length,
       duration
     }, 'Retrieved acts with metadata' );
 
-    logSlowOperation( logger, 'getAllActsWithMetadata', duration, {
+    logSlowOperation( mf.logger, 'getAllActsWithMetadata', duration, {
       'count': results.length
     } );
 
@@ -423,8 +376,6 @@
    * @throws {Error} When not connected to database
    */
   const getActsWithoutBandsintown = async () => {
-    const { logger, logLevel } = getLogger();
-
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
     }
@@ -451,12 +402,12 @@
     const ids = results.map( ( doc ) => doc._id );
     const duration = Date.now() - startTime;
 
-    logger[ logLevel ]( {
+    mf.logger.debug( {
       'count': ids.length,
       duration
     }, 'Retrieved acts without Bandsintown' );
 
-    logSlowOperation( logger, 'getActsWithoutBandsintown', duration, {
+    logSlowOperation( mf.logger, 'getActsWithoutBandsintown', duration, {
       'count': ids.length
     } );
 
@@ -483,7 +434,6 @@
     globalThis.mf.testing.database = {
       client,
       getDatabase,
-      getLogger,
       logSlowOperation
     };
   }

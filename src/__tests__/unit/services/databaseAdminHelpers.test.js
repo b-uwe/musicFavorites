@@ -1,6 +1,6 @@
 /**
  * Unit tests for databaseAdmin module helper functions
- * Tests getLogger, logSlowOperation, and updateActMetadata helpers
+ * Tests logSlowOperation and updateActMetadata helpers
  * @module __tests__/unit/services/databaseAdminHelpers
  */
 
@@ -74,61 +74,6 @@ describe( 'databaseAdmin - Helper Functions', () => {
     if ( originalMfLogger ) {
       globalThis.mf.logger = originalMfLogger;
     }
-  } );
-
-  describe( 'getLogger helper', () => {
-    /**
-     * Test getLogger returns debug level in non-test environment
-     */
-    test( 'returns debug log level when NODE_ENV is not test', () => {
-      const originalEnv = process.env.NODE_ENV;
-
-      process.env.NODE_ENV = 'development';
-
-      const result = mf.testing.databaseAdmin.getLogger( 'debug' );
-
-      expect( result.logLevel ).toBe( 'debug' );
-      expect( result.logger ).toBe( mockLogger );
-
-      process.env.NODE_ENV = originalEnv;
-    } );
-
-    /**
-     * Test getLogger returns error level in test environment
-     */
-    test( 'returns error log level when NODE_ENV is test', () => {
-      // NODE_ENV is already 'test' in Jest
-      expect( process.env.NODE_ENV ).toBe( 'test' );
-
-      const result = mf.testing.databaseAdmin.getLogger( 'info' );
-
-      // In test mode, logger should use 'error' level regardless of default
-      expect( result.logLevel ).toBe( 'error' );
-      expect( result.logger ).toBe( mockLogger );
-    } );
-
-    /**
-     * Test getLogger returns no-op logger when mf.logger is not available
-     */
-    test( 'returns no-op logger when mf.logger is undefined', () => {
-      // Remove mf.logger
-      delete globalThis.mf.logger;
-
-      const result = mf.testing.databaseAdmin.getLogger( 'debug' );
-
-      // Should return no-op logger functions
-      expect( result.logger ).toBeDefined();
-      expect( result.logger.debug ).toBeDefined();
-      expect( result.logger.info ).toBeDefined();
-      expect( result.logger.warn ).toBeDefined();
-      expect( result.logger.error ).toBeDefined();
-
-      // Verify no-op functions don't throw
-      expect( () => result.logger.debug( 'test' ) ).not.toThrow();
-      expect( () => result.logger.info( 'test' ) ).not.toThrow();
-      expect( () => result.logger.warn( 'test' ) ).not.toThrow();
-      expect( () => result.logger.error( 'test' ) ).not.toThrow();
-    } );
   } );
 
   describe( 'logSlowOperation helper', () => {

@@ -10,14 +10,30 @@ describe( 'database - Unit Tests', () => {
   let mockClient;
   let mockDb;
   let mockCollection;
+  let mockLogger;
   let MongoClient;
+  let originalMfLogger;
 
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
+    // Load constants first
+    require( '../../../constants' );
+
+    // Save original logger
+    originalMfLogger = globalThis.mf?.logger;
+
     // Set MONGODB_URI for tests
     process.env.MONGODB_URI = 'mongodb://test:27017';
+
+    // Create mock logger
+    mockLogger = {
+      'debug': jest.fn(),
+      'info': jest.fn(),
+      'warn': jest.fn(),
+      'error': jest.fn()
+    };
 
     // Create mock collection
     mockCollection = {
@@ -46,18 +62,24 @@ describe( 'database - Unit Tests', () => {
     MongoClient = jest.fn().mockImplementation( () => mockClient );
     mongodb.MongoClient = MongoClient;
 
+    // Set up mf.logger before requiring database
+    globalThis.mf = globalThis.mf || {};
+    globalThis.mf.logger = mockLogger;
+
     // Require database module AFTER mocking (sets up mf.database)
     require( '../../../services/database' );
   } );
 
   afterEach( () => {
     delete process.env.MONGODB_URI;
+    // Restore original logger
+    if ( originalMfLogger ) {
+      globalThis.mf.logger = originalMfLogger;
+    }
   } );
 
   describe( 'connect', () => {
-    /**
-     * Test throws DB_001 when MONGODB_URI is missing
-     */
+    /** Test throws DB_001 when MONGODB_URI is missing */
     test( 'throws DB_001 error when MONGODB_URI is not set', async () => {
       delete process.env.MONGODB_URI;
 
@@ -66,9 +88,7 @@ describe( 'database - Unit Tests', () => {
         toThrow( 'Service misconfigured. Please try again later. (Error: DB_001)' );
     } );
 
-    /**
-     * Test successful connection sets client
-     */
+    /** Test successful connection sets client */
     test( 'creates client and connects on first call', async () => {
       // Mock successful ping
       mockDb.command.mockResolvedValue( { 'ok': 1 } );
@@ -80,9 +100,7 @@ describe( 'database - Unit Tests', () => {
       expect( mockDb.command ).toHaveBeenCalledWith( { 'ping': 1 } );
     } );
 
-    /**
-     * Test throws DB_002 when ping fails
-     */
+    /** Test throws DB_002 when ping fails */
     test( 'throws DB_002 error when ping response is not ok', async () => {
       // Mock failed ping
       mockDb.command.mockResolvedValue( { 'ok': 0 } );
