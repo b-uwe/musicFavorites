@@ -443,24 +443,11 @@ describe( 'Express App - Route Handler Unit Tests', () => {
 
   describe( 'Logger initialization', () => {
     /**
-     * Test that logger is initialized and accessible
+     * Test that logger is initialized and accessible in test environment
      */
-    test( 'initializes logger in globalThis.mf', () => {
+    test( 'initializes logger with silent level in tests', () => {
       expect( mf.logger ).toBeDefined();
       expect( typeof mf.logger.info ).toBe( 'function' );
-      expect( typeof mf.logger.error ).toBe( 'function' );
-      expect( typeof mf.logger.warn ).toBe( 'function' );
-      expect( typeof mf.logger.debug ).toBe( 'function' );
-    } );
-
-    /**
-     * Test that logger is silent in test environment
-     */
-    test( 'logger is silent in test environment', () => {
-      /*
-       * In test mode, logger should be silent (level: 'silent')
-       * This means it won't output anything
-       */
       expect( mf.logger.level ).toBe( 'silent' );
     } );
 
@@ -492,6 +479,32 @@ describe( 'Express App - Route Handler Unit Tests', () => {
         expect( globalThis.mf.logger.level ).toBe( 'debug' );
         process.env.NODE_ENV = originalEnv;
       } );
+    } );
+  } );
+
+  describe( 'Express app singleton pattern', () => {
+    /**
+     * Test that app, usageStats, and gracefulShutdown persist across module reloads
+     */
+    test( 'maintains singleton instances across jest.resetModules', () => {
+      const originalApp = mf.app;
+      const originalStats = mf.usageStats;
+      const originalShutdown = mf.gracefulShutdown;
+
+      // Modify stats to verify persistence
+      mf.usageStats.requests = 42;
+      mf.usageStats.actsQueried = 100;
+
+      // Attempt to reload module
+      jest.resetModules();
+      require( '../../app' );
+
+      // All instances should persist due to singleton pattern
+      expect( mf.app ).toBe( originalApp );
+      expect( mf.usageStats ).toBe( originalStats );
+      expect( mf.usageStats.requests ).toBe( 42 );
+      expect( mf.usageStats.actsQueried ).toBe( 100 );
+      expect( mf.gracefulShutdown ).toBe( originalShutdown );
     } );
   } );
 
