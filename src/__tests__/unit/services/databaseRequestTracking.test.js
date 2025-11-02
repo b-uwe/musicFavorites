@@ -59,7 +59,7 @@ describe( 'database - Request Tracking Tests', () => {
      * Test that it throws DB_023 error when client is null
      */
     test( 'throws DB_023 error when client is null', async () => {
-      await expect( mf.database.updateLastRequestedAt( [ 'test-id' ] ) ).
+      await expect( mf.databaseAdmin.updateLastRequestedAt( [ 'test-id' ] ) ).
         rejects.
         toThrow( /DB_023/u );
     } );
@@ -70,7 +70,7 @@ describe( 'database - Request Tracking Tests', () => {
     test( 'throws DB_024 error when actIds is not an array', async () => {
       await mf.database.connect();
 
-      await expect( mf.database.updateLastRequestedAt( 'not-an-array' ) ).
+      await expect( mf.databaseAdmin.updateLastRequestedAt( 'not-an-array' ) ).
         rejects.
         toThrow( /DB_024/u );
     } );
@@ -81,7 +81,7 @@ describe( 'database - Request Tracking Tests', () => {
     test( 'throws DB_024 error when actIds is empty array', async () => {
       await mf.database.connect();
 
-      await expect( mf.database.updateLastRequestedAt( [] ) ).
+      await expect( mf.databaseAdmin.updateLastRequestedAt( [] ) ).
         rejects.
         toThrow( /DB_024/u );
     } );
@@ -93,7 +93,7 @@ describe( 'database - Request Tracking Tests', () => {
       mockCollection.updateOne.mockResolvedValue( { 'acknowledged': true } );
 
       await mf.database.connect();
-      await mf.database.updateLastRequestedAt( [ 'test-id-1' ] );
+      await mf.databaseAdmin.updateLastRequestedAt( [ 'test-id-1' ] );
 
       expect( mockCollection.updateOne ).toHaveBeenCalledWith(
         { '_id': 'test-id-1' },
@@ -114,7 +114,7 @@ describe( 'database - Request Tracking Tests', () => {
       mockCollection.updateOne.mockResolvedValue( { 'acknowledged': true } );
 
       await mf.database.connect();
-      await mf.database.updateLastRequestedAt( [ 'test-id-1', 'test-id-2', 'test-id-3' ] );
+      await mf.databaseAdmin.updateLastRequestedAt( [ 'test-id-1', 'test-id-2', 'test-id-3' ] );
 
       expect( mockCollection.updateOne ).toHaveBeenCalledTimes( 3 );
     } );
@@ -127,7 +127,7 @@ describe( 'database - Request Tracking Tests', () => {
 
       await mf.database.connect();
 
-      await expect( mf.database.updateLastRequestedAt( [ 'test-id' ] ) ).
+      await expect( mf.databaseAdmin.updateLastRequestedAt( [ 'test-id' ] ) ).
         rejects.
         toThrow( /DB_025/u );
     } );
@@ -174,7 +174,7 @@ describe( 'database - Request Tracking Tests', () => {
       // Require database again to reinitialize with null client
       require( '../../../services/database' );
 
-      await expect( mf.database.removeActsNotRequestedFor14Updates() ).
+      await expect( mf.databaseAdmin.removeActsNotRequestedFor14Updates() ).
         rejects.
         toThrow( /DB_026/u );
     } );
@@ -188,7 +188,7 @@ describe( 'database - Request Tracking Tests', () => {
       } );
 
       await mf.database.connect();
-      const result = await mf.database.removeActsNotRequestedFor14Updates();
+      const result = await mf.databaseAdmin.removeActsNotRequestedFor14Updates();
 
       expect( result ).toEqual( { 'deletedCount': 0 } );
     } );
@@ -214,7 +214,7 @@ describe( 'database - Request Tracking Tests', () => {
       } );
 
       await mf.database.connect();
-      const result = await mf.database.removeActsNotRequestedFor14Updates();
+      const result = await mf.databaseAdmin.removeActsNotRequestedFor14Updates();
 
       expect( result ).toEqual( { 'deletedCount': 2 } );
       expect( mockCollection.deleteMany ).toHaveBeenCalledWith( {
@@ -242,7 +242,7 @@ describe( 'database - Request Tracking Tests', () => {
 
       await mf.database.connect();
 
-      await expect( mf.database.removeActsNotRequestedFor14Updates() ).
+      await expect( mf.databaseAdmin.removeActsNotRequestedFor14Updates() ).
         rejects.
         toThrow( /DB_027/u );
     } );

@@ -117,7 +117,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'logs error to database when fetchAndEnrichActData fails', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
@@ -128,7 +128,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
-      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( {
+      expect( mf.databaseAdmin.logUpdateError ).toHaveBeenCalledWith( {
         'timestamp': expect.stringMatching( /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+0[12]:00$/u ),
         'actId': 'test-id',
         'errorMessage': 'MusicBrainz API error',
@@ -144,7 +144,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'detects musicbrainz error source correctly', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
@@ -155,7 +155,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
-      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( mf.databaseAdmin.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
         'errorSource': 'musicbrainz'
       } ) );
 
@@ -168,7 +168,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'detects bandsintown error source correctly', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
@@ -179,7 +179,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
-      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( mf.databaseAdmin.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
         'errorSource': 'bandsintown'
       } ) );
 
@@ -192,7 +192,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'detects cache error source correctly', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
@@ -204,7 +204,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
-      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( mf.databaseAdmin.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
         'errorSource': 'cache'
       } ) );
 
@@ -217,7 +217,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'defaults to unknown error source for unrecognized errors', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockResolvedValue();
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 
@@ -228,7 +228,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await mf.cacheUpdater.updateAct( 'test-id' );
 
-      expect( mf.database.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
+      expect( mf.databaseAdmin.logUpdateError ).toHaveBeenCalledWith( expect.objectContaining( {
         'errorSource': 'unknown'
       } ) );
 
@@ -241,7 +241,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'handles error logging failures gracefully without throwing', async () => {
       const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
 
-      jest.spyOn( mf.database, 'logUpdateError' ).mockRejectedValue( new Error( 'Logging failed' ) );
+      jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockRejectedValue( new Error( 'Logging failed' ) );
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
         const dateStr = new Date().toLocaleString( 'sv-SE', { 'timeZone': 'Europe/Berlin' } );
 

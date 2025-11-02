@@ -71,7 +71,7 @@
 
       // Log error to database
       try {
-        await mf.database.logUpdateError( {
+        await mf.databaseAdmin.logUpdateError( {
           'timestamp': mf.actService.getBerlinTimestamp(),
           actId,
           'errorMessage': error.message,
@@ -157,7 +157,7 @@
 
       // Remove acts not requested for 14 updates before processing updates
       try {
-        await mf.database.removeActsNotRequestedFor14Updates();
+        await mf.databaseAdmin.removeActsNotRequestedFor14Updates();
       } catch {
         // Silent fail - don't block updates if removal fails
       }
