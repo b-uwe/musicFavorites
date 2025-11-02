@@ -10,25 +10,13 @@ describe( 'database - Request Tracking Tests', () => {
   let mockCollection;
   let mockDb;
   let mockClient;
-  let mockLogger;
-  let originalMfLogger;
 
   beforeEach( () => {
     jest.clearAllMocks();
 
-    // Load constants first
+    // Load logger and constants first
+    require( '../../../logger' );
     require( '../../../constants' );
-
-    // Save original logger
-    originalMfLogger = globalThis.mf?.logger;
-
-    // Create mock logger
-    mockLogger = {
-      'debug': jest.fn(),
-      'info': jest.fn(),
-      'warn': jest.fn(),
-      'error': jest.fn()
-    };
 
     // Setup MongoDB mocks
     mockCollection = {
@@ -58,7 +46,6 @@ describe( 'database - Request Tracking Tests', () => {
 
     // Set up mf namespace before requiring database
     globalThis.mf = globalThis.mf || {};
-    globalThis.mf.logger = mockLogger;
     globalThis.mf.actService = {
       'getBerlinTimestamp': jest.fn( () => '2024-01-15 10:30:00+01:00' )
     };
@@ -69,10 +56,6 @@ describe( 'database - Request Tracking Tests', () => {
 
   afterEach( () => {
     delete process.env.MONGODB_URI;
-    // Restore original logger
-    if ( originalMfLogger ) {
-      globalThis.mf.logger = originalMfLogger;
-    }
   } );
 
   describe( 'updateLastRequestedAt', () => {

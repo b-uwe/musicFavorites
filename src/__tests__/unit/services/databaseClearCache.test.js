@@ -10,30 +10,18 @@ describe( 'databaseAdmin.clearCache - Unit Tests', () => {
   let mockClient;
   let mockDb;
   let mockCollection;
-  let mockLogger;
   let MongoClient;
-  let originalMfLogger;
 
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Load constants first
+    // Load logger and constants first
+    require( '../../../logger' );
     require( '../../../constants' );
-
-    // Save original logger
-    originalMfLogger = globalThis.mf?.logger;
 
     // Set MONGODB_URI for tests
     process.env.MONGODB_URI = 'mongodb://test:27017';
-
-    // Create mock logger
-    mockLogger = {
-      'debug': jest.fn(),
-      'info': jest.fn(),
-      'warn': jest.fn(),
-      'error': jest.fn()
-    };
 
     // Create mock collection
     mockCollection = {
@@ -59,20 +47,12 @@ describe( 'databaseAdmin.clearCache - Unit Tests', () => {
     MongoClient = jest.fn().mockImplementation( () => mockClient );
     mongodb.MongoClient = MongoClient;
 
-    // Set up mf.logger before requiring database
-    globalThis.mf = globalThis.mf || {};
-    globalThis.mf.logger = mockLogger;
-
     // Require database module AFTER mocking (sets up mf.database)
     require( '../../../services/database' );
   } );
 
   afterEach( () => {
     delete process.env.MONGODB_URI;
-    // Restore original logger
-    if ( originalMfLogger ) {
-      globalThis.mf.logger = originalMfLogger;
-    }
   } );
 
   describe( 'clearCache', () => {

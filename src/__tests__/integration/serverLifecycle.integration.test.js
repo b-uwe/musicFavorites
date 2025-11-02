@@ -9,15 +9,9 @@
 
 const { MongoClient } = require( 'mongodb' );
 
-// Set up mf.logger before loading modules
+// Load logger and constants first
+require( '../../logger' );
 require( '../../constants' );
-globalThis.mf = globalThis.mf || {};
-globalThis.mf.logger = {
-  'debug': jest.fn(),
-  'info': jest.fn(),
-  'warn': jest.fn(),
-  'error': jest.fn()
-};
 
 // Load real business logic modules AFTER mocks
 require( '../../services/database' );

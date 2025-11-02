@@ -7,30 +7,18 @@
 describe( 'database - Helper Functions', () => {
   let mockClient;
   let mockDb;
-  let mockLogger;
   let MongoClient;
-  let originalMfLogger;
 
   beforeEach( () => {
     jest.clearAllMocks();
     jest.resetModules();
 
-    // Load constants first
+    // Load logger and constants first
+    require( '../../../logger' );
     require( '../../../constants' );
-
-    // Save original logger
-    originalMfLogger = globalThis.mf?.logger;
 
     // Set MONGODB_URI for tests
     process.env.MONGODB_URI = 'mongodb://test:27017';
-
-    // Create mock logger
-    mockLogger = {
-      'debug': jest.fn(),
-      'info': jest.fn(),
-      'warn': jest.fn(),
-      'error': jest.fn()
-    };
 
     // Create mock database
     mockDb = {
@@ -51,20 +39,12 @@ describe( 'database - Helper Functions', () => {
     MongoClient = jest.fn().mockImplementation( () => mockClient );
     mongodb.MongoClient = MongoClient;
 
-    // Set up mf.logger before requiring database
-    globalThis.mf = globalThis.mf || {};
-    globalThis.mf.logger = mockLogger;
-
     // Require database module AFTER mocking
     require( '../../../services/database' );
   } );
 
   afterEach( () => {
     delete process.env.MONGODB_URI;
-    // Restore original logger
-    if ( originalMfLogger ) {
-      globalThis.mf.logger = originalMfLogger;
-    }
   } );
 
   describe( 'logSlowOperation helper', () => {
@@ -78,10 +58,13 @@ describe( 'database - Helper Functions', () => {
       };
       const slowDuration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 50;
 
+      // Spy on logger to verify it's called
+      const warnSpy = jest.spyOn( mf.logger, 'warn' );
+
       mf.testing.database.logSlowOperation( 'testOperation', slowDuration, context );
 
       // Verify warn was called with slow operation details
-      expect( mockLogger.warn ).toHaveBeenCalledWith(
+      expect( warnSpy ).toHaveBeenCalledWith(
         {
           'operation': 'testOperation',
           'duration': slowDuration,
@@ -90,6 +73,8 @@ describe( 'database - Helper Functions', () => {
         },
         'Slow database operation'
       );
+
+      warnSpy.mockRestore();
     } );
 
     /**
@@ -101,12 +86,15 @@ describe( 'database - Helper Functions', () => {
       };
       const fastDuration = mf.constants.SLOW_QUERY_THRESHOLD_MS - 50;
 
-      mockLogger.warn.mockClear();
+      // Spy on logger to verify it's NOT called
+      const warnSpy = jest.spyOn( mf.logger, 'warn' );
 
       mf.testing.database.logSlowOperation( 'testOperation', fastDuration, context );
 
       // Verify warn was NOT called for fast operation
-      expect( mockLogger.warn ).not.toHaveBeenCalled();
+      expect( warnSpy ).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
     } );
 
     /**
@@ -116,23 +104,31 @@ describe( 'database - Helper Functions', () => {
       const context = { 'actId': 'test-id' };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 1;
 
+      // Spy on logger to verify it's called
+      const warnSpy = jest.spyOn( mf.logger, 'warn' );
+
       mf.testing.database.logSlowOperation( 'testOperation', duration, context );
 
-      expect( mockLogger.warn ).toHaveBeenCalled();
+      expect( warnSpy ).toHaveBeenCalled();
+
+      warnSpy.mockRestore();
     } );
 
     /**
      * Test logSlowOperation does not warn for operations exactly at threshold
      */
     test( 'does not log warning when operation duration is exactly at threshold', () => {
-      mockLogger.warn.mockClear();
-
       const context = { 'actId': 'test-id' };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS;
 
+      // Spy on logger to verify it's NOT called
+      const warnSpy = jest.spyOn( mf.logger, 'warn' );
+
       mf.testing.database.logSlowOperation( 'testOperation', duration, context );
 
-      expect( mockLogger.warn ).not.toHaveBeenCalled();
+      expect( warnSpy ).not.toHaveBeenCalled();
+
+      warnSpy.mockRestore();
     } );
   } );
 } );
