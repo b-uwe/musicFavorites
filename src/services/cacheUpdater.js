@@ -195,8 +195,9 @@
     await sleep( TWELVE_HOURS_MS );
 
     // Phase 3: Start perpetual cycle-based updates
-    // eslint-disable-next-line no-constant-condition
-    while ( true ) {
+    const keepRunning = true;
+
+    while ( keepRunning ) {
       await runCycle( cycleIntervalMs, retryDelayMs );
     }
   };

@@ -40,7 +40,7 @@ describe( 'database - Request Tracking Tests', () => {
     delete require.cache[ require.resolve( '../../../services/database' ) ];
     delete require.cache[ require.resolve( '../../../services/actService' ) ];
 
-    // Mock actService
+    // Set up mf namespace before requiring database
     globalThis.mf = globalThis.mf || {};
     globalThis.mf.actService = {
       'getBerlinTimestamp': jest.fn( () => '2024-01-15 10:30:00+01:00' )

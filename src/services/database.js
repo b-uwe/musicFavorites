@@ -8,7 +8,26 @@
 
   const { MongoClient, ServerApiVersion } = require( 'mongodb' );
 
+  // Load logger and constants modules
+  require( '../logger' );
+  require( '../constants' );
+
   let client = null;
+
+  /**
+   * Verifies MongoDB connection with ping command
+   * @returns {Promise<void>} Resolves if ping successful
+   * @throws {Error} When ping fails
+   */
+  const verifyConnection = async () => {
+    const pingResult = await client.db( 'admin' ).command( {
+      'ping': 1
+    } );
+
+    if ( pingResult.ok !== 1 ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
+    }
+  };
 
   /**
    * Connects to MongoDB database
@@ -16,11 +35,18 @@
    * @throws {Error} When MONGODB_URI is not set or connection fails
    */
   const connect = async () => {
-    const uri = process.env.MONGODB_URI;
+    const { 'MONGODB_URI': uri } = process.env;
 
     if ( !uri ) {
       throw new Error( 'Service misconfigured. Please try again later. (Error: DB_001)' );
     }
+
+    // Sanitize URI for logging
+    const sanitizedUri = uri.replace( /\/\/.*@/u, '//***@' );
+
+    mf.logger.info( {
+      'uri': sanitizedUri
+    }, 'Connecting to MongoDB' );
 
     try {
       if ( !client ) {
@@ -36,15 +62,9 @@
         await client.connect();
       }
 
-      // Ping to confirm successful connection
-      const pingResult = await client.db( 'admin' ).command( {
-        'ping': 1
-      } );
+      await verifyConnection();
 
-      // Verify ping response
-      if ( pingResult.ok !== 1 ) {
-        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_002)' );
-      }
+      mf.logger.info( 'MongoDB connected successfully' );
     } catch ( error ) {
       // Reset client on any failure to allow retry
       client = null;
@@ -66,6 +86,8 @@
     if ( !client ) {
       return;
     }
+
+    mf.logger.info( 'Disconnecting from MongoDB' );
 
     try {
       await client.close();
@@ -92,6 +114,23 @@
   };
 
   /**
+   * Logs slow database operation warning
+   * @param {string} operation - Operation name
+   * @param {number} duration - Duration in ms
+   * @param {object} context - Additional context
+   * @returns {void}
+   */
+  const logSlowOperation = ( operation, duration, context ) => {
+    if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
+      mf.logger.warn( {
+        operation,
+        duration,
+        ...context
+      }, 'Slow database operation' );
+    }
+  };
+
+  /**
    * Gets act data from cache
    * @param {string} actId - The MusicBrainz act ID
    * @returns {Promise<object|null>} Cached act data or null if not found
@@ -102,16 +141,39 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
     }
 
+    const startTime = Date.now();
+
+    mf.logger.debug( {
+      actId
+    }, 'Cache lookup' );
+
     const db = client.db( 'musicfavorites' );
     const collection = db.collection( 'acts' );
 
     const result = await collection.findOne( {
       '_id': actId
     } );
+    const duration = Date.now() - startTime;
 
     if ( !result ) {
+      mf.logger.debug( {
+        actId,
+        'hit': false,
+        duration
+      }, 'Cache miss' );
+
       return null;
     }
+
+    mf.logger.debug( {
+      actId,
+      'hit': true,
+      duration
+    }, 'Cache hit' );
+
+    logSlowOperation( 'getActFromCache', duration, {
+      actId
+    } );
 
     // Map MongoDB _id to musicbrainzId for API response
     const { _id, ...actData } = result;
@@ -137,6 +199,11 @@
       throw new Error( 'Invalid request. Please try again later. (Error: DB_006)' );
     }
 
+    const actId = actData._id;
+    const startTime = Date.now();
+
+    mf.logger.debug( { actId }, 'Caching act data' );
+
     const db = client.db( 'musicfavorites' );
     const actsCollection = db.collection( 'acts' );
     const metadataCollection = db.collection( 'actMetadata' );
@@ -158,6 +225,12 @@
       { '$inc': { 'updatesSinceLastRequest': 1 } },
       { 'upsert': true }
     );
+
+    const duration = Date.now() - startTime;
+
+    logSlowOperation( 'cacheAct', duration, {
+      actId
+    } );
   };
 
   /**
@@ -170,6 +243,8 @@
     if ( !client ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_008)' );
     }
+
+    mf.logger.debug( 'Testing cache health' );
 
     try {
       const db = client.db( 'musicfavorites' );
@@ -206,6 +281,7 @@
         throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_010)' );
       }
     } catch ( error ) {
+      mf.logger.warn( 'Cache health check failed' );
       // If health check fails, reset client to allow reconnection on next attempt
       client = null;
       throw error;
@@ -222,6 +298,8 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
     }
 
+    const startTime = Date.now();
+
     const db = client.db( 'musicfavorites' );
     const collection = db.collection( 'acts' );
 
@@ -232,6 +310,16 @@
     } ).toArray();
 
     const ids = results.map( ( doc ) => doc._id );
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'count': ids.length,
+      duration
+    }, 'Retrieved all act IDs' );
+
+    logSlowOperation( 'getAllActIds', duration, {
+      'count': ids.length
+    } );
 
     return ids.sort();
   };
@@ -246,6 +334,8 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
     }
 
+    const startTime = Date.now();
+
     const db = client.db( 'musicfavorites' );
     const collection = db.collection( 'acts' );
 
@@ -255,6 +345,17 @@
         'updatedAt': 1
       }
     } ).toArray();
+
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'count': results.length,
+      duration
+    }, 'Retrieved acts with metadata' );
+
+    logSlowOperation( 'getAllActsWithMetadata', duration, {
+      'count': results.length
+    } );
 
     return results.sort( ( a, b ) => {
       if ( a._id < b._id ) {
@@ -279,6 +380,8 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
     }
 
+    const startTime = Date.now();
+
     const db = client.db( 'musicfavorites' );
     const collection = db.collection( 'acts' );
 
@@ -297,13 +400,22 @@
     ).toArray();
 
     const ids = results.map( ( doc ) => doc._id );
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'count': ids.length,
+      duration
+    }, 'Retrieved acts without Bandsintown' );
+
+    logSlowOperation( 'getActsWithoutBandsintown', duration, {
+      'count': ids.length
+    } );
 
     return ids.sort();
   };
 
 
-  // Initialize global namespace
-  globalThis.mf = globalThis.mf || {};
+  // Extend global namespace (mf is already initialized by constants.js)
   globalThis.mf.database = {
     connect,
     disconnect,
@@ -321,7 +433,8 @@
     globalThis.mf.testing = globalThis.mf.testing || {};
     globalThis.mf.testing.database = {
       client,
-      getDatabase
+      getDatabase,
+      logSlowOperation
     };
   }
 

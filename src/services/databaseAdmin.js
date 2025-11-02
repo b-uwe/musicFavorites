@@ -9,6 +9,25 @@
   // Require database module for shared client access
   require( './database' );
 
+  // Constants are already loaded by database.js, but we reference them here too
+
+  /**
+   * Logs slow database operation warning
+   * @param {string} operation - Operation name
+   * @param {number} duration - Duration in ms
+   * @param {object} context - Additional context
+   * @returns {void}
+   */
+  const logSlowOperation = ( operation, duration, context ) => {
+    if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
+      mf.logger.warn( {
+        operation,
+        duration,
+        ...context
+      }, 'Slow database operation' );
+    }
+  };
+
   /**
    * Logs a data update error to the database
    * @param {object} errorData - Error information
@@ -27,6 +46,11 @@
     } catch {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_016)' );
     }
+
+    mf.logger.debug( {
+      'actId': errorData.actId,
+      'errorSource': errorData.errorSource
+    }, 'Logging update error' );
 
     const collection = db.collection( 'dataUpdateErrors' );
 
@@ -57,6 +81,7 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_019)' );
     }
 
+    const startTime = Date.now();
     const collection = db.collection( 'dataUpdateErrors' );
 
     const sevenDaysAgo = new Date();
@@ -80,6 +105,17 @@
       'createdAt': -1
     } ).toArray();
 
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'count': results.length,
+      duration
+    }, 'Retrieved recent update errors' );
+
+    logSlowOperation( 'getRecentUpdateErrors', duration, {
+      'count': results.length
+    } );
+
     return results;
   };
 
@@ -96,6 +132,8 @@
     } catch {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_020)' );
     }
+
+    mf.logger.debug( 'Ensuring error collection indexes' );
 
     const collection = db.collection( 'dataUpdateErrors' );
 
@@ -119,12 +157,41 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_021)' );
     }
 
+    mf.logger.debug( 'Clearing all cached acts' );
+
     const collection = db.collection( 'acts' );
 
     const result = await collection.deleteMany( {} );
 
     if ( !result.acknowledged ) {
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_022)' );
+    }
+
+    mf.logger.debug( { 'deletedCount': result.deletedCount }, 'Cache cleared' );
+  };
+
+  /**
+   * Updates metadata for a single act ID
+   * @param {object} collection - MongoDB collection
+   * @param {string} actId - Act ID to update
+   * @param {string} timestamp - Berlin timestamp
+   * @returns {Promise<void>} Resolves when updated
+   * @throws {Error} When update not acknowledged
+   */
+  const updateActMetadata = async ( collection, actId, timestamp ) => {
+    const result = await collection.updateOne(
+      { '_id': actId },
+      {
+        '$set': {
+          'lastRequestedAt': timestamp,
+          'updatesSinceLastRequest': 0
+        }
+      },
+      { 'upsert': true }
+    );
+
+    if ( !result.acknowledged ) {
+      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_025)' );
     }
   };
 
@@ -147,26 +214,30 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
     }
 
+    const startTime = Date.now();
+
+    mf.logger.debug( {
+      'count': actIds.length
+    }, 'Updating lastRequestedAt for acts' );
+
     require( './actService' );
     const metadataCollection = db.collection( 'actMetadata' );
     const timestamp = mf.actService.getBerlinTimestamp();
 
     for ( const actId of actIds ) {
-      const result = await metadataCollection.updateOne(
-        { '_id': actId },
-        {
-          '$set': {
-            'lastRequestedAt': timestamp,
-            'updatesSinceLastRequest': 0
-          }
-        },
-        { 'upsert': true }
-      );
-
-      if ( !result.acknowledged ) {
-        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_025)' );
-      }
+      await updateActMetadata( metadataCollection, actId, timestamp );
     }
+
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'count': actIds.length,
+      duration
+    }, 'Updated lastRequestedAt' );
+
+    logSlowOperation( 'updateLastRequestedAt', duration, {
+      'count': actIds.length
+    } );
   };
 
   /**
@@ -183,11 +254,17 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_026)' );
     }
 
+    const startTime = Date.now();
+
+    mf.logger.debug( 'Removing acts not requested for 14+ updates' );
+
     const staleMetadata = await db.collection( 'actMetadata' ).find( {
       'updatesSinceLastRequest': { '$gte': 14 }
     } ).toArray();
 
     if ( staleMetadata.length === 0 ) {
+      mf.logger.debug( { 'deletedCount': 0 }, 'No stale acts found' );
+
       return { 'deletedCount': 0 };
     }
     const idsToRemove = staleMetadata.map( ( doc ) => doc._id );
@@ -197,6 +274,17 @@
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_027)' );
     }
     await db.collection( 'actMetadata' ).deleteMany( { '_id': { '$in': idsToRemove } } );
+
+    const duration = Date.now() - startTime;
+
+    mf.logger.debug( {
+      'deletedCount': actsResult.deletedCount,
+      duration
+    }, 'Removed stale acts' );
+
+    logSlowOperation( 'removeActsNotRequestedFor14Updates', duration, {
+      'deletedCount': actsResult.deletedCount
+    } );
 
     return { 'deletedCount': actsResult.deletedCount };
   };
@@ -210,4 +298,13 @@
     updateLastRequestedAt,
     removeActsNotRequestedFor14Updates
   };
+
+  // Expose testing utilities when running under Jest
+  if ( process.env.JEST_WORKER_ID ) {
+    globalThis.mf.testing = globalThis.mf.testing || {};
+    globalThis.mf.testing.databaseAdmin = {
+      logSlowOperation,
+      updateActMetadata
+    };
+  }
 } )();
