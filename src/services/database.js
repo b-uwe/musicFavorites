@@ -22,20 +22,31 @@
     const { 'NODE_ENV': nodeEnv } = process.env;
     const logLevel = nodeEnv === 'test' ? 'error' : defaultLevel;
 
-    return {
-      'logger': mf.logger || {
-        /* eslint-disable jsdoc/require-jsdoc, no-empty-function */
-        'debug': () => {},
-        'info': () => {},
-        'warn': () => {},
-        'error': () => {}
-        /* eslint-enable jsdoc/require-jsdoc, no-empty-function */
+    const noOpLogger = {
+      /** No-op debug fallback @returns {void} */
+      'debug': () => {
+        /* Intentionally empty - no-op fallback */
       },
+      /** No-op info fallback @returns {void} */
+      'info': () => {
+        /* Intentionally empty - no-op fallback */
+      },
+      /** No-op warn fallback @returns {void} */
+      'warn': () => {
+        /* Intentionally empty - no-op fallback */
+      },
+      /** No-op error fallback @returns {void} */
+      'error': () => {
+        /* Intentionally empty - no-op fallback */
+      }
+    };
+
+    return {
+      'logger': mf.logger || noOpLogger,
       logLevel
     };
   };
 
-  /* istanbul ignore next */
   /**
    * Verifies MongoDB connection with ping command
    * @returns {Promise<void>} Resolves if ping successful
@@ -138,7 +149,6 @@
     return client.db( dbName );
   };
 
-  /* istanbul ignore next */
   /**
    * Logs slow database operation warning
    * @param {object} logger - Logger instance
