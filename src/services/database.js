@@ -114,20 +114,26 @@
   };
 
   /**
-   * Logs slow database operation warning
-   * @param {string} operation - Operation name
-   * @param {number} duration - Duration in ms
-   * @param {object} context - Additional context
-   * @returns {void}
+   * Wraps database operation with timing and slow operation logging
+   * @param {Function} operationFn - Function to execute (sync or async)
+   * @param {string} operationName - Operation name for logging
+   * @param {object} context - Additional context for logging
+   * @returns {Promise<*>} Result from operationFn
    */
-  const logSlowOperation = ( operation, duration, context ) => {
+  const logSlowOperation = async ( operationFn, operationName, context = {} ) => {
+    const startTime = Date.now();
+    const result = await operationFn();
+    const duration = Date.now() - startTime;
+
     if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
       mf.logger.warn( {
-        operation,
+        'operation': operationName,
         duration,
         ...context
       }, 'Slow database operation' );
     }
+
+    return result;
   };
 
   /**
@@ -136,52 +142,51 @@
    * @returns {Promise<object|null>} Cached act data or null if not found
    * @throws {Error} When not connected to database
    */
-  const getActFromCache = async ( actId ) => {
-    if ( !client ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
-    }
-
-    const startTime = Date.now();
-
+  const getActFromCache = ( actId ) => {
     mf.logger.debug( {
       actId
     }, 'Cache lookup' );
 
-    const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'acts' );
+    return logSlowOperation(
+      async () => {
+        if ( !client ) {
+          throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
+        }
 
-    const result = await collection.findOne( {
-      '_id': actId
-    } );
-    const duration = Date.now() - startTime;
+        const db = client.db( 'musicfavorites' );
+        const collection = db.collection( 'acts' );
 
-    if ( !result ) {
-      mf.logger.debug( {
-        actId,
-        'hit': false,
-        duration
-      }, 'Cache miss' );
+        const result = await collection.findOne( {
+          '_id': actId
+        } );
 
-      return null;
-    }
+        if ( !result ) {
+          mf.logger.debug( {
+            actId,
+            'hit': false
+          }, 'Cache miss' );
 
-    mf.logger.debug( {
-      actId,
-      'hit': true,
-      duration
-    }, 'Cache hit' );
+          return null;
+        }
 
-    logSlowOperation( 'getActFromCache', duration, {
-      actId
-    } );
+        mf.logger.debug( {
+          actId,
+          'hit': true
+        }, 'Cache hit' );
 
-    // Map MongoDB _id to musicbrainzId for API response
-    const { _id, ...actData } = result;
+        // Map MongoDB _id to musicbrainzId for API response
+        const { _id, ...actData } = result;
 
-    return {
-      'musicbrainzId': _id,
-      ...actData
-    };
+        return {
+          'musicbrainzId': _id,
+          ...actData
+        };
+      },
+      'getActFromCache',
+      {
+        actId
+      }
+    );
   };
 
   /**
@@ -190,48 +195,47 @@
    * @returns {Promise<void>} Resolves when act is cached
    * @throws {Error} When not connected, actData missing _id, or write not acknowledged
    */
-  const cacheAct = async ( actData ) => {
-    if ( !client ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
+  const cacheAct = ( actData ) => logSlowOperation(
+    async () => {
+      if ( !client ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_005)' );
+      }
+
+      if ( !actData._id ) {
+        throw new Error( 'Invalid request. Please try again later. (Error: DB_006)' );
+      }
+
+      const actId = actData._id;
+
+      mf.logger.debug( { actId }, 'Caching act data' );
+
+      const db = client.db( 'musicfavorites' );
+      const actsCollection = db.collection( 'acts' );
+      const metadataCollection = db.collection( 'actMetadata' );
+
+      // Store public act data
+      const result = await actsCollection.updateOne(
+        { '_id': actData._id },
+        { '$set': actData },
+        { 'upsert': true }
+      );
+
+      if ( !result.acknowledged ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
+      }
+
+      // Update internal tracking metadata in separate collection
+      await metadataCollection.updateOne(
+        { '_id': actData._id },
+        { '$inc': { 'updatesSinceLastRequest': 1 } },
+        { 'upsert': true }
+      );
+    },
+    'cacheAct',
+    {
+      'actId': actData._id
     }
-
-    if ( !actData._id ) {
-      throw new Error( 'Invalid request. Please try again later. (Error: DB_006)' );
-    }
-
-    const actId = actData._id;
-    const startTime = Date.now();
-
-    mf.logger.debug( { actId }, 'Caching act data' );
-
-    const db = client.db( 'musicfavorites' );
-    const actsCollection = db.collection( 'acts' );
-    const metadataCollection = db.collection( 'actMetadata' );
-
-    // Store public act data
-    const result = await actsCollection.updateOne(
-      { '_id': actData._id },
-      { '$set': actData },
-      { 'upsert': true }
-    );
-
-    if ( !result.acknowledged ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_007)' );
-    }
-
-    // Update internal tracking metadata in separate collection
-    await metadataCollection.updateOne(
-      { '_id': actData._id },
-      { '$inc': { 'updatesSinceLastRequest': 1 } },
-      { 'upsert': true }
-    );
-
-    const duration = Date.now() - startTime;
-
-    logSlowOperation( 'cacheAct', duration, {
-      actId
-    } );
-  };
+  );
 
   /**
    * Tests cache health with a dummy write-then-delete operation
@@ -293,126 +297,113 @@
    * @returns {Promise<Array<string>>} Sorted array of all cached act IDs
    * @throws {Error} When not connected to database
    */
-  const getAllActIds = async () => {
-    if ( !client ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
-    }
-
-    const startTime = Date.now();
-
-    const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'acts' );
-
-    const results = await collection.find( {}, {
-      'projection': {
-        '_id': 1
+  const getAllActIds = () => logSlowOperation(
+    async () => {
+      if ( !client ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_013)' );
       }
-    } ).toArray();
 
-    const ids = results.map( ( doc ) => doc._id );
-    const duration = Date.now() - startTime;
+      const db = client.db( 'musicfavorites' );
+      const collection = db.collection( 'acts' );
 
-    mf.logger.debug( {
-      'count': ids.length,
-      duration
-    }, 'Retrieved all act IDs' );
+      const results = await collection.find( {}, {
+        'projection': {
+          '_id': 1
+        }
+      } ).toArray();
 
-    logSlowOperation( 'getAllActIds', duration, {
-      'count': ids.length
-    } );
+      const ids = results.map( ( doc ) => doc._id );
 
-    return ids.sort();
-  };
+      mf.logger.debug( {
+        'count': ids.length
+      }, 'Retrieved all act IDs' );
+
+      return ids.sort();
+    },
+    'getAllActIds',
+    {}
+  );
 
   /**
    * Gets all acts with metadata from cache
    * @returns {Promise<Array<object>>} Sorted array of acts with _id and updatedAt
    * @throws {Error} When not connected to database
    */
-  const getAllActsWithMetadata = async () => {
-    if ( !client ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
-    }
-
-    const startTime = Date.now();
-
-    const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'acts' );
-
-    const results = await collection.find( {}, {
-      'projection': {
-        '_id': 1,
-        'updatedAt': 1
-      }
-    } ).toArray();
-
-    const duration = Date.now() - startTime;
-
-    mf.logger.debug( {
-      'count': results.length,
-      duration
-    }, 'Retrieved acts with metadata' );
-
-    logSlowOperation( 'getAllActsWithMetadata', duration, {
-      'count': results.length
-    } );
-
-    return results.sort( ( a, b ) => {
-      if ( a._id < b._id ) {
-        return -1;
+  const getAllActsWithMetadata = () => logSlowOperation(
+    async () => {
+      if ( !client ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_014)' );
       }
 
-      if ( a._id > b._id ) {
-        return 1;
-      }
+      const db = client.db( 'musicfavorites' );
+      const collection = db.collection( 'acts' );
 
-      return 0;
-    } );
-  };
+      const results = await collection.find( {}, {
+        'projection': {
+          '_id': 1,
+          'updatedAt': 1
+        }
+      } ).toArray();
+
+      mf.logger.debug( {
+        'count': results.length
+      }, 'Retrieved acts with metadata' );
+
+      return results.sort( ( a, b ) => {
+        if ( a._id < b._id ) {
+          return -1;
+        }
+
+        if ( a._id > b._id ) {
+          return 1;
+        }
+
+        return 0;
+      } );
+    },
+    'getAllActsWithMetadata',
+    {}
+  );
 
   /**
    * Gets all acts without Bandsintown relation from cache
    * @returns {Promise<Array<string>>} Sorted array of MusicBrainz IDs without Bandsintown links
    * @throws {Error} When not connected to database
    */
-  const getActsWithoutBandsintown = async () => {
-    if ( !client ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
-    }
-
-    const startTime = Date.now();
-
-    const db = client.db( 'musicfavorites' );
-    const collection = db.collection( 'acts' );
-
-    const results = await collection.find(
-      {
-        '$or': [
-          { 'relations.bandsintown': { '$exists': false } },
-          { 'relations.bandsintown': null }
-        ]
-      },
-      {
-        'projection': {
-          '_id': 1
-        }
+  const getActsWithoutBandsintown = () => logSlowOperation(
+    async () => {
+      if ( !client ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_015)' );
       }
-    ).toArray();
 
-    const ids = results.map( ( doc ) => doc._id );
-    const duration = Date.now() - startTime;
+      const db = client.db( 'musicFavorites' );
+      const collection = db.collection( 'acts' );
 
-    mf.logger.debug( {
-      'count': ids.length,
-      duration
-    }, 'Retrieved acts without Bandsintown' );
+      const results = await collection.find(
+        {
+          '$or': [
+            { 'relations.bandsintown': { '$exists': false } },
+            { 'relations.bandsintown': null }
+          ]
+        },
+        {
+          'projection': {
+            '_id': 1
+          }
+        }
+      ).toArray();
 
-    logSlowOperation( 'getActsWithoutBandsintown', duration, {
-      'count': ids.length
-    } );
+      const ids = results.map( ( doc ) => doc._id );
 
-    return ids.sort();
-  };
+      mf.logger.debug( {
+        'count': ids.length
+      }, 'Retrieved acts without Bandsintown' );
+
+      return ids.sort();
+    },
+    'getActsWithoutBandsintown',
+    {}
+  );
 
 
   // Extend global namespace (mf is already initialized by constants.js)
@@ -425,7 +416,8 @@
     getAllActIds,
     getAllActsWithMetadata,
     getActsWithoutBandsintown,
-    getDatabase
+    getDatabase,
+    logSlowOperation
   };
 
   // Expose testing utilities when running under Jest
