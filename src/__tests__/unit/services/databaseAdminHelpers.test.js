@@ -87,7 +87,7 @@ describe( 'databaseAdmin - Helper Functions', () => {
       };
       const slowDuration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 50;
 
-      mf.testing.databaseAdmin.logSlowOperation( mockLogger, 'testOperation', slowDuration, context );
+      mf.testing.databaseAdmin.logSlowOperation( 'testOperation', slowDuration, context );
 
       // Verify warn was called with slow operation details
       expect( mockLogger.warn ).toHaveBeenCalledWith(
@@ -112,7 +112,7 @@ describe( 'databaseAdmin - Helper Functions', () => {
 
       mockLogger.warn.mockClear();
 
-      mf.testing.databaseAdmin.logSlowOperation( mockLogger, 'testOperation', fastDuration, context );
+      mf.testing.databaseAdmin.logSlowOperation( 'testOperation', fastDuration, context );
 
       // Verify warn was NOT called for fast operation
       expect( mockLogger.warn ).not.toHaveBeenCalled();
@@ -125,7 +125,7 @@ describe( 'databaseAdmin - Helper Functions', () => {
       const context = { 'count': 10 };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 1;
 
-      mf.testing.databaseAdmin.logSlowOperation( mockLogger, 'testOperation', duration, context );
+      mf.testing.databaseAdmin.logSlowOperation( 'testOperation', duration, context );
 
       expect( mockLogger.warn ).toHaveBeenCalled();
     } );
@@ -139,7 +139,7 @@ describe( 'databaseAdmin - Helper Functions', () => {
       const context = { 'count': 10 };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS;
 
-      mf.testing.databaseAdmin.logSlowOperation( mockLogger, 'testOperation', duration, context );
+      mf.testing.databaseAdmin.logSlowOperation( 'testOperation', duration, context );
 
       expect( mockLogger.warn ).not.toHaveBeenCalled();
     } );

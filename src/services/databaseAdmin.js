@@ -13,15 +13,14 @@
 
   /**
    * Logs slow database operation warning
-   * @param {object} logger - Logger instance
    * @param {string} operation - Operation name
    * @param {number} duration - Duration in ms
    * @param {object} context - Additional context
    * @returns {void}
    */
-  const logSlowOperation = ( logger, operation, duration, context ) => {
+  const logSlowOperation = ( operation, duration, context ) => {
     if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
-      logger.warn( {
+      mf.logger.warn( {
         operation,
         duration,
         ...context
@@ -113,7 +112,7 @@
       duration
     }, 'Retrieved recent update errors' );
 
-    logSlowOperation( mf.logger, 'getRecentUpdateErrors', duration, {
+    logSlowOperation( 'getRecentUpdateErrors', duration, {
       'count': results.length
     } );
 
@@ -236,7 +235,7 @@
       duration
     }, 'Updated lastRequestedAt' );
 
-    logSlowOperation( mf.logger, 'updateLastRequestedAt', duration, {
+    logSlowOperation( 'updateLastRequestedAt', duration, {
       'count': actIds.length
     } );
   };
@@ -283,7 +282,7 @@
       duration
     }, 'Removed stale acts' );
 
-    logSlowOperation( mf.logger, 'removeActsNotRequestedFor14Updates', duration, {
+    logSlowOperation( 'removeActsNotRequestedFor14Updates', duration, {
       'deletedCount': actsResult.deletedCount
     } );
 

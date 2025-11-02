@@ -114,15 +114,14 @@
 
   /**
    * Logs slow database operation warning
-   * @param {object} logger - Logger instance
    * @param {string} operation - Operation name
    * @param {number} duration - Duration in ms
    * @param {object} context - Additional context
    * @returns {void}
    */
-  const logSlowOperation = ( logger, operation, duration, context ) => {
+  const logSlowOperation = ( operation, duration, context ) => {
     if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
-      logger.warn( {
+      mf.logger.warn( {
         operation,
         duration,
         ...context
@@ -171,7 +170,7 @@
       duration
     }, 'Cache hit' );
 
-    logSlowOperation( mf.logger, 'getActFromCache', duration, {
+    logSlowOperation( 'getActFromCache', duration, {
       actId
     } );
 
@@ -228,7 +227,7 @@
 
     const duration = Date.now() - startTime;
 
-    logSlowOperation( mf.logger, 'cacheAct', duration, {
+    logSlowOperation( 'cacheAct', duration, {
       actId
     } );
   };
@@ -317,7 +316,7 @@
       duration
     }, 'Retrieved all act IDs' );
 
-    logSlowOperation( mf.logger, 'getAllActIds', duration, {
+    logSlowOperation( 'getAllActIds', duration, {
       'count': ids.length
     } );
 
@@ -353,7 +352,7 @@
       duration
     }, 'Retrieved acts with metadata' );
 
-    logSlowOperation( mf.logger, 'getAllActsWithMetadata', duration, {
+    logSlowOperation( 'getAllActsWithMetadata', duration, {
       'count': results.length
     } );
 
@@ -407,7 +406,7 @@
       duration
     }, 'Retrieved acts without Bandsintown' );
 
-    logSlowOperation( mf.logger, 'getActsWithoutBandsintown', duration, {
+    logSlowOperation( 'getActsWithoutBandsintown', duration, {
       'count': ids.length
     } );
 

@@ -78,7 +78,7 @@ describe( 'database - Helper Functions', () => {
       };
       const slowDuration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 50;
 
-      mf.testing.database.logSlowOperation( mockLogger, 'testOperation', slowDuration, context );
+      mf.testing.database.logSlowOperation( 'testOperation', slowDuration, context );
 
       // Verify warn was called with slow operation details
       expect( mockLogger.warn ).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe( 'database - Helper Functions', () => {
 
       mockLogger.warn.mockClear();
 
-      mf.testing.database.logSlowOperation( mockLogger, 'testOperation', fastDuration, context );
+      mf.testing.database.logSlowOperation( 'testOperation', fastDuration, context );
 
       // Verify warn was NOT called for fast operation
       expect( mockLogger.warn ).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe( 'database - Helper Functions', () => {
       const context = { 'actId': 'test-id' };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS + 1;
 
-      mf.testing.database.logSlowOperation( mockLogger, 'testOperation', duration, context );
+      mf.testing.database.logSlowOperation( 'testOperation', duration, context );
 
       expect( mockLogger.warn ).toHaveBeenCalled();
     } );
@@ -130,7 +130,7 @@ describe( 'database - Helper Functions', () => {
       const context = { 'actId': 'test-id' };
       const duration = mf.constants.SLOW_QUERY_THRESHOLD_MS;
 
-      mf.testing.database.logSlowOperation( mockLogger, 'testOperation', duration, context );
+      mf.testing.database.logSlowOperation( 'testOperation', duration, context );
 
       expect( mockLogger.warn ).not.toHaveBeenCalled();
     } );
