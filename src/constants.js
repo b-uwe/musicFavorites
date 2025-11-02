@@ -21,10 +21,18 @@
    */
   const HTTP_TIMEOUT = 5000;
 
+  /**
+   * Threshold for slow database operation warnings in milliseconds
+   * Operations exceeding this duration will log a warning
+   * @constant {number}
+   */
+  const SLOW_QUERY_THRESHOLD_MS = 250;
+
   // Initialize global namespace
   globalThis.mf = globalThis.mf || {};
   globalThis.mf.constants = {
     USER_AGENT,
-    HTTP_TIMEOUT
+    HTTP_TIMEOUT,
+    SLOW_QUERY_THRESHOLD_MS
   };
 } )();
