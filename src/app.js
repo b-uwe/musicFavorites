@@ -18,7 +18,11 @@
   app.use( ( req, res, next ) => {
     const start = Date.now();
 
-    res.on( 'finish', () => {
+    /*
+     * Use res.once() instead of res.on() to auto-remove listener after it fires
+     * The 'finish' event only fires once per response, so this prevents memory leaks
+     */
+    res.once( 'finish', () => {
       const duration = Date.now() - start;
 
       mf.logger.info( {
