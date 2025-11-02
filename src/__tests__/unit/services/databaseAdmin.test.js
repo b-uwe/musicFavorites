@@ -1,16 +1,16 @@
 /**
- * Coverage tests for databaseAdmin module
+ * Unit tests for databaseAdmin module exports
  * Tests that databaseAdmin extends the mf namespace correctly
- * @module __tests__/coverage/databaseAdmin
+ * @module __tests__/unit/services/databaseAdmin
  */
 
-describe( 'databaseAdmin - Branch Coverage', () => {
+describe( 'databaseAdmin - Module Exports', () => {
   /**
    * Test that databaseAdmin is loaded and exports are available
    */
   test( 'module exports all admin functions', () => {
     // Load the module
-    require( '../../services/database' );
+    require( '../../../services/database' );
 
     expect( globalThis.mf ).toBeDefined();
     expect( globalThis.mf.databaseAdmin ).toBeDefined();
