@@ -40,13 +40,16 @@
    */
   const ensureCacheHealthy = async () => {
     if ( !cacheHealthy ) {
+      mf.logger.warn( 'Cache marked unhealthy, attempting recovery' );
       try {
         // Try to reconnect if needed (client may have been reset)
         await withTimeout( mf.database.connect(), DB_TIMEOUT_MS );
         // Test cache health
         await withTimeout( mf.database.testCacheHealth(), DB_TIMEOUT_MS );
         cacheHealthy = true;
+        mf.logger.info( 'Cache health recovered successfully' );
       } catch ( error ) {
+        mf.logger.error( { 'error': error.message }, 'Cache recovery failed' );
         throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       }
     }
@@ -171,6 +174,13 @@
     // Determine status based on events
     const finalStatus = determineStatus( events, transformedData.status );
 
+    mf.logger.info( {
+      actId,
+      'hasBandsintown': Boolean( transformedData.relations?.bandsintown ),
+      'eventCount': events.length,
+      finalStatus
+    }, 'Act enrichment completed' );
+
     return {
       ...transformedData,
       'status': finalStatus,
@@ -218,6 +228,10 @@
       map( ( act ) => act.musicbrainzId );
 
     if ( staleActIds.length > 0 ) {
+      mf.logger.debug( {
+        'staleCount': staleActIds.length,
+        'cachedCount': cachedActs.length
+      }, 'Triggering background refresh for stale acts' );
       mf.fetchQueue.triggerBackgroundFetch( staleActIds );
     }
   };
@@ -236,6 +250,7 @@
       ) ) );
     } catch ( error ) {
       cacheHealthy = false;
+      mf.logger.error( { 'error': error.message }, 'Failed to fetch acts from cache' );
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
     }
   };
@@ -316,9 +331,18 @@
     }
 
     if ( missingIds.length === 1 ) {
+      mf.logger.info( {
+        'actCount': actIds.length,
+        'cachedCount': cachedActs.length
+      }, 'Fetching 1 missing act synchronously' );
       return handleSingleMissingAct( missingIds[ 0 ], cachedActs );
     }
 
+    mf.logger.info( {
+      'actCount': actIds.length,
+      'cachedCount': cachedActs.length,
+      'missingCount': missingIds.length
+    }, 'Multiple acts missing, using background fetch' );
     return handleMultipleMissingActs( missingIds, cachedActs.length );
   };
 
