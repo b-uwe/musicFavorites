@@ -19,6 +19,11 @@ describe( 'fetchQueue - Unit Tests', () => {
 
     // Spy on actService function
     jest.spyOn( mf.actService, 'fetchAndEnrichActData' ).mockResolvedValue( {} );
+
+    // Spy on logger functions
+    jest.spyOn( mf.logger, 'info' ).mockImplementation();
+    jest.spyOn( mf.logger, 'debug' ).mockImplementation();
+    jest.spyOn( mf.logger, 'error' ).mockImplementation();
   } );
 
   afterEach( () => {
@@ -170,6 +175,155 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       jest.useRealTimers();
     }, 15000 );
+
+    /**
+     * Test that processFetchQueue logs queue start
+     */
+    test( 'logs queue processing start with queue depth', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id1', 'id2', 'id3' ] );
+
+      mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
+      mf.database.cacheAct.mockResolvedValue();
+
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      expect( mf.logger.info ).toHaveBeenCalledWith(
+        { 'queueDepth': 3 },
+        'Starting background fetch queue'
+      );
+
+      jest.useRealTimers();
+    }, 15000 );
+
+    /**
+     * Test that processFetchQueue logs each fetch operation
+     */
+    test( 'logs each act fetch with position and total', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id1', 'id2' ] );
+
+      mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
+      mf.database.cacheAct.mockResolvedValue();
+
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      // Check that debug was called for each fetch
+      expect( mf.logger.debug ).toHaveBeenCalledWith(
+        {
+          'actId': 'id1',
+          'position': 1,
+          'total': 2
+        },
+        'Fetching act in background'
+      );
+
+      expect( mf.logger.debug ).toHaveBeenCalledWith(
+        {
+          'actId': 'id2',
+          'position': 2,
+          'total': 2
+        },
+        'Fetching act in background'
+      );
+
+      jest.useRealTimers();
+    }, 15000 );
+
+    /**
+     * Test that processFetchQueue logs queue completion
+     */
+    test( 'logs queue completion with metrics', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id1', 'id2' ] );
+
+      mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
+      mf.database.cacheAct.mockResolvedValue();
+
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      // Should log completion with success count
+      const completionCalls = mf.logger.info.mock.calls.filter( ( call ) => call[ 1 ] === 'Background fetch queue completed' );
+
+      expect( completionCalls.length ).toBe( 1 );
+      expect( completionCalls[ 0 ][ 0 ] ).toEqual( {
+        'actsProcessed': 2,
+        'successCount': 2,
+        'errorCount': 0,
+        'duration': expect.any( Number )
+      } );
+
+      jest.useRealTimers();
+    }, 15000 );
+
+    /**
+     * Test that processFetchQueue logs delays between fetches
+     */
+    test( 'logs delay before next fetch', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id1', 'id2' ] );
+
+      mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
+      mf.database.cacheAct.mockResolvedValue();
+
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      // Should log delay once (between first and second fetch)
+      expect( mf.logger.debug ).toHaveBeenCalledWith(
+        { 'delayMs': 30000 },
+        'Waiting before next fetch'
+      );
+
+      jest.useRealTimers();
+    }, 15000 );
+
+    /**
+     * Test that processFetchQueue counts errors correctly
+     */
+    test( 'logs completion with error count when fetch fails', async () => {
+      jest.useFakeTimers();
+
+      const queue = new Set( [ 'id1', 'id2', 'id3' ] );
+
+      mf.actService.fetchAndEnrichActData.
+        mockResolvedValueOnce( {} ).
+        mockRejectedValueOnce( new Error( 'Fetch failed' ) ).
+        mockResolvedValueOnce( {} );
+      mf.database.cacheAct.mockResolvedValue();
+
+      const promise = mf.testing.fetchQueue.processFetchQueue( queue );
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      // Should log completion with 1 error
+      const completionCalls = mf.logger.info.mock.calls.filter( ( call ) => call[ 1 ] === 'Background fetch queue completed' );
+
+      expect( completionCalls[ 0 ][ 0 ] ).toEqual( {
+        'actsProcessed': 3,
+        'successCount': 2,
+        'errorCount': 1,
+        'duration': expect.any( Number )
+      } );
+
+      jest.useRealTimers();
+    }, 15000 );
   } );
 
   describe( 'triggerBackgroundFetch', () => {
@@ -253,17 +407,6 @@ describe( 'fetchQueue - Unit Tests', () => {
     test( 'resets flag and logs error when processFetchQueue throws', async () => {
       jest.useFakeTimers();
 
-      /**
-       * No-op function for console.error mock
-       * @returns {void} Nothing
-       */
-      const noOp = () => {
-        // Intentionally empty - suppresses console output during test
-      };
-
-      // Spy on console.error to suppress output and verify it was called
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation( noOp );
-
       // Clear modules to force re-require
       jest.resetModules();
 
@@ -276,6 +419,9 @@ describe( 'fetchQueue - Unit Tests', () => {
       require( '../../../services/database' );
       jest.spyOn( mf.database, 'cacheAct' ).mockResolvedValue();
 
+      // Spy on logger before requiring fetchQueue
+      jest.spyOn( mf.logger, 'error' ).mockImplementation();
+
       // Require fetchQueue (this will have the broken actService require)
       require( '../../../services/fetchQueue' );
 
@@ -285,11 +431,13 @@ describe( 'fetchQueue - Unit Tests', () => {
       // Wait for promise to settle
       await jest.runAllTimersAsync();
 
-      // Verify console.error was called with error message
-      expect( consoleErrorSpy ).toHaveBeenCalledWith( 'Background fetch error:', 'Simulated require failure' );
+      // Verify logger.error was called with error message
+      expect( mf.logger.error ).toHaveBeenCalledWith(
+        { 'errorMessage': 'Simulated require failure' },
+        'Background fetch error'
+      );
 
       // Cleanup
-      consoleErrorSpy.mockRestore();
       jest.clearAllMocks();
       jest.resetModules();
       jest.dontMock( '../../../services/actService' );
@@ -300,6 +448,9 @@ describe( 'fetchQueue - Unit Tests', () => {
       require( '../../../services/fetchQueue' );
       jest.spyOn( mf.database, 'cacheAct' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'fetchAndEnrichActData' ).mockResolvedValue( {} );
+      jest.spyOn( mf.logger, 'info' ).mockImplementation();
+      jest.spyOn( mf.logger, 'debug' ).mockImplementation();
+      jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.useRealTimers();
     }, 15000 );
