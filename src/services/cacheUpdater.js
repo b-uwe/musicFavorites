@@ -67,7 +67,10 @@
       // Replace cache entry
       await mf.database.cacheAct( dataToCache );
     } catch ( error ) {
-      console.error( `Failed to update act ${actId}:`, error.message );
+      mf.logger.error( {
+        actId,
+        'errorMessage': error.message
+      }, 'Failed to update act' );
 
       // Log error to database
       try {
@@ -79,7 +82,10 @@
         } );
       } catch ( logError ) {
         // Silent fail on logging error to prevent cascading failures
-        console.error( `Failed to log error for act ${actId}:`, logError.message );
+        mf.logger.error( {
+          actId,
+          'errorMessage': logError.message
+        }, 'Failed to log update error' );
       }
     }
   };
@@ -110,7 +116,9 @@
         await sleep( timeSlice );
       }
     } catch ( error ) {
-      console.error( 'Cycle error:', error.message );
+      mf.logger.error( {
+        'errorMessage': error.message
+      }, 'Cache update cycle error' );
       await sleep( retryDelayMs );
     }
   };
@@ -170,7 +178,9 @@
 
       return staleActs.length;
     } catch ( error ) {
-      console.error( 'Sequential update error:', error.message );
+      mf.logger.error( {
+        'errorMessage': error.message
+      }, 'Sequential update error' );
 
       return 0;
     }

@@ -79,26 +79,29 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that updateAct handles fetch errors without throwing
      */
     test( 'handles fetchAndEnrichActData errors without throwing', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       mf.actService.fetchAndEnrichActData.mockRejectedValue( new Error( 'Fetch failed' ) );
 
       // Should not throw
       await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
 
-      expect( consoleErrorSpy ).toHaveBeenCalledWith(
-        expect.stringContaining( 'Failed to update act test-id' ),
-        expect.any( String )
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        {
+          'actId': 'test-id',
+          'errorMessage': 'Fetch failed'
+        },
+        'Failed to update act'
       );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test that updateAct handles cache errors without throwing
      */
     test( 'handles mf.database.cacheAct errors without throwing', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       mf.actService.fetchAndEnrichActData.mockResolvedValue( {} );
       mf.database.cacheAct.mockRejectedValue( new Error( 'Cache failed' ) );
@@ -106,16 +109,22 @@ describe( 'cacheUpdater - Unit Tests', () => {
       // Should not throw
       await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
 
-      expect( consoleErrorSpy ).toHaveBeenCalled();
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        {
+          'actId': 'test-id',
+          'errorMessage': 'Cache failed'
+        },
+        'Failed to update act'
+      );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test that updateAct logs errors to database on failure
      */
     test( 'logs error to database when fetchAndEnrichActData fails', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -135,14 +144,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
         'errorSource': 'musicbrainz'
       } );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test error source detection for musicbrainz errors
      */
     test( 'detects musicbrainz error source correctly', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -159,14 +168,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
         'errorSource': 'musicbrainz'
       } ) );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test error source detection for bandsintown errors
      */
     test( 'detects bandsintown error source correctly', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -183,14 +192,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
         'errorSource': 'bandsintown'
       } ) );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test error source detection for cache errors
      */
     test( 'detects cache error source correctly', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -208,14 +217,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
         'errorSource': 'cache'
       } ) );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test error source defaults to unknown for unrecognized errors
      */
     test( 'defaults to unknown error source for unrecognized errors', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockResolvedValue();
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -232,14 +241,14 @@ describe( 'cacheUpdater - Unit Tests', () => {
         'errorSource': 'unknown'
       } ) );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
 
     /**
      * Test handles error logging failures gracefully
      */
     test( 'handles error logging failures gracefully without throwing', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       jest.spyOn( mf.databaseAdmin, 'logUpdateError' ).mockRejectedValue( new Error( 'Logging failed' ) );
       jest.spyOn( mf.actService, 'getBerlinTimestamp' ).mockImplementation( () => {
@@ -252,12 +261,23 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       await expect( mf.cacheUpdater.updateAct( 'test-id' ) ).resolves.not.toThrow();
 
-      expect( consoleErrorSpy ).toHaveBeenCalledWith(
-        expect.stringContaining( 'Failed to log error for act test-id' ),
-        expect.any( String )
+      expect( loggerErrorSpy ).toHaveBeenCalledTimes( 2 );
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        {
+          'actId': 'test-id',
+          'errorMessage': 'Some error'
+        },
+        'Failed to update act'
+      );
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        {
+          'actId': 'test-id',
+          'errorMessage': 'Logging failed'
+        },
+        'Failed to log update error'
       );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
   } );
 
@@ -402,19 +422,19 @@ describe( 'cacheUpdater - Unit Tests', () => {
      * Test that runSequentialUpdate handles errors gracefully
      */
     test( 'continues and returns 0 on getAllActsWithMetadata error', async () => {
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       mf.database.getAllActsWithMetadata.mockRejectedValue( new Error( 'DB error' ) );
 
       const result = await mf.cacheUpdater.runSequentialUpdate();
 
       expect( result ).toBe( 0 );
-      expect( consoleErrorSpy ).toHaveBeenCalledWith(
-        expect.stringContaining( 'Sequential update error' ),
-        expect.any( String )
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        { 'errorMessage': 'DB error' },
+        'Sequential update error'
       );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     } );
   } );
 
@@ -582,7 +602,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'catches errors and sleeps for retryDelayMs', async () => {
       jest.useFakeTimers();
 
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       mf.database.getAllActIds.mockRejectedValue( new Error( 'DB error' ) );
 
@@ -591,12 +611,12 @@ describe( 'cacheUpdater - Unit Tests', () => {
       await jest.runAllTimersAsync();
       await promise;
 
-      expect( consoleErrorSpy ).toHaveBeenCalledWith(
-        'Cycle error:',
-        'DB error'
+      expect( loggerErrorSpy ).toHaveBeenCalledWith(
+        { 'errorMessage': 'DB error' },
+        'Cache update cycle error'
       );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
       jest.useRealTimers();
     } );
 
@@ -606,7 +626,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
     test( 'continues processing remaining acts after updateAct error', async () => {
       jest.useFakeTimers();
 
-      const consoleErrorSpy = jest.spyOn( console, 'error' ).mockImplementation();
+      const loggerErrorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation();
 
       mf.database.getAllActIds.mockResolvedValue( [ 'id1', 'id2', 'id3' ] );
       mf.actService.fetchAndEnrichActData.
@@ -623,7 +643,7 @@ describe( 'cacheUpdater - Unit Tests', () => {
       // All three should still be attempted despite error on id2
       expect( mf.actService.fetchAndEnrichActData ).toHaveBeenCalledTimes( 3 );
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
       jest.useRealTimers();
     }, 15000 );
   } );
