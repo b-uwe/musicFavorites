@@ -49,7 +49,7 @@
         cacheHealthy = true;
         mf.logger.info( 'Cache health recovered successfully' );
       } catch ( error ) {
-        mf.logger.error( { 'error': error.message }, 'Cache recovery failed' );
+        mf.logger.error( { 'err': error }, 'Cache recovery failed' );
         throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_001)' );
       }
     }
@@ -250,7 +250,7 @@
       ) ) );
     } catch ( error ) {
       cacheHealthy = false;
-      mf.logger.error( { 'error': error.message }, 'Failed to fetch acts from cache' );
+      mf.logger.error( { 'err': error }, 'Failed to fetch acts from cache' );
       throw new Error( 'Service temporarily unavailable. Please try again later. (Error: SVC_002)' );
     }
   };

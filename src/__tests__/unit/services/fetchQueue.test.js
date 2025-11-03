@@ -433,7 +433,11 @@ describe( 'fetchQueue - Unit Tests', () => {
 
       // Verify logger.error was called with error message
       expect( mf.logger.error ).toHaveBeenCalledWith(
-        { 'errorMessage': 'Simulated require failure' },
+        {
+          'err': expect.objectContaining( {
+            'message': 'Simulated require failure'
+          } )
+        },
         'Background fetch error'
       );
 

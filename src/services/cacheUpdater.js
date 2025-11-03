@@ -69,7 +69,7 @@
     } catch ( error ) {
       mf.logger.error( {
         actId,
-        'errorMessage': error.message
+        'err': error
       }, 'Failed to update act' );
 
       // Log error to database
@@ -84,7 +84,7 @@
         // Silent fail on logging error to prevent cascading failures
         mf.logger.error( {
           actId,
-          'errorMessage': logError.message
+          'err': logError
         }, 'Failed to log update error' );
       }
     }
@@ -117,7 +117,7 @@
       }
     } catch ( error ) {
       mf.logger.error( {
-        'errorMessage': error.message
+        'err': error
       }, 'Cache update cycle error' );
       await sleep( retryDelayMs );
     }
@@ -179,7 +179,7 @@
       return staleActs.length;
     } catch ( error ) {
       mf.logger.error( {
-        'errorMessage': error.message
+        'err': error
       }, 'Sequential update error' );
 
       return 0;

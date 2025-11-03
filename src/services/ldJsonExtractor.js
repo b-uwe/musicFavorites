@@ -128,7 +128,7 @@
       mf.logger.warn(
         {
           url,
-          'error': error.message
+          'err': error
         },
         'Failed to extract LD+JSON'
       );

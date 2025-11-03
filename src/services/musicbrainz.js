@@ -57,7 +57,7 @@
     mf.logger.error(
       {
         actId,
-        'error': error.message,
+        'err': error,
         'status': error.response?.status
       },
       'MusicBrainz API error'

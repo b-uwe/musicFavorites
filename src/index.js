@@ -49,12 +49,12 @@
       // Start background cache update cycle (fire-and-forget)
       mf.cacheUpdater.start().catch( ( error ) => {
         mf.logger.error( {
-          'error': error.message
+          'err': error
         }, 'Cache updater crashed' );
       } );
     } catch ( error ) {
       mf.logger.error( {
-        'error': error.message
+        'err': error
       }, 'MongoDB connection failed' );
       mf.logger.warn( 'Server running but database unavailable' );
     }

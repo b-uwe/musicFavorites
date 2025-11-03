@@ -89,7 +89,9 @@ describe( 'cacheUpdater - Unit Tests', () => {
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
         {
           'actId': 'test-id',
-          'errorMessage': 'Fetch failed'
+          'err': expect.objectContaining( {
+            'message': 'Fetch failed'
+          } )
         },
         'Failed to update act'
       );
@@ -112,7 +114,9 @@ describe( 'cacheUpdater - Unit Tests', () => {
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
         {
           'actId': 'test-id',
-          'errorMessage': 'Cache failed'
+          'err': expect.objectContaining( {
+            'message': 'Cache failed'
+          } )
         },
         'Failed to update act'
       );
@@ -265,14 +269,18 @@ describe( 'cacheUpdater - Unit Tests', () => {
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
         {
           'actId': 'test-id',
-          'errorMessage': 'Some error'
+          'err': expect.objectContaining( {
+            'message': 'Some error'
+          } )
         },
         'Failed to update act'
       );
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
         {
           'actId': 'test-id',
-          'errorMessage': 'Logging failed'
+          'err': expect.objectContaining( {
+            'message': 'Logging failed'
+          } )
         },
         'Failed to log update error'
       );
@@ -430,7 +438,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
 
       expect( result ).toBe( 0 );
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
-        { 'errorMessage': 'DB error' },
+        {
+          'err': expect.objectContaining( {
+            'message': 'DB error'
+          } )
+        },
         'Sequential update error'
       );
 
@@ -612,7 +624,11 @@ describe( 'cacheUpdater - Unit Tests', () => {
       await promise;
 
       expect( loggerErrorSpy ).toHaveBeenCalledWith(
-        { 'errorMessage': 'DB error' },
+        {
+          'err': expect.objectContaining( {
+            'message': 'DB error'
+          } )
+        },
         'Cache update cycle error'
       );
 
