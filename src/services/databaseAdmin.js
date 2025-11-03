@@ -194,10 +194,6 @@
         throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
       }
 
-      mf.logger.debug( {
-        'count': actIds.length
-      }, 'Updating lastRequestedAt for acts' );
-
       require( './actService' );
       const metadataCollection = db.collection( 'actMetadata' );
       const timestamp = mf.actService.getBerlinTimestamp();

@@ -142,52 +142,46 @@
    * @returns {Promise<object|null>} Cached act data or null if not found
    * @throws {Error} When not connected to database
    */
-  const getActFromCache = ( actId ) => {
-    mf.logger.debug( {
-      actId
-    }, 'Cache lookup' );
+  const getActFromCache = ( actId ) => logSlowOperation(
+    async () => {
+      if ( !client ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
+      }
 
-    return logSlowOperation(
-      async () => {
-        if ( !client ) {
-          throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_004)' );
-        }
+      const db = client.db( 'musicfavorites' );
+      const collection = db.collection( 'acts' );
 
-        const db = client.db( 'musicfavorites' );
-        const collection = db.collection( 'acts' );
+      const result = await collection.findOne( {
+        '_id': actId
+      } );
 
-        const result = await collection.findOne( {
-          '_id': actId
-        } );
-
-        if ( !result ) {
-          mf.logger.debug( {
-            actId,
-            'hit': false
-          }, 'Cache miss' );
-
-          return null;
-        }
-
+      if ( !result ) {
         mf.logger.debug( {
           actId,
-          'hit': true
-        }, 'Cache hit' );
+          'hit': false
+        }, 'Cache miss' );
 
-        // Map MongoDB _id to musicbrainzId for API response
-        const { _id, ...actData } = result;
-
-        return {
-          'musicbrainzId': _id,
-          ...actData
-        };
-      },
-      'getActFromCache',
-      {
-        actId
+        return null;
       }
-    );
-  };
+
+      mf.logger.debug( {
+        actId,
+        'hit': true
+      }, 'Cache hit' );
+
+      // Map MongoDB _id to musicbrainzId for API response
+      const { _id, ...actData } = result;
+
+      return {
+        'musicbrainzId': _id,
+        ...actData
+      };
+    },
+    'getActFromCache',
+    {
+      actId
+    }
+  );
 
   /**
    * Caches act data in database
