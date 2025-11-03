@@ -1,14 +1,15 @@
 /**
- * Coverage tests for correlation ID propagation
- * Ensures correlation IDs propagate through entire async call chain
- * @module __tests__/coverage/correlationId
+ * Integration tests for correlation ID propagation
+ * Tests: AsyncLocalStorage context propagation through real components
+ * Mocks: Only external I/O (none needed for these tests)
+ * @module __tests__/integration/correlationId
  */
 
 require( '../../logger' );
 require( '../../services/cacheUpdater' );
 require( '../../services/fetchQueue' );
 
-describe( 'Correlation ID Propagation Coverage', () => {
+describe( 'Correlation ID Propagation Integration', () => {
   beforeEach( () => {
     jest.clearAllMocks();
   } );
