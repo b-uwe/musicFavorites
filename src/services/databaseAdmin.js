@@ -9,24 +9,7 @@
   // Require database module for shared client access
   require( './database' );
 
-  // Constants are already loaded by database.js, but we reference them here too
-
-  /**
-   * Logs slow database operation warning
-   * @param {string} operation - Operation name
-   * @param {number} duration - Duration in ms
-   * @param {object} context - Additional context
-   * @returns {void}
-   */
-  const logSlowOperation = ( operation, duration, context ) => {
-    if ( duration > mf.constants.SLOW_QUERY_THRESHOLD_MS ) {
-      mf.logger.warn( {
-        operation,
-        duration,
-        ...context
-      }, 'Slow database operation' );
-    }
-  };
+  // Constants and logSlowOperation are already loaded by database.js
 
   /**
    * Logs a data update error to the database
@@ -72,52 +55,48 @@
    * @returns {Promise<Array<object>>} Array of error objects sorted by timestamp descending
    * @throws {Error} When not connected to database
    */
-  const getRecentUpdateErrors = async () => {
-    let db;
+  const getRecentUpdateErrors = () => mf.database.logSlowOperation(
+    async () => {
+      let db;
 
-    try {
-      db = mf.database.getDatabase( 'musicfavorites' );
-    } catch {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_019)' );
-    }
-
-    const startTime = Date.now();
-    const collection = db.collection( 'dataUpdateErrors' );
-
-    const sevenDaysAgo = new Date();
-
-    sevenDaysAgo.setDate( sevenDaysAgo.getDate() - 7 );
-
-    const results = await collection.find(
-      {
-        'createdAt': { '$gte': sevenDaysAgo }
-      },
-      {
-        'projection': {
-          '_id': 0,
-          'timestamp': 1,
-          'actId': 1,
-          'errorMessage': 1,
-          'errorSource': 1
-        }
+      try {
+        db = mf.database.getDatabase( 'musicfavorites' );
+      } catch {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_019)' );
       }
-    ).sort( {
-      'createdAt': -1
-    } ).toArray();
 
-    const duration = Date.now() - startTime;
+      const collection = db.collection( 'dataUpdateErrors' );
 
-    mf.logger.debug( {
-      'count': results.length,
-      duration
-    }, 'Retrieved recent update errors' );
+      const sevenDaysAgo = new Date();
 
-    logSlowOperation( 'getRecentUpdateErrors', duration, {
-      'count': results.length
-    } );
+      sevenDaysAgo.setDate( sevenDaysAgo.getDate() - 7 );
 
-    return results;
-  };
+      const results = await collection.find(
+        {
+          'createdAt': { '$gte': sevenDaysAgo }
+        },
+        {
+          'projection': {
+            '_id': 0,
+            'timestamp': 1,
+            'actId': 1,
+            'errorMessage': 1,
+            'errorSource': 1
+          }
+        }
+      ).sort( {
+        'createdAt': -1
+      } ).toArray();
+
+      mf.logger.debug( {
+        'count': results.length
+      }, 'Retrieved recent update errors' );
+
+      return results;
+    },
+    'getRecentUpdateErrors',
+    {}
+  );
 
   /**
    * Ensures TTL index exists on dataUpdateErrors collection
@@ -201,93 +180,85 @@
    * @returns {Promise<void>} Resolves when all acts are updated
    * @throws {Error} When not connected, actIds invalid, or update not acknowledged
    */
-  const updateLastRequestedAt = async ( actIds ) => {
-    if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
-      throw new Error( 'Invalid request. Please try again later. (Error: DB_024)' );
-    }
+  const updateLastRequestedAt = ( actIds ) => mf.database.logSlowOperation(
+    async () => {
+      if ( !Array.isArray( actIds ) || actIds.length === 0 ) {
+        throw new Error( 'Invalid request. Please try again later. (Error: DB_024)' );
+      }
 
-    let db;
+      let db;
 
-    try {
-      db = mf.database.getDatabase( 'musicfavorites' );
-    } catch {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
-    }
+      try {
+        db = mf.database.getDatabase( 'musicfavorites' );
+      } catch {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_023)' );
+      }
 
-    const startTime = Date.now();
+      mf.logger.debug( {
+        'count': actIds.length
+      }, 'Updating lastRequestedAt for acts' );
 
-    mf.logger.debug( {
+      require( './actService' );
+      const metadataCollection = db.collection( 'actMetadata' );
+      const timestamp = mf.actService.getBerlinTimestamp();
+
+      for ( const actId of actIds ) {
+        await updateActMetadata( metadataCollection, actId, timestamp );
+      }
+
+      mf.logger.debug( {
+        'count': actIds.length
+      }, 'Updated lastRequestedAt' );
+    },
+    'updateLastRequestedAt',
+    {
       'count': actIds.length
-    }, 'Updating lastRequestedAt for acts' );
-
-    require( './actService' );
-    const metadataCollection = db.collection( 'actMetadata' );
-    const timestamp = mf.actService.getBerlinTimestamp();
-
-    for ( const actId of actIds ) {
-      await updateActMetadata( metadataCollection, actId, timestamp );
     }
-
-    const duration = Date.now() - startTime;
-
-    mf.logger.debug( {
-      'count': actIds.length,
-      duration
-    }, 'Updated lastRequestedAt' );
-
-    logSlowOperation( 'updateLastRequestedAt', duration, {
-      'count': actIds.length
-    } );
-  };
+  );
 
   /**
    * Removes acts that have not been requested for 14 or more updates
    * @returns {Promise<object>} Object with deletedCount property
    * @throws {Error} When not connected or delete not acknowledged
    */
-  const removeActsNotRequestedFor14Updates = async () => {
-    let db;
+  const removeActsNotRequestedFor14Updates = () => mf.database.logSlowOperation(
+    async () => {
+      let db;
 
-    try {
-      db = mf.database.getDatabase( 'musicfavorites' );
-    } catch {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_026)' );
-    }
+      try {
+        db = mf.database.getDatabase( 'musicfavorites' );
+      } catch {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_026)' );
+      }
 
-    const startTime = Date.now();
+      mf.logger.debug( 'Removing acts not requested for 14+ updates' );
 
-    mf.logger.debug( 'Removing acts not requested for 14+ updates' );
+      const staleMetadata = await db.collection( 'actMetadata' ).find( {
+        'updatesSinceLastRequest': { '$gte': 14 }
+      } ).toArray();
 
-    const staleMetadata = await db.collection( 'actMetadata' ).find( {
-      'updatesSinceLastRequest': { '$gte': 14 }
-    } ).toArray();
+      if ( staleMetadata.length === 0 ) {
+        mf.logger.debug( { 'deletedCount': 0 }, 'No stale acts found' );
 
-    if ( staleMetadata.length === 0 ) {
-      mf.logger.debug( { 'deletedCount': 0 }, 'No stale acts found' );
+        return { 'deletedCount': 0 };
+      }
+      const idsToRemove = staleMetadata.map( ( doc ) => doc._id );
+      const actsResult = await db.collection( 'acts' ).deleteMany( { '_id': { '$in': idsToRemove } } );
 
-      return { 'deletedCount': 0 };
-    }
-    const idsToRemove = staleMetadata.map( ( doc ) => doc._id );
-    const actsResult = await db.collection( 'acts' ).deleteMany( { '_id': { '$in': idsToRemove } } );
+      if ( !actsResult.acknowledged ) {
+        throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_027)' );
+      }
+      await db.collection( 'actMetadata' ).deleteMany( { '_id': { '$in': idsToRemove } } );
 
-    if ( !actsResult.acknowledged ) {
-      throw new Error( 'Service temporarily unavailable. Please try again later. (Error: DB_027)' );
-    }
-    await db.collection( 'actMetadata' ).deleteMany( { '_id': { '$in': idsToRemove } } );
+      mf.logger.debug( {
+        'deletedCount': actsResult.deletedCount
+      }, 'Removed stale acts' );
 
-    const duration = Date.now() - startTime;
-
-    mf.logger.debug( {
-      'deletedCount': actsResult.deletedCount,
-      duration
-    }, 'Removed stale acts' );
-
-    logSlowOperation( 'removeActsNotRequestedFor14Updates', duration, {
-      'deletedCount': actsResult.deletedCount
-    } );
-
-    return { 'deletedCount': actsResult.deletedCount };
-  };
+      return { 'deletedCount': actsResult.deletedCount };
+    },
+    'removeActsNotRequestedFor14Updates',
+    {}
+  );
 
   // Extend global namespace (mf is already initialized by database.js)
   globalThis.mf.databaseAdmin = {
@@ -303,7 +274,6 @@
   if ( process.env.JEST_WORKER_ID ) {
     globalThis.mf.testing = globalThis.mf.testing || {};
     globalThis.mf.testing.databaseAdmin = {
-      logSlowOperation,
       updateActMetadata
     };
   }
