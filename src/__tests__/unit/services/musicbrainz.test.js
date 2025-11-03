@@ -279,7 +279,9 @@ describe( 'musicbrainz', () => {
       expect( errorSpy ).toHaveBeenCalledWith(
         expect.objectContaining( {
           'actId': validMbid,
-          'error': 'Network timeout'
+          'err': expect.objectContaining( {
+            'message': 'Network timeout'
+          } )
         } ),
         'MusicBrainz API error'
       );

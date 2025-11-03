@@ -384,7 +384,9 @@ describe( 'LD+JSON Extractor', () => {
       expect( warnSpy ).toHaveBeenCalledWith(
         expect.objectContaining( {
           url,
-          'error': 'Network error'
+          'err': expect.objectContaining( {
+            'message': 'Network error'
+          } )
         } ),
         'Failed to extract LD+JSON'
       );

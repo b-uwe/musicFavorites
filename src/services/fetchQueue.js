@@ -153,7 +153,7 @@
         // This is defensive programming! It should be impossible to land here as of now
         isBackgroundFetchRunning = false;
         mf.logger.error( {
-          'errorMessage': error.message
+          'err': error
         }, 'Background fetch error' );
       } );
   };
