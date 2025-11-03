@@ -70,48 +70,26 @@
   };
 
   /**
-   * Processes the fetch queue sequentially with 30-second delays
-   * Uses lazy require pattern to avoid circular dependency with actService
+   * Processes queue items sequentially until empty
    * @param {Set<string>} queue - Set of MusicBrainz act IDs to fetch
+   * @param {object} stats - Object to track success/error counts and position
    * @returns {Promise<void>} Resolves when queue is empty
    */
-  const processFetchQueue = async ( queue ) => {
-    /*
-     * CRITICAL: Lazy require to break circular dependency
-     * This function is called after all modules are loaded, so it's safe
-     */
-    require( './actService' );
-
-    const startTime = Date.now();
-    const totalActs = queue.size;
-    let successCount = 0;
-    let errorCount = 0;
-    let position = 0;
-
-    mf.logger.info( {
-      'queueDepth': totalActs
-    }, 'Starting background fetch queue' );
-
-    // Process queue until empty
+  const processQueueItems = async ( queue, stats ) => {
     while ( queue.size > 0 ) {
-      // Get first item from Set
       const [ actId ] = queue;
 
-      // Remove from queue before processing
       queue.delete( actId );
+      stats.position++;
 
-      position++;
-
-      // Process the act and track success/failure
-      const success = await processActInQueue( actId, position, totalActs );
+      const success = await processActInQueue( actId, stats.position, stats.totalActs );
 
       if ( success ) {
-        successCount++;
+        stats.successCount++;
       } else {
-        errorCount++;
+        stats.errorCount++;
       }
 
-      // Wait 30 seconds before processing next act (only if queue not empty)
       if ( queue.size > 0 ) {
         mf.logger.debug( {
           'delayMs': THIRTY_SECONDS_MS
@@ -119,8 +97,40 @@
         await sleep( THIRTY_SECONDS_MS );
       }
     }
+  };
 
-    logQueueCompletion( totalActs, successCount, errorCount, startTime );
+  /**
+   * Processes the fetch queue sequentially with 30-second delays
+   * Uses lazy require pattern to avoid circular dependency with actService
+   * @param {Set<string>} queue - Set of MusicBrainz act IDs to fetch
+   * @param {string|null} parentCorrelationId - Optional parent correlation ID for linking
+   * @returns {Promise<void>} Resolves when queue is empty
+   */
+  const processFetchQueue = async ( queue, parentCorrelationId = null ) => {
+    // Generate queue-specific correlation ID
+    const queueId = `queue-${Date.now()}`;
+    const correlationId = parentCorrelationId ? `${parentCorrelationId}→${queueId}` : queueId;
+
+    // Wrap entire queue processing in async context for correlation tracking
+    await mf.asyncLocalStorage.run( { correlationId }, async () => {
+      require( './actService' );
+
+      const startTime = Date.now();
+      const stats = {
+        'totalActs': queue.size,
+        'successCount': 0,
+        'errorCount': 0,
+        'position': 0
+      };
+
+      mf.logger.info( {
+        'queueDepth': stats.totalActs
+      }, 'Starting background fetch queue' );
+
+      await processQueueItems( queue, stats );
+
+      logQueueCompletion( stats.totalActs, stats.successCount, stats.errorCount, startTime );
+    } );
   };
 
   /**
@@ -131,6 +141,10 @@
    * @returns {void} Returns immediately after queueing
    */
   const triggerBackgroundFetch = ( actIds ) => {
+    // Capture parent correlation ID if available (e.g., from HTTP request)
+    const store = mf.asyncLocalStorage?.getStore();
+    const parentCorrelationId = store?.correlationId || null;
+
     // Add all missing IDs to the queue (Set prevents duplicates)
     for ( const actId of actIds ) {
       fetchQueue.add( actId );
@@ -144,8 +158,8 @@
     // Start the queue processor
     isBackgroundFetchRunning = true;
 
-    // Process queue in background (fire-and-forget)
-    processFetchQueue( fetchQueue ).
+    // Process queue in background (fire-and-forget) with parent correlation
+    processFetchQueue( fetchQueue, parentCorrelationId ).
       then( () => {
         isBackgroundFetchRunning = false;
       } ).

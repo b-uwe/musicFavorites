@@ -6,6 +6,7 @@
 ( () => {
   'use strict';
 
+  const crypto = require( 'crypto' );
   const express = require( 'express' );
   const path = require( 'path' );
   const speakeasy = require( 'speakeasy' );
@@ -22,9 +23,27 @@
 
   const app = express();
 
+  // Correlation ID middleware - generates unique ID for each request
+  app.use( ( req, res, next ) => {
+    // Generate unique correlation ID with timestamp and cryptographically random component
+    const correlationId = `req-${Date.now().toString( 36 )}-${crypto.randomBytes( 6 ).toString( 'base64url' )}`;
+
+    // Add to response headers for client-side debugging
+    res.setHeader( 'X-Correlation-ID', correlationId );
+
+    // Store in async context for automatic propagation to all downstream operations
+    mf.asyncLocalStorage.run( { correlationId }, () => {
+      next();
+    } );
+  } );
+
   // HTTP request/response logging middleware
   app.use( ( req, res, next ) => {
     const start = Date.now();
+
+    // Capture correlation ID from async context
+    const store = mf.asyncLocalStorage.getStore();
+    const correlationId = store?.correlationId;
 
     /*
      * Use res.once() instead of res.on() to auto-remove listener after it fires
@@ -34,6 +53,7 @@
       const duration = Date.now() - start;
 
       mf.logger.info( {
+        correlationId,
         'method': req.method,
         'path': req.path,
         'statusCode': res.statusCode,
