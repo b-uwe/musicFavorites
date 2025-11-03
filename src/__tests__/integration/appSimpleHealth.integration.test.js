@@ -64,6 +64,9 @@ describe( 'Express App - /health Integration Tests', () => {
 
     expect( response.status ).toBe( 503 );
     expect( response.body ).toEqual( {
+      'meta': {
+        'correlationId': expect.stringMatching( /^req-[a-z0-9]+-[A-Za-z0-9_-]+$/u )
+      },
       'status': 'unhealthy',
       'reason': 'database_unavailable',
       'timestamp': expect.stringMatching( /^\d{4}-\d{2}-\d{2}T/u )

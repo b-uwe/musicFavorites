@@ -95,8 +95,11 @@ describe( 'app - Branch Coverage', () => {
 
       // Mock logger module to initialize globalThis.mf with mockLogger
       jest.doMock( '../../logger', () => {
+        const { AsyncLocalStorage } = require( 'async_hooks' );
+
         globalThis.mf = globalThis.mf || {};
         globalThis.mf.logger = mockLogger;
+        globalThis.mf.asyncLocalStorage = new AsyncLocalStorage();
         return {};
       } );
 

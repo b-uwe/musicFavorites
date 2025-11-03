@@ -166,6 +166,31 @@
   const deduplicateActIds = ( actIds ) => [ ...new Set( actIds ) ];
 
   /**
+   * Get correlation ID from async context
+   * @returns {string|undefined} Correlation ID if in async context
+   */
+  const getCorrelationId = () => {
+    const store = mf.asyncLocalStorage.getStore();
+
+    return store?.correlationId;
+  };
+
+  /**
+   * Build META object with correlation ID
+   * @returns {object} META object with correlationId
+   */
+  const buildMetaWithCorrelation = () => ( {
+    ...META,
+    'correlationId': getCorrelationId()
+  } );
+
+  /**
+   * Build minimal META object with only correlation ID
+   * @returns {object} Minimal META object
+   */
+  const buildMinimalMeta = () => ( { 'correlationId': getCorrelationId() } );
+
+  /**
    * Handle act data fetching for both GET and POST routes
    * @param {Array} actIds - Array of act IDs to fetch
    * @param {object} req - Express request object
@@ -191,7 +216,7 @@
 
       if ( result.error ) {
         return res.status( 503 ).json( {
-          'meta': META,
+          'meta': buildMetaWithCorrelation(),
           'type': 'error',
           'error': result.error
         } );
@@ -203,13 +228,13 @@
       } );
 
       return res.json( {
-        'meta': META,
+        'meta': buildMetaWithCorrelation(),
         'type': 'acts',
         'acts': result.acts
       } );
     } catch ( error ) {
       return res.status( 500 ).json( {
-        'meta': META,
+        'meta': buildMetaWithCorrelation(),
         'type': 'error',
         'error': {
           'message': 'Failed to fetch act data',
@@ -246,7 +271,7 @@
     // Validate request body
     if ( !ids || typeof ids !== 'string' || ids.trim().length === 0 ) {
       return res.status( 400 ).json( {
-        'meta': META,
+        'meta': buildMetaWithCorrelation(),
         'type': 'error',
         'error': {
           'message': 'Invalid request body',
@@ -291,12 +316,14 @@
       await mf.database.testCacheHealth();
 
       return res.status( 200 ).json( {
+        'meta': buildMinimalMeta(),
         'status': 'healthy',
         'timestamp': new Date().toISOString(),
         'uptime': process.uptime()
       } );
     } catch ( error ) {
       return res.status( 503 ).json( {
+        'meta': buildMinimalMeta(),
         'status': 'unhealthy',
         'reason': 'database_unavailable',
         'timestamp': new Date().toISOString()
@@ -336,6 +363,7 @@
     const adminAuth = validateAdminAuth( req );
     if ( adminAuth?.status !== 200 ) {
       return res.status( adminAuth.status ).json( {
+        'meta': buildMinimalMeta(),
         'error': adminAuth.error
       } );
     }
@@ -356,6 +384,7 @@
       const dataUpdateErrors = await mf.databaseAdmin.getRecentUpdateErrors();
 
       return res.json( {
+        'meta': buildMinimalMeta(),
         'status': 'ok',
         cacheSize,
         lastCacheUpdate,
@@ -366,6 +395,7 @@
       } );
     } catch ( error ) {
       return res.status( 500 ).json( {
+        'meta': buildMinimalMeta(),
         'error': 'Failed to fetch health data',
         'details': error.message
       } );
@@ -387,6 +417,7 @@
     const adminAuth = validateAdminAuth( req );
     if ( adminAuth?.status !== 200 ) {
       return res.status( adminAuth.status ).json( {
+        'meta': buildMinimalMeta(),
         'error': adminAuth.error
       } );
     }
@@ -395,11 +426,13 @@
       await mf.databaseAdmin.clearCache();
 
       return res.json( {
+        'meta': buildMinimalMeta(),
         'status': 'ok',
         'message': 'Cache cleared successfully'
       } );
     } catch ( error ) {
       return res.status( 500 ).json( {
+        'meta': buildMinimalMeta(),
         'error': 'Failed to clear cache',
         'details': error.message
       } );
@@ -413,6 +446,7 @@
    * @returns {object} JSON error response
    */
   app.use( ( req, res ) => res.status( 404 ).json( {
+    'meta': buildMinimalMeta(),
     'error': 'Not found',
     'status': 404
   } ) );
