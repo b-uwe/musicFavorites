@@ -97,30 +97,36 @@
    * @returns {Promise<void>} Resolves when cycle completes
    */
   const runCycle = async ( cycleIntervalMs, retryDelayMs ) => {
-    try {
-      // Fetch all act IDs from cache
-      const actIds = await mf.database.getAllActIds();
+    // Generate cycle-specific correlation ID
+    const cycleId = `cycle-${new Date().toISOString()}`;
 
-      if ( actIds.length === 0 ) {
-        await sleep( cycleIntervalMs );
+    // Wrap entire cycle in async context for correlation tracking
+    await mf.asyncLocalStorage.run( { 'correlationId': cycleId }, async () => {
+      try {
+        // Fetch all act IDs from cache
+        const actIds = await mf.database.getAllActIds();
 
-        return;
+        if ( actIds.length === 0 ) {
+          await sleep( cycleIntervalMs );
+
+          return;
+        }
+
+        // Calculate time slice: cycle interval divided by number of acts
+        const timeSlice = cycleIntervalMs / actIds.length;
+
+        // Update each act in sequence
+        for ( const actId of actIds ) {
+          await updateAct( actId );
+          await sleep( timeSlice );
+        }
+      } catch ( error ) {
+        mf.logger.error( {
+          'err': error
+        }, 'Cache update cycle error' );
+        await sleep( retryDelayMs );
       }
-
-      // Calculate time slice: cycle interval divided by number of acts
-      const timeSlice = cycleIntervalMs / actIds.length;
-
-      // Update each act in sequence
-      for ( const actId of actIds ) {
-        await updateAct( actId );
-        await sleep( timeSlice );
-      }
-    } catch ( error ) {
-      mf.logger.error( {
-        'err': error
-      }, 'Cache update cycle error' );
-      await sleep( retryDelayMs );
-    }
+    } );
   };
 
   /**
@@ -147,43 +153,49 @@
    * Runs a single sequential update of all acts with fixed 30s pauses
    * @returns {Promise<number>} Number of acts processed
    */
-  const runSequentialUpdate = async () => {
-    try {
-      // Fetch all acts with metadata from cache
-      const acts = await mf.database.getAllActsWithMetadata();
+  const runSequentialUpdate = () => {
+    // Generate sequential update correlation ID
+    const sequentialId = `sequential-${new Date().toISOString()}`;
 
-      if ( acts.length === 0 ) {
-        return 0;
-      }
-
-      // Filter to only stale acts (lastUpdated > 24h ago or missing)
-      const staleActs = acts.filter( isActStale );
-
-      if ( staleActs.length === 0 ) {
-        return 0;
-      }
-
-      // Remove acts not requested for 14 updates before processing updates
+    // Wrap entire sequential update in async context for correlation tracking
+    return mf.asyncLocalStorage.run( { 'correlationId': sequentialId }, async () => {
       try {
-        await mf.databaseAdmin.removeActsNotRequestedFor14Updates();
-      } catch {
-        // Silent fail - don't block updates if removal fails
+        // Fetch all acts with metadata from cache
+        const acts = await mf.database.getAllActsWithMetadata();
+
+        if ( acts.length === 0 ) {
+          return 0;
+        }
+
+        // Filter to only stale acts (lastUpdated > 24h ago or missing)
+        const staleActs = acts.filter( isActStale );
+
+        if ( staleActs.length === 0 ) {
+          return 0;
+        }
+
+        // Remove acts not requested for 14 updates before processing updates
+        try {
+          await mf.databaseAdmin.removeActsNotRequestedFor14Updates();
+        } catch {
+          // Silent fail - don't block updates if removal fails
+        }
+
+        // Update each stale act with fixed 30s pause
+        for ( const act of staleActs ) {
+          await updateAct( act._id );
+          await sleep( THIRTY_SECONDS_MS );
+        }
+
+        return staleActs.length;
+      } catch ( error ) {
+        mf.logger.error( {
+          'err': error
+        }, 'Sequential update error' );
+
+        return 0;
       }
-
-      // Update each stale act with fixed 30s pause
-      for ( const act of staleActs ) {
-        await updateAct( act._id );
-        await sleep( THIRTY_SECONDS_MS );
-      }
-
-      return staleActs.length;
-    } catch ( error ) {
-      mf.logger.error( {
-        'err': error
-      }, 'Sequential update error' );
-
-      return 0;
-    }
+    } );
   };
 
   /**

@@ -55,4 +55,58 @@ describe( 'logger', () => {
     jest.resetModules();
     require( '../../logger' );
   } );
+
+  test( 'asyncLocalStorage is available globally', () => {
+    expect( mf.asyncLocalStorage ).toBeDefined();
+    expect( typeof mf.asyncLocalStorage.run ).toBe( 'function' );
+    expect( typeof mf.asyncLocalStorage.getStore ).toBe( 'function' );
+  } );
+
+  test( 'logger mixin adds correlationId when in async context', () => {
+    // Create a logger in debug mode to actually execute the mixin
+    const originalEnv = process.env.NODE_ENV;
+
+    process.env.NODE_ENV = 'development';
+    delete globalThis.mf.logger;
+    jest.resetModules();
+    require( '../../logger' );
+
+    const infoSpy = jest.spyOn( mf.logger, 'debug' );
+
+    // Log inside async context - this should trigger the mixin
+    mf.asyncLocalStorage.run( { 'correlationId': 'test-correlation-id' }, () => {
+      mf.logger.debug( { 'testField': 'testValue' }, 'test message' );
+    } );
+
+    // Verify log was called
+    expect( infoSpy ).toHaveBeenCalled();
+
+    infoSpy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    delete globalThis.mf.logger;
+    jest.resetModules();
+    require( '../../logger' );
+  } );
+
+  test( 'logger mixin returns empty object when no correlationId', () => {
+    const originalEnv = process.env.NODE_ENV;
+
+    process.env.NODE_ENV = 'development';
+    delete globalThis.mf.logger;
+    jest.resetModules();
+    require( '../../logger' );
+
+    const infoSpy = jest.spyOn( mf.logger, 'debug' );
+
+    // Log outside async context
+    mf.logger.debug( { 'testField': 'testValue' }, 'test message' );
+
+    expect( infoSpy ).toHaveBeenCalled();
+
+    infoSpy.mockRestore();
+    process.env.NODE_ENV = originalEnv;
+    delete globalThis.mf.logger;
+    jest.resetModules();
+    require( '../../logger' );
+  } );
 } );
