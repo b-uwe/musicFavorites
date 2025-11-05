@@ -142,42 +142,34 @@
 
   /**
    * Sets response headers for cache control and robots
+   * Robots blocking will be removed once caching layer is in place
+   * Proper caching strategy will be implemented later
    * @param {object} res - Express response object
    * @returns {void}
    */
   const setResponseHeaders = ( res ) => {
-    // TODO: Remove robots blocking once caching layer is in place to protect upstream providers
     res.set( 'X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet' );
-
-    /*
-     * TODO: Implement proper caching strategy with ETags and Cache-Control max-age
-     * For now, disable all caching
-     */
     res.set( 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate' );
     res.set( 'Pragma', 'no-cache' );
     res.set( 'Expires', '0' );
   };
 
   /**
-   * Deduplicate an array of act IDs while preserving order of first occurrence
-   * @param {Array<string>} actIds - Array of act IDs that may contain duplicates
-   * @returns {Array<string>} Array of unique act IDs in order of first occurrence
+   * Deduplicate act IDs preserving order of first occurrence
+   * @param {Array<string>} actIds - Array of act IDs
+   * @returns {Array<string>} Unique act IDs
    */
   const deduplicateActIds = ( actIds ) => [ ...new Set( actIds ) ];
 
   /**
    * Get correlation ID from async context
-   * @returns {string|undefined} Correlation ID if in async context
+   * @returns {string|undefined} Correlation ID
    */
-  const getCorrelationId = () => {
-    const store = mf.asyncLocalStorage.getStore();
-
-    return store?.correlationId;
-  };
+  const getCorrelationId = () => mf.asyncLocalStorage.getStore()?.correlationId;
 
   /**
    * Build META object with correlation ID
-   * @returns {object} META object with correlationId
+   * @returns {object} META with correlationId
    */
   const buildMetaWithCorrelation = () => ( {
     ...META,
@@ -185,8 +177,8 @@
   } );
 
   /**
-   * Build minimal META object with only correlation ID
-   * @returns {object} Minimal META object
+   * Build minimal META object
+   * @returns {object} Minimal META
    */
   const buildMinimalMeta = () => ( { 'correlationId': getCorrelationId() } );
 
@@ -286,12 +278,7 @@
     return handleActsRequest( actIds, req, res );
   } );
 
-  /**
-   * Serve robots.txt file
-   * @param {object} req - Express request object
-   * @param {object} res - Express response object
-   * @returns {void} Sends robots.txt file
-   */
+  // Serve robots.txt file
   app.get( '/robots.txt', ( req, res ) => {
     const robotsPath = path.join( __dirname, '..', 'robots.txt' );
 
@@ -302,12 +289,7 @@
     } );
   } );
 
-  /**
-   * Simple health check endpoint for load balancers and monitoring
-   * @param {object} req - Express request object
-   * @param {object} res - Express response object
-   * @returns {Promise<object>} Health status JSON response
-   */
+  // Simple health check endpoint for load balancers and monitoring
   app.get( '/health', async ( req, res ) => {
     res.setHeader( 'Cache-Control', 'no-cache, no-store, must-revalidate' );
 
@@ -332,6 +314,41 @@
   } );
 
   /**
+   * Categorize captured logs intelligently
+   * @param {Array} capturedLogs - Raw captured logs from log buffer
+   * @returns {object} Categorized logs by issue type
+   */
+  const categorizeLogs = ( capturedLogs ) => {
+    const categorized = {
+      'invalidBandsintownUrls': [],
+      'brokenEventData': [],
+      'other': []
+    };
+
+    for ( const log of capturedLogs ) {
+      if ( log.issue === 'invalid_bandsintown_url' ) {
+        categorized.invalidBandsintownUrls.push( {
+          'timestamp': log.timestamp,
+          'actId': log.actId,
+          'invalidUrl': log.invalidUrl
+        } );
+      } else if ( log.issue === 'broken_event_data' ) {
+        categorized.brokenEventData.push( {
+          'timestamp': log.timestamp,
+          'actId': log.actId,
+          'rejectedCount': log.rejectedCount,
+          'rejectedEvents': log.rejectedEvents
+        } );
+      } else {
+        // Keep other logs as-is
+        categorized.other.push( log );
+      }
+    }
+
+    return categorized;
+  };
+
+  /**
    * Calculate last cache update stats from acts with metadata
    * @param {Array<object>} actsWithMetadata - Array of acts with updatedAt timestamps
    * @returns {object|null} Object with newest and oldest update info, or null if empty
@@ -349,11 +366,38 @@
     }, {} );
 
   /**
-   * Health Status
-   * @param {object} req - Express request object
-   * @param {object} res - Express response object
-   * @returns {void} Returns a health Status
+   * Gather all health data for admin endpoint
+   * @returns {Promise<object>} Health data object
    */
+  const gatherHealthData = async () => {
+    const actIds = await mf.database.getAllActIds();
+    const cacheSize = actIds.length;
+
+    let lastCacheUpdate = null;
+
+    if ( cacheSize > 0 ) {
+      const actsWithMetadata = await mf.database.getAllActsWithMetadata();
+
+      lastCacheUpdate = calculateLastCacheUpdate( actsWithMetadata );
+    }
+
+    const artistsWithoutBandsintown = await mf.database.getActsWithoutBandsintown();
+    const dataUpdateErrors = await mf.databaseAdmin.getRecentUpdateErrors();
+
+    // Get captured logs and categorize them intelligently
+    const capturedLogs = mf.logger.getLogs();
+    const dataQualityIssues = categorizeLogs( capturedLogs );
+
+    return {
+      cacheSize,
+      lastCacheUpdate,
+      artistsWithoutBandsintown,
+      dataUpdateErrors,
+      dataQualityIssues
+    };
+  };
+
+  // Admin health endpoint with detailed system status
   app.get( '/admin/health', async ( req, res ) => {
     app.set( 'json spaces', 2 );
 
@@ -369,27 +413,12 @@
     }
 
     try {
-      const actIds = await mf.database.getAllActIds();
-      const cacheSize = actIds.length;
-
-      let lastCacheUpdate = null;
-
-      if ( cacheSize > 0 ) {
-        const actsWithMetadata = await mf.database.getAllActsWithMetadata();
-
-        lastCacheUpdate = calculateLastCacheUpdate( actsWithMetadata );
-      }
-
-      const artistsWithoutBandsintown = await mf.database.getActsWithoutBandsintown();
-      const dataUpdateErrors = await mf.databaseAdmin.getRecentUpdateErrors();
+      const healthData = await gatherHealthData();
 
       return res.json( {
         'meta': buildMinimalMeta(),
         'status': 'ok',
-        cacheSize,
-        lastCacheUpdate,
-        artistsWithoutBandsintown,
-        dataUpdateErrors,
+        ...healthData,
         'uptime': process.uptime(),
         usageStats
       } );
@@ -402,12 +431,7 @@
     }
   } );
 
-  /**
-   * Clear Cache
-   * @param {object} req - Express request object
-   * @param {object} res - Express response object
-   * @returns {void} Returns cache flush confirmation
-   */
+  // Admin endpoint to clear cache
   app.delete( '/admin/health/cache', async ( req, res ) => {
     app.set( 'json spaces', 2 );
 
@@ -439,12 +463,7 @@
     }
   } );
 
-  /**
-   * Handle 404 errors with JSON response
-   * @param {object} req - Express request object
-   * @param {object} res - Express response object
-   * @returns {object} JSON error response
-   */
+  // Handle 404 errors with JSON response
   app.use( ( req, res ) => res.status( 404 ).json( {
     'meta': buildMinimalMeta(),
     'error': 'Not found',
@@ -459,19 +478,13 @@
    */
   const gracefulShutdown = ( server ) => {
     mf.logger.info( 'Initiating graceful shutdown' );
-
     server.close( () => {
       mf.database.disconnect().then( () => {
         mf.logger.info( 'Database disconnected successfully' );
         process.exit( 0 );
       } ).catch( ( error ) => {
-        /*
-         * Exit even if database disconnect fails
-         * Server is already closed, nothing left to clean up
-         */
-        mf.logger.error( {
-          'error': error.message
-        }, 'Database disconnect failed during shutdown' );
+        // Exit even if disconnect fails - server is already closed
+        mf.logger.error( { 'error': error.message }, 'Database disconnect failed during shutdown' );
         process.exit( 0 );
       } );
     } );

@@ -142,13 +142,29 @@
 
     // Validate Bandsintown URL format
     if ( bandsintownUrl.match( /^https?:\/\/(?:www\.)?bandsintown\.com\/a\/(?:\d+)$/u )?.length !== 1 ) {
+      mf.logger.error( {
+        'actId': actData.musicbrainzId || actData._id,
+        'invalidUrl': bandsintownUrl,
+        'issue': 'invalid_bandsintown_url'
+      }, 'Invalid Bandsintown URL format - possible attack or data corruption' );
       return [];
     }
 
     try {
       const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
+      const result = mf.bandsintownTransformer.transformEvents( ldJsonData, true );
 
-      return mf.bandsintownTransformer.transformEvents( ldJsonData );
+      // Log broken event data with rejection reasons
+      if ( result.rejected && result.rejected.length > 0 ) {
+        mf.logger.warn( {
+          'actId': actData.musicbrainzId || actData._id,
+          'rejectedCount': result.rejected.length,
+          'rejectedEvents': result.rejected,
+          'issue': 'broken_event_data'
+        }, 'Bandsintown events rejected during transformation' );
+      }
+
+      return result.events;
     } catch ( error ) {
       if ( silentFail ) {
         return [];
@@ -174,9 +190,13 @@
     // Determine status based on events
     const finalStatus = determineStatus( events, transformedData.status );
 
+    const hasBandsintown = Boolean( transformedData.relations?.bandsintown );
+    const hasSongkick = Boolean( transformedData.relations?.songkick );
+
     mf.logger.info( {
       actId,
-      'hasBandsintown': Boolean( transformedData.relations?.bandsintown ),
+      hasBandsintown,
+      hasSongkick,
       'eventCount': events.length,
       finalStatus
     }, 'Act enrichment completed' );

@@ -123,23 +123,95 @@
   };
 
   /**
+   * Categorize a single LD+JSON item as event or rejected
+   * @param {object} item - LD+JSON object
+   * @returns {object} Object with either event or rejected property
+   */
+  const categorizeItem = ( item ) => {
+    // Check @type
+    if ( item[ '@type' ] !== 'MusicEvent' ) {
+      return {
+        'rejected': {
+          'reason': 'wrong_type',
+          'type': item[ '@type' ],
+          'name': item.name || 'unknown'
+        }
+      };
+    }
+
+    // Check date range
+    if ( !isEventWithinRange( item.startDate ) ) {
+      return {
+        'rejected': {
+          'reason': 'date_out_of_range',
+          'date': item.startDate,
+          'name': item.name || 'unknown'
+        }
+      };
+    }
+
+    // Check name
+    if ( !item.name ) {
+      return {
+        'rejected': {
+          'reason': 'missing_name',
+          'date': item.startDate
+        }
+      };
+    }
+
+    // Valid event
+    return {
+      'event': transformEvent( item )
+    };
+  };
+
+  /**
    * Transforms array of LD+JSON objects to event schema
    * Filters to include only MusicEvent type objects
    * Filters out events older than 2 calendar days (UTC)
    * Filters out events without a name
    * @param {Array<object>} ldJsonData - Array of LD+JSON objects
-   * @returns {Array<object>} Array of transformed event objects
+   * @param {boolean} includeRejected - If true, return both events and rejected items
+   * @returns {Array<object>|object} Array of events, or object with events and rejected
    */
-  const transformEvents = ( ldJsonData ) => {
+  const transformEvents = ( ldJsonData, includeRejected = false ) => {
     if ( !ldJsonData || !Array.isArray( ldJsonData ) ) {
-      return [];
+      const emptyResult = {
+        'events': [],
+        'rejected': []
+      };
+
+      return includeRejected ? emptyResult : [];
     }
 
-    return ldJsonData.
-      filter( ( item ) => item[ '@type' ] === 'MusicEvent' ).
-      filter( ( item ) => isEventWithinRange( item.startDate ) ).
-      filter( ( item ) => item.name ).
-      map( transformEvent );
+    if ( !includeRejected ) {
+      // Original behavior for backward compatibility
+      return ldJsonData.
+        filter( ( item ) => item[ '@type' ] === 'MusicEvent' ).
+        filter( ( item ) => isEventWithinRange( item.startDate ) ).
+        filter( ( item ) => item.name ).
+        map( transformEvent );
+    }
+
+    // New behavior: track rejections
+    const events = [];
+    const rejected = [];
+
+    for ( const item of ldJsonData ) {
+      const result = categorizeItem( item );
+
+      if ( result.event ) {
+        events.push( result.event );
+      } else {
+        rejected.push( result.rejected );
+      }
+    }
+
+    return {
+      events,
+      rejected
+    };
   };
 
   // Initialize global namespace
