@@ -420,12 +420,15 @@ describe( 'actService', () => {
         ];
 
         mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( mockLdJson );
-        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( {
+          'events': mockTransformedEvents,
+          'rejected': []
+        } );
 
         const result = await mf.actService.fetchBandsintownEvents( artistData );
 
         expect( mf.ldJsonExtractor.fetchAndExtractLdJson ).toHaveBeenCalledWith( 'https://bandsintown.com/a/12345' );
-        expect( mf.bandsintownTransformer.transformEvents ).toHaveBeenCalledWith( mockLdJson );
+        expect( mf.bandsintownTransformer.transformEvents ).toHaveBeenCalledWith( mockLdJson, true );
         expect( result ).toEqual( mockTransformedEvents );
       } );
 
@@ -483,7 +486,10 @@ describe( 'actService', () => {
         mf.musicbrainz.fetchAct.mockResolvedValue( mockMbData );
         mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
         mf.ldJsonExtractor.fetchAndExtractLdJson.mockResolvedValue( {} );
-        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockEvents );
+        mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( {
+          'events': mockEvents,
+          'rejected': []
+        } );
 
         const result = await mf.actService.fetchAndEnrichActData( 'test-id' );
 

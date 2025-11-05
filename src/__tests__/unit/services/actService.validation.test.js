@@ -4,8 +4,9 @@
  */
 
 describe( 'actService - Data Validation Logging', () => {
-  let debugSpy;
+  let errorSpy;
   let warnSpy;
+  let infoSpy;
 
   beforeEach( () => {
     jest.clearAllMocks();
@@ -13,121 +14,58 @@ describe( 'actService - Data Validation Logging', () => {
     require( '../../../services/actService' );
 
     // Spy on logger methods
-    debugSpy = jest.spyOn( mf.logger, 'debug' ).mockImplementation( () => {
+    errorSpy = jest.spyOn( mf.logger, 'error' ).mockImplementation( () => {
       // Mock implementation
     } );
     warnSpy = jest.spyOn( mf.logger, 'warn' ).mockImplementation( () => {
       // Mock implementation
     } );
+    infoSpy = jest.spyOn( mf.logger, 'info' ).mockImplementation( () => {
+      // Mock implementation
+    } );
   } );
 
   afterEach( () => {
-    if ( debugSpy ) {
-      debugSpy.mockRestore();
+    if ( errorSpy ) {
+      errorSpy.mockRestore();
     }
     if ( warnSpy ) {
       warnSpy.mockRestore();
     }
+    if ( infoSpy ) {
+      infoSpy.mockRestore();
+    }
   } );
 
-  describe( 'fetchBandsintownEvents - Event Filtering Logging', () => {
+  describe( 'fetchBandsintownEvents - Invalid URL Logging', () => {
     /**
-     * Test logging when some events are filtered
+     * Test ERROR logging when Bandsintown URL format is invalid
      */
-    test( 'logs debug when some Bandsintown events are filtered', async () => {
+    test( 'logs ERROR when Bandsintown URL format is invalid', async () => {
       const artistData = {
         'musicbrainzId': 'test-id',
         'relations': {
-          'bandsintown': 'https://bandsintown.com/a/12345'
+          'bandsintown': 'https://malicious-site.com/fake'
         }
       };
 
-      // Mock LD+JSON data with 5 raw events
-      const mockLdJson = [
-        { 'name': 'Event 1' },
-        { 'name': 'Event 2' },
-        { 'name': 'Event 3' },
-        { 'name': 'Event 4' },
-        { 'name': 'Event 5' }
-      ];
-
-      // But transformer only returns 3 valid events (2 filtered out)
-      const mockTransformedEvents = [
-        {
-          'name': 'Event 1',
-          'date': '2025-12-01',
-          'location': {}
-        },
-        {
-          'name': 'Event 2',
-          'date': '2025-12-02',
-          'location': {}
-        },
-        {
-          'name': 'Event 3',
-          'date': '2025-12-03',
-          'location': {}
-        }
-      ];
-
-      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
-      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
-
       await mf.actService.fetchBandsintownEvents( artistData );
 
-      // Should log debug about filtered events
-      expect( debugSpy ).toHaveBeenCalledWith(
+      // Should log ERROR about invalid URL
+      expect( errorSpy ).toHaveBeenCalledWith(
         {
           'actId': 'test-id',
-          'rawEventCount': 5,
-          'validEventCount': 3,
-          'filteredCount': 2
+          'invalidUrl': 'https://malicious-site.com/fake',
+          'issue': 'invalid_bandsintown_url'
         },
-        'Some Bandsintown events filtered during transformation'
+        'Invalid Bandsintown URL format - possible attack or data corruption'
       );
     } );
 
     /**
-     * Test warning when ALL events are filtered
+     * Test no ERROR logging when URL is valid
      */
-    test( 'logs warning when all Bandsintown events are filtered', async () => {
-      const artistData = {
-        'musicbrainzId': 'test-id',
-        'relations': {
-          'bandsintown': 'https://bandsintown.com/a/12345'
-        }
-      };
-
-      // Mock LD+JSON data with 3 raw events
-      const mockLdJson = [
-        { 'name': 'Event 1' },
-        { 'name': 'Event 2' },
-        { 'name': 'Event 3' }
-      ];
-
-      // But transformer returns empty array (all filtered)
-      const mockTransformedEvents = [];
-
-      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
-      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
-
-      await mf.actService.fetchBandsintownEvents( artistData );
-
-      // Should log warning about all events filtered
-      expect( warnSpy ).toHaveBeenCalledWith(
-        {
-          'actId': 'test-id',
-          'rawEventCount': 3,
-          'issue': 'all_events_filtered'
-        },
-        'All Bandsintown events were filtered out'
-      );
-    } );
-
-    /**
-     * Test no logging when all events are valid (no filtering)
-     */
-    test( 'does not log when all events are valid (no filtering)', async () => {
+    test( 'does not log ERROR when Bandsintown URL is valid', async () => {
       const artistData = {
         'musicbrainzId': 'test-id',
         'relations': {
@@ -136,153 +74,209 @@ describe( 'actService - Data Validation Logging', () => {
       };
 
       const mockLdJson = [
-        { 'name': 'Event 1' },
-        { 'name': 'Event 2' }
-      ];
-
-      const mockTransformedEvents = [
         {
-          'name': 'Event 1',
-          'date': '2025-12-01',
-          'location': {}
-        },
-        {
-          'name': 'Event 2',
-          'date': '2025-12-02',
-          'location': {}
+          '@type': 'MusicEvent',
+          'name': 'Concert',
+          'startDate': '2025-12-01T18:00:00'
         }
       ];
 
       mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
-      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
+      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( {
+        'events': [
+          {
+            'name': 'Concert',
+            'date': '2025-12-01',
+            'location': {}
+          }
+        ],
+        'rejected': []
+      } );
 
       await mf.actService.fetchBandsintownEvents( artistData );
 
-      // Should not log validation warnings/debug when no filtering occurred
-      expect( debugSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'filteredCount': expect.any( Number ) } ),
-        'Some Bandsintown events filtered during transformation'
-      );
-      expect( warnSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'all_events_filtered' } ),
-        'All Bandsintown events were filtered out'
-      );
+      // Should not log ERROR
+      expect( errorSpy ).not.toHaveBeenCalled();
     } );
 
     /**
-     * Test no logging when LD+JSON is empty (no raw events)
+     * Test no logging when there's no Bandsintown URL
      */
-    test( 'does not log when LD+JSON returns no events', async () => {
+    test( 'does not log when there is no Bandsintown URL', async () => {
       const artistData = {
         'musicbrainzId': 'test-id',
-        'relations': {
-          'bandsintown': 'https://bandsintown.com/a/12345'
-        }
-      };
-
-      const mockLdJson = [];
-      const mockTransformedEvents = [];
-
-      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
-      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockTransformedEvents );
-
-      await mf.actService.fetchBandsintownEvents( artistData );
-
-      // Should not log when there were no events to begin with
-      expect( warnSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'all_events_filtered' } ),
-        expect.any( String )
-      );
-    } );
-  } );
-
-  describe( 'fetchAndEnrichActData - Data Quality Logging', () => {
-    /**
-     * Test logging when act has no relations and no events
-     */
-    test( 'logs warning when act has no relations and no Bandsintown events', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      // No relations
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
         'relations': {}
       };
 
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
+      await mf.actService.fetchBandsintownEvents( artistData );
 
-      // Mock no Bandsintown events
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
+      // Should not log anything
+      expect( errorSpy ).not.toHaveBeenCalled();
+      expect( warnSpy ).not.toHaveBeenCalled();
+    } );
+  } );
 
-      await mf.actService.fetchAndEnrichActData( actId );
+  describe( 'fetchBandsintownEvents - Broken Event Data Logging', () => {
+    /**
+     * Test WARN logging when events are rejected
+     */
+    test( 'logs WARN when some events are rejected during transformation', async () => {
+      const artistData = {
+        'musicbrainzId': 'test-id',
+        'relations': {
+          'bandsintown': 'https://bandsintown.com/a/12345'
+        }
+      };
 
-      // Should log warning about minimal data
+      const mockLdJson = [
+        {
+          '@type': 'MusicEvent',
+          'name': 'Valid Event',
+          'startDate': '2025-12-01T18:00:00'
+        },
+        {
+          '@type': 'Event',
+          'name': 'Wrong Type',
+          'startDate': '2025-12-02T18:00:00'
+        }
+      ];
+
+      const mockResult = {
+        'events': [
+          {
+            'name': 'Valid Event',
+            'date': '2025-12-01',
+            'location': {}
+          }
+        ],
+        'rejected': [
+          {
+            'reason': 'wrong_type',
+            'type': 'Event',
+            'name': 'Wrong Type'
+          }
+        ]
+      };
+
+      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
+      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockResult );
+
+      await mf.actService.fetchBandsintownEvents( artistData );
+
+      // Should log WARN about rejected events
       expect( warnSpy ).toHaveBeenCalledWith(
         {
-          actId,
-          'issue': 'minimal_data'
+          'actId': 'test-id',
+          'rejectedCount': 1,
+          'rejectedEvents': [
+            {
+              'reason': 'wrong_type',
+              'type': 'Event',
+              'name': 'Wrong Type'
+            }
+          ],
+          'issue': 'broken_event_data'
         },
-        'Act has no relations and no Bandsintown events'
+        'Bandsintown events rejected during transformation'
       );
     } );
 
     /**
-     * Test logging when act has no location data
+     * Test no WARN logging when all events are valid
      */
-    test( 'logs debug when act has no country or region data', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
+    test( 'does not log WARN when all events are valid', async () => {
+      const artistData = {
+        'musicbrainzId': 'test-id',
         'relations': {
-          'official': 'https://example.com'
+          'bandsintown': 'https://bandsintown.com/a/12345'
         }
-        // No country or region
       };
 
-      const mockEvents = [
+      const mockLdJson = [
         {
+          '@type': 'MusicEvent',
           'name': 'Concert',
-          'date': '2025-12-01',
-          'location': {}
+          'startDate': '2025-12-01T18:00:00'
         }
       ];
 
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( mockEvents );
+      const mockResult = {
+        'events': [
+          {
+            'name': 'Concert',
+            'date': '2025-12-01',
+            'location': {}
+          }
+        ],
+        'rejected': []
+      };
 
-      await mf.actService.fetchAndEnrichActData( actId );
+      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
+      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockResult );
 
-      // Should log debug about missing location
-      expect( debugSpy ).toHaveBeenCalledWith(
-        {
-          actId,
-          'issue': 'no_location'
-        },
-        'Act has no country or region data'
-      );
+      await mf.actService.fetchBandsintownEvents( artistData );
+
+      // Should not log WARN
+      expect( warnSpy ).not.toHaveBeenCalled();
     } );
 
     /**
-     * Test no data quality warnings when act has good data
+     * Test multiple rejection reasons
      */
-    test( 'does not log data quality warnings when act has complete data', async () => {
+    test( 'logs all rejection reasons when multiple issues exist', async () => {
+      const artistData = {
+        '_id': 'test-id-2',
+        'relations': {
+          'bandsintown': 'https://bandsintown.com/a/12345'
+        }
+      };
+
+      const mockResult = {
+        'events': [],
+        'rejected': [
+          {
+            'reason': 'wrong_type',
+            'type': 'Event',
+            'name': 'Not MusicEvent'
+          },
+          {
+            'reason': 'date_out_of_range',
+            'date': '2020-01-01T18:00:00',
+            'name': 'Old Event'
+          },
+          {
+            'reason': 'missing_name',
+            'date': '2025-12-01T18:00:00'
+          }
+        ]
+      };
+
+      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockResult );
+
+      await mf.actService.fetchBandsintownEvents( artistData );
+
+      // Should log all rejection reasons
+      expect( warnSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          'actId': 'test-id-2',
+          'rejectedCount': 3,
+          'rejectedEvents': expect.arrayContaining( [
+            expect.objectContaining( { 'reason': 'wrong_type' } ),
+            expect.objectContaining( { 'reason': 'date_out_of_range' } ),
+            expect.objectContaining( { 'reason': 'missing_name' } )
+          ] )
+        } ),
+        'Bandsintown events rejected during transformation'
+      );
+    } );
+  } );
+
+  describe( 'fetchAndEnrichActData - hasSongkick Tracking', () => {
+    /**
+     * Test hasSongkick true when Songkick relation exists
+     */
+    test( 'logs hasSongkick as true when act has Songkick relation', async () => {
       const actId = 'test-id';
 
       const mockMbData = {
@@ -294,11 +288,84 @@ describe( 'actService - Data Validation Logging', () => {
         '_id': actId,
         'name': 'Test Artist',
         'status': 'active',
-        'country': 'Germany',
-        'region': 'Berlin',
         'relations': {
           'official': 'https://example.com',
-          'bandsintown': 'https://bandsintown.com/a/12345'
+          'songkick': 'https://songkick.com/artists/12345'
+        }
+      };
+
+      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
+      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
+      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
+
+      await mf.actService.fetchAndEnrichActData( actId );
+
+      // Should log hasSongkick as true
+      expect( infoSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          actId,
+          'hasBandsintown': false,
+          'hasSongkick': true
+        } ),
+        'Act enrichment completed'
+      );
+    } );
+
+    /**
+     * Test hasSongkick false when no Songkick relation
+     */
+    test( 'logs hasSongkick as false when act has no Songkick relation', async () => {
+      const actId = 'test-id';
+
+      const mockMbData = {
+        'id': actId,
+        'name': 'Test Artist'
+      };
+
+      const mockTransformed = {
+        '_id': actId,
+        'name': 'Test Artist',
+        'status': 'active',
+        'relations': {
+          'official': 'https://example.com'
+        }
+      };
+
+      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
+      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
+      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
+
+      await mf.actService.fetchAndEnrichActData( actId );
+
+      // Should log hasSongkick as false
+      expect( infoSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          actId,
+          'hasBandsintown': false,
+          'hasSongkick': false
+        } ),
+        'Act enrichment completed'
+      );
+    } );
+
+    /**
+     * Test both hasBandsintown and hasSongkick true
+     */
+    test( 'logs both hasBandsintown and hasSongkick when both exist', async () => {
+      const actId = 'test-id';
+
+      const mockMbData = {
+        'id': actId,
+        'name': 'Test Artist'
+      };
+
+      const mockTransformed = {
+        '_id': actId,
+        'name': 'Test Artist',
+        'status': 'active',
+        'relations': {
+          'bandsintown': 'https://bandsintown.com/a/12345',
+          'songkick': 'https://songkick.com/artists/12345'
         }
       };
 
@@ -312,163 +379,24 @@ describe( 'actService - Data Validation Logging', () => {
 
       mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
       mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( mockEvents );
+
+      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( [] );
+      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( {
+        'events': mockEvents,
+        'rejected': []
+      } );
 
       await mf.actService.fetchAndEnrichActData( actId );
 
-      // Should not log data quality warnings
-      expect( warnSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'minimal_data' } ),
-        expect.any( String )
-      );
-      expect( debugSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'no_location' } ),
-        expect.any( String )
-      );
-    } );
-
-    /**
-     * Test logging when act has relations but no events (not minimal data)
-     */
-    test( 'does not log minimal_data when act has relations', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
-        'relations': {
-          'official': 'https://example.com'
-        }
-      };
-
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
-
-      await mf.actService.fetchAndEnrichActData( actId );
-
-      // Should not log minimal_data because it has relations
-      expect( warnSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'minimal_data' } ),
-        expect.any( String )
-      );
-    } );
-
-    /**
-     * Test logging when act has events but no relations (not minimal data)
-     */
-    test( 'does not log minimal_data when act has events', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
-        'relations': {
-          'bandsintown': 'https://bandsintown.com/a/12345'
-        }
-      };
-
-      const mockEvents = [
-        {
-          'name': 'Concert',
-          'date': '2025-12-01',
-          'location': {}
-        }
-      ];
-
-      const mockLdJson = [ { 'event': 'data' } ];
-
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      mf.ldJsonExtractor.fetchAndExtractLdJson = jest.fn().mockResolvedValue( mockLdJson );
-      mf.bandsintownTransformer.transformEvents = jest.fn().mockReturnValue( mockEvents );
-
-      await mf.actService.fetchAndEnrichActData( actId );
-
-      // Should not log minimal_data because it has events
-      expect( warnSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'minimal_data' } ),
-        expect.any( String )
-      );
-    } );
-
-    /**
-     * Test no location warning when act has country but no region
-     */
-    test( 'does not log no_location when act has country', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
-        'country': 'Germany',
-        'relations': {
-          'official': 'https://example.com'
-        }
-      };
-
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
-
-      await mf.actService.fetchAndEnrichActData( actId );
-
-      // Should not log no_location because it has country
-      expect( debugSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'no_location' } ),
-        expect.any( String )
-      );
-    } );
-
-    /**
-     * Test no location warning when act has region but no country
-     */
-    test( 'does not log no_location when act has region', async () => {
-      const actId = 'test-id';
-
-      const mockMbData = {
-        'id': actId,
-        'name': 'Test Artist'
-      };
-
-      const mockTransformed = {
-        '_id': actId,
-        'name': 'Test Artist',
-        'status': 'active',
-        'region': 'Berlin',
-        'relations': {
-          'official': 'https://example.com'
-        }
-      };
-
-      mf.musicbrainz.fetchAct = jest.fn().mockResolvedValue( mockMbData );
-      mf.musicbrainzTransformer.transformActData = jest.fn().mockReturnValue( mockTransformed );
-      jest.spyOn( mf.actService, 'fetchBandsintownEvents' ).mockResolvedValue( [] );
-
-      await mf.actService.fetchAndEnrichActData( actId );
-
-      // Should not log no_location because it has region
-      expect( debugSpy ).not.toHaveBeenCalledWith(
-        expect.objectContaining( { 'issue': 'no_location' } ),
-        expect.any( String )
+      // Should log both as true
+      expect( infoSpy ).toHaveBeenCalledWith(
+        expect.objectContaining( {
+          actId,
+          'hasBandsintown': true,
+          'hasSongkick': true,
+          'eventCount': 1
+        } ),
+        'Act enrichment completed'
       );
     } );
   } );

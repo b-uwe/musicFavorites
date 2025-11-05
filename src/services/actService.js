@@ -142,37 +142,29 @@
 
     // Validate Bandsintown URL format
     if ( bandsintownUrl.match( /^https?:\/\/(?:www\.)?bandsintown\.com\/a\/(?:\d+)$/u )?.length !== 1 ) {
+      mf.logger.error( {
+        'actId': actData.musicbrainzId || actData._id,
+        'invalidUrl': bandsintownUrl,
+        'issue': 'invalid_bandsintown_url'
+      }, 'Invalid Bandsintown URL format - possible attack or data corruption' );
       return [];
     }
 
     try {
       const ldJsonData = await mf.ldJsonExtractor.fetchAndExtractLdJson( bandsintownUrl );
-      const rawEventCount = Array.isArray( ldJsonData ) ? ldJsonData.length : 0;
-      const events = mf.bandsintownTransformer.transformEvents( ldJsonData );
-      const validEventCount = events.length;
+      const result = mf.bandsintownTransformer.transformEvents( ldJsonData, true );
 
-      // Log data validation issues when events are filtered during transformation
-      if ( rawEventCount > validEventCount ) {
-        const filteredCount = rawEventCount - validEventCount;
-
-        mf.logger.debug( {
+      // Log broken event data with rejection reasons
+      if ( result.rejected && result.rejected.length > 0 ) {
+        mf.logger.warn( {
           'actId': actData.musicbrainzId || actData._id,
-          rawEventCount,
-          validEventCount,
-          filteredCount
-        }, 'Some Bandsintown events filtered during transformation' );
-
-        // If ALL events filtered, log as warning
-        if ( validEventCount === 0 && rawEventCount > 0 ) {
-          mf.logger.warn( {
-            'actId': actData.musicbrainzId || actData._id,
-            rawEventCount,
-            'issue': 'all_events_filtered'
-          }, 'All Bandsintown events were filtered out' );
-        }
+          'rejectedCount': result.rejected.length,
+          'rejectedEvents': result.rejected,
+          'issue': 'broken_event_data'
+        }, 'Bandsintown events rejected during transformation' );
       }
 
-      return events;
+      return result.events;
     } catch ( error ) {
       if ( silentFail ) {
         return [];
@@ -195,31 +187,16 @@
     // Fetch Bandsintown events if available
     const events = await fetchBandsintownEvents( transformedData, silentEventFail );
 
-    // Check for data quality issues
-    const hasNoRelations = !transformedData.relations ||
-      Object.keys( transformedData.relations ).length === 0;
-    const hasBandsintown = Boolean( transformedData.relations?.bandsintown );
-
-    if ( hasNoRelations && events.length === 0 ) {
-      mf.logger.warn( {
-        actId,
-        'issue': 'minimal_data'
-      }, 'Act has no relations and no Bandsintown events' );
-    }
-
-    if ( !transformedData.country && !transformedData.region ) {
-      mf.logger.debug( {
-        actId,
-        'issue': 'no_location'
-      }, 'Act has no country or region data' );
-    }
-
     // Determine status based on events
     const finalStatus = determineStatus( events, transformedData.status );
+
+    const hasBandsintown = Boolean( transformedData.relations?.bandsintown );
+    const hasSongkick = Boolean( transformedData.relations?.songkick );
 
     mf.logger.info( {
       actId,
       hasBandsintown,
+      hasSongkick,
       'eventCount': events.length,
       finalStatus
     }, 'Act enrichment completed' );
